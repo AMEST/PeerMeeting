@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31205.134
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeerMeeting.Host", "PeerMeeting.Host\PeerMeeting.Host.csproj", "{AC3CAC08-7873-4304-936A-C89A6D74D13D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AC3CAC08-7873-4304-936A-C89A6D74D13D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC3CAC08-7873-4304-936A-C89A6D74D13D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC3CAC08-7873-4304-936A-C89A6D74D13D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC3CAC08-7873-4304-936A-C89A6D74D13D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4583051D-A9CF-4960-ADDB-E3D97CDE43CC}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,39 @@
+{
+  "name": "peermeeting",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free-solid": "^5.0.13",
+    "@fortawesome/fontawesome-svg-core": "^1.2.35",
+    "@fortawesome/free-solid-svg-icons": "^5.15.3",
+    "@fortawesome/vue-fontawesome": "^2.0.2",
+    "adapterjs": "^0.15.5",
+    "core-js": "^2.6.5",
+    "detectrtc": "^1.4.1",
+    "register-service-worker": "^1.6.2",
+    "rtcmulticonnection": "^3.7.0",
+    "uuid": "^8.3.2",
+    "vue": "^2.6.10",
+    "vue-router": "^3.0.3",
+    "vuex": "^3.6.2"
+  },
+  "devDependencies": {
+    "@aspnet/signalr": "^1.0.27",
+    "@fortawesome/fontawesome-free": "^5.15.3",
+    "@vue/cli-plugin-babel": "^3.0.5",
+    "@vue/cli-plugin-eslint": "^3.0.5",
+    "@vue/cli-plugin-pwa": "^3.0.5",
+    "@vue/cli-service": "^3.0.5",
+    "axios": "^0.21.1",
+    "babel-eslint": "^10.0.1",
+    "bootstrap-vue": "^2.21.2",
+    "eslint": "^5.16.0",
+    "eslint-plugin-vue": "^5.0.0",
+    "vue-template-compiler": "^2.6.10"
+  }
+}
