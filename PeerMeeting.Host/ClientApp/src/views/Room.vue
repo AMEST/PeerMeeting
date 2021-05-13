@@ -2,15 +2,20 @@
   <div class="room">
     <b-container fluid>
       <h1>room: {{ this.roomId }}</h1>
-      <br />
-      <b-button @click="toggleAudio">{{
-        audioEnabled ? "Mute" : "Unmute"
-      }}</b-button>
-      <b-button @click="toggleVideo">{{
-        videoEnabled ? "Disable video" : "Video"
-      }}</b-button>
-      <div id="videos-container"></div>
-      <b-card v-for="p in participants" :key="p.id" ref="p"></b-card>
+      <div id="videos-container" class="card-deck"></div>
+      <div class="room-controls">
+        <b-button variant="info" @click="toggleAudio"
+          ><b-icon :icon="videoEnabled ? 'mic' : 'mic-mute'"></b-icon
+        ></b-button>
+        <b-button variant="danger" @click="leave"
+          ><b-icon icon="telephone"></b-icon
+        ></b-button>
+        <b-button variant="info" @click="toggleVideo"
+          ><b-icon
+            :icon="videoEnabled ? 'camera-video' : 'camera-video-off'"
+          ></b-icon
+        ></b-button>
+      </div>
     </b-container>
   </div>
 </template>
@@ -19,8 +24,9 @@
 /* eslint-disable */
 // @ is an alias to /src
 import WebRtcSignalR from "@/WebRtcHub";
+import RtcConfigurationUtils from "@/RTCUtils";
 import RTCMultiConnection from "rtcmulticonnection";
-import { v4 as uuidv4 } from 'uuid'
+import { v4 as uuidv4 } from "uuid";
 require("adapterjs");
 export default {
   name: "room",
@@ -29,109 +35,95 @@ export default {
     connection: null,
     audioEnabled: true,
     videoEnabled: true,
-    participants:[]
+    participants: [],
   }),
   components: {
     RTCMultiConnection,
   },
   methods: {
     toggleVideo: function () {
-      if (this.videoEnabled) this.connection.attachStreams[0].mute("video");
-      else this.connection.attachStreams[0].unmute("video");
+      if (this.videoEnabled) {
+        this.connection.attachStreams[0].mute("video");
+        this.videoEnabled = false;
+      } else {
+        this.connection.attachStreams[0].unmute("video");
+        this.videoEnabled = true;
+      }
     },
     toggleAudio: function () {
-      if (this.audioEnabled) this.connection.attachStreams[0].mute("audio");
-      else this.connection.attachStreams[0].unmute("audio");
+      if (this.audioEnabled) {
+        this.connection.attachStreams[0].mute("audio");
+        this, (this.audioEnabled = false);
+      } else {
+        this.connection.attachStreams[0].unmute("audio");
+        this.audioEnabled = true;
+      }
     },
-    addParticipantBlock: function(id, innerBlock){
-      console.log(id, innerBlock)
-      this.participants.push({
-        id: "card-"+id,
-        object: innerBlock
-      })
+    addParticipantBlock: function (event) {
+      var userBlock = document.getElementById(event.userid);
+      if (!existing) {
+        userBlock = document.createElement("div");
+        userBlock.id = event.userid;
+        userBlock.setAttribute("class", "card bg-secondary text-white user-block");
+        var username = document.createElement("span");
+        username.innerText = event.userid.split("|")[1];
+        username.setAttribute("class","username-span");
+        userBlock.appendChild(username);
+        document.getElementById("videos-container").appendChild(userBlock);
+      }
+
+      var existing = document.getElementById(event.streamid);
+      if (existing && existing.parentNode) {
+        existing.parentNode.removeChild(existing);
+      }
+      if(event.mediaElement != null)
+        event.mediaElement.controls = false
+      userBlock.appendChild(event.mediaElement);
     },
     join: function () {
       this.connection.join(this.roomId);
     },
+    leave: function () {
+      this.connection.leave();
+      window.location.href = "/";
+    },
     initialize: function () {
       var self = this;
       var DetectRTC = require("detectrtc");
-      this.connection = new RTCMultiConnection();
-      console.info("rtc", this.connection);
-
+      try {
+        this.connection = new RTCMultiConnection();
+      } catch (e) {
+        console.error("Error Initialize RTCMultuConnection", e);
+        window.location.reload();
+      }
+      this.connection.userid =
+        uuidv4() + "|" + this.$store.state.application.profile.name;
       // using signalR for signaling
       this.connection.setCustomSocketHandler(WebRtcSignalR);
-      console.info("rtc", "1");
-      this.connection.session = {
-        audio: true,
-        video: true,
-      };
-      console.info("rtc", "2");
-      this.connection.sdpConstraints.mandatory = {
-        OfferToReceiveAudio: true,
-        OfferToReceiveVideo: true,
-      };
-      console.info("rtc", "3");
-      this.connection.onstream = function (event) {
-        console.log('onStream', event)
-        var existing = document.getElementById(event.streamid);
-        if (existing && existing.parentNode) {
-          existing.parentNode.removeChild(existing);
-        }
+      RtcConfigurationUtils.ConfigureBase(this.connection);
 
-        //document
-        //  .getElementById("videos-container")
-        //  .appendChild(event.mediaElement);
-        self.addParticipantBlock(event.streamid, event.mediaElement)
+      this.connection.onstream = function (event) {
+        console.log("onStream", event);
+        self.addParticipantBlock(event);
         setTimeout(() => {
           var stream = document.getElementById(event.streamid);
           stream.play();
         }, 1000);
       };
-
-      this.connection.onstreamended = function (event) {
-        var mediaElement = document.getElementById(event.streamid);
-        if (mediaElement) {
-          mediaElement.parentNode.removeChild(mediaElement);
+      RtcConfigurationUtils.ConfigureMediaError(
+        this.connection,
+        DetectRTC,
+        (videoState, audioState) => {
+          self.videoEnabled = videoState;
+          self.audioEnabled = audioState;
+          self.addParticipantBlock({
+            streamid: null,
+            userid: self.connection.userid,
+            mediaElement: document.createElement("div")
+          })
         }
-        var participantBlock = document.getElementById('card-'+event.streamid);
-        if (participantBlock) {
-          participantBlock.parentNode.removeChild(participantBlock);
-        }
-      };
-      this.connection.onMediaError = function (e) {
-        console.error("Media Error", e);
-        if (e.message === "Concurrent mic process limit.") {
-          if (DetectRTC.audioInputDevices.length <= 1) {
-            alert(
-              "Please select external microphone. Check github issue number 483."
-            );
-            return;
-          }
-
-          var secondaryMic = DetectRTC.audioInputDevices[1].deviceId;
-          self.connection.mediaConstraints.audio = {
-            deviceId: secondaryMic,
-          };
-
-          self.connection.join(self.connection.sessionid);
-          return;
-        }
-        if (e.message === "Could not start video source") {
-          self.videoEnabled = false;
-          self.audioEnabled = true;
-          self.connection.dontCaptureUserMedia = true;
-          navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-          navigator.getUserMedia({audio: true, video: false}, function (stream) {
-            self.connection.addStream(stream);
-            console.log('STREAM', stream)
-            self.connection.join(self.connection.sessionid);
-          }, function(){})
-          
-          return;
-        }
-      };
-    }
+      );
+    },
   },
   created: function () {
     this.roomId = this.$route.params.id;
@@ -144,6 +136,7 @@ export default {
     // eslint-disable-next-line
     $route(to, from) {
       this.roomId = to;
+      this.connection.leave();
       this.initialize();
       this.join(this.roomId);
     },
@@ -160,8 +153,39 @@ export default {
 }
 .full-height {
   min-height: calc(100vh - 63px);
+  max-height: calc(100vh - 63px);
 }
 .block-min-height {
   min-height: 600px;
+}
+
+.user-block {
+  min-width: 355px;
+  overflow: hidden;
+  border-radius: 18px;
+  max-height: calc(100vh - 169px);
+}
+.user-block video {
+  background-color: black;
+}
+.username-span{
+  position: absolute;
+  background-color: rgb(255,255,255, 0.22);
+  width: 100%;
+  overflow: hidden;
+  overflow-wrap: normal;
+}
+.room-controls {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 48px;
+  background-color: rgb(0, 0, 0, 0.2);
+  vertical-align: middle;
+  line-height: 48px;
+}
+.room-controls button {
+  margin-right: 0.3em;
 }
 </style>

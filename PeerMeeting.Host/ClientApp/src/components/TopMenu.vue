@@ -41,6 +41,7 @@ export default {
 .topicon {
   max-width: 48px;
   margin-bottom: 5px;
+  padding-right: 5px;
 }
 .white-avatar .b-avatar-img img{
   background-color: white;
