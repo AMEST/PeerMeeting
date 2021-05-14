@@ -1,4 +1,5 @@
 import { HubConnectionBuilder, LogLevel } from '@aspnet/signalr'
+/* eslint-disable */
 function WebRtcSignalR (connection, connectCallback) {
   var signalRConnection = new HubConnectionBuilder()
     .withUrl('/ws/webrtc')

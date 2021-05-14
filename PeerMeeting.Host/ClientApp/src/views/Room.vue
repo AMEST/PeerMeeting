@@ -53,7 +53,7 @@ export default {
     toggleAudio: function () {
       if (this.audioEnabled) {
         this.connection.attachStreams[0].mute("audio");
-        this, (this.audioEnabled = false);
+        this.audioEnabled = false;
       } else {
         this.connection.attachStreams[0].unmute("audio");
         this.audioEnabled = true;
@@ -105,6 +105,7 @@ export default {
       RtcConfigurationUtils.ConfigureBase(this.connection);
 
       this.connection.onstream = function (event) {
+        // eslint-disable-next-line
         console.log("onStream", event);
         self.addParticipantBlock(event);
         setTimeout(() => {
@@ -129,8 +130,10 @@ export default {
   },
   created: function () {
     this.roomId = this.$route.params.id;
+    // eslint-disable-next-line
     console.info("created", "run init");
     this.initialize();
+    // eslint-disable-next-line
     console.info("created", "run join");
     this.join(this.roomId);
   },

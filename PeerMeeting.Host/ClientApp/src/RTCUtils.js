@@ -1,3 +1,4 @@
+/* eslint-disable */
 var RtcConfigurationUtils = {
   ConfigureBase: function (connection) {
     connection.codecs.video = 'VP8'
