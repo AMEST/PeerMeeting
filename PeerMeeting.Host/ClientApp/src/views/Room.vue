@@ -1,7 +1,7 @@
 <template>
   <div class="room">
     <b-container fluid>
-      <h1>room: {{ this.roomId }}</h1>
+      <h3 class="room-name">{{ this.roomId }}</h3>
       <div id="videos-container" class="card-deck"></div>
       <div class="room-controls">
         <b-button variant="info" @click="toggleAudio"
@@ -64,10 +64,13 @@ export default {
       if (!existing) {
         userBlock = document.createElement("div");
         userBlock.id = event.userid;
-        userBlock.setAttribute("class", "card bg-secondary text-white user-block");
+        userBlock.setAttribute(
+          "class",
+          "card bg-secondary text-white user-block"
+        );
         var username = document.createElement("span");
         username.innerText = event.userid.split("|")[1];
-        username.setAttribute("class","username-span");
+        username.setAttribute("class", "username-span");
         userBlock.appendChild(username);
         document.getElementById("videos-container").appendChild(userBlock);
       }
@@ -76,8 +79,7 @@ export default {
       if (existing && existing.parentNode) {
         existing.parentNode.removeChild(existing);
       }
-      if(event.mediaElement != null)
-        event.mediaElement.controls = false
+      if (event.mediaElement != null) event.mediaElement.controls = false;
       userBlock.appendChild(event.mediaElement);
     },
     join: function () {
@@ -119,8 +121,8 @@ export default {
           self.addParticipantBlock({
             streamid: null,
             userid: self.connection.userid,
-            mediaElement: document.createElement("div")
-          })
+            mediaElement: document.createElement("div"),
+          });
         }
       );
     },
@@ -164,16 +166,20 @@ export default {
   overflow: hidden;
   border-radius: 18px;
   max-height: calc(100vh - 169px);
+  height: fit-content;
+  min-height: 240px;
 }
 .user-block video {
   background-color: black;
 }
-.username-span{
+.username-span {
   position: absolute;
-  background-color: rgb(255,255,255, 0.22);
+  background-color: rgb(255, 255, 255, 0.32);
   width: 100%;
   overflow: hidden;
   overflow-wrap: normal;
+  color: black;
+  font-weight: bold;
 }
 .room-controls {
   position: fixed;
@@ -184,6 +190,11 @@ export default {
   background-color: rgb(0, 0, 0, 0.2);
   vertical-align: middle;
   line-height: 48px;
+}
+.room-name{
+  padding-top: 5px;
+  color: rgb(0, 0, 0, 0.4);
+  font-weight: bold;
 }
 .room-controls button {
   margin-right: 0.3em;
