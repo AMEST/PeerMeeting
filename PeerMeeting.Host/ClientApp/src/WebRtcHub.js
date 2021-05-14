@@ -2,9 +2,9 @@ import { HubConnectionBuilder, LogLevel } from '@aspnet/signalr'
 function WebRtcSignalR (connection, connectCallback) {
   var signalRConnection = new HubConnectionBuilder()
     .withUrl('/ws/webrtc')
-    .configureLogging(LogLevel.Debug)
+    .configureLogging(LogLevel.Trace)
     .build()
-  console.info('sre', 'created')
+  console.info('sre created')
 
   function isData (session) {
     return !session.audio && !session.video && !session.screen && session.data
@@ -52,6 +52,10 @@ function WebRtcSignalR (connection, connectCallback) {
     })
 
     if (connectCallback) connectCallback(connection.socket)
+  }).catch( e => {
+    console.error('Error while establishing connection. Error: ' + e.message)
+    console.error(JSON.stringify(e, Object.getOwnPropertyNames(e)))
+    alert(JSON.stringify(e, Object.getOwnPropertyNames(e)))
   })
 
   connection.socket.emit = function (eventName, data, callback) {

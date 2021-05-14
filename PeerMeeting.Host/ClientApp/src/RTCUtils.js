@@ -20,6 +20,7 @@ var RtcConfigurationUtils = {
       }
     }
   },
+  // eslint-disable-next-line
   ConfigureMediaError: function (connection, DetectRTC, callback = (videoState, audioState) => { }) {
     connection.onMediaError = function (e) {
       console.error('Media Error', e)

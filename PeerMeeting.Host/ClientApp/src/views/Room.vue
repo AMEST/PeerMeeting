@@ -5,7 +5,7 @@
       <div id="videos-container" class="card-deck"></div>
       <div class="room-controls">
         <b-button variant="info" @click="toggleAudio"
-          ><b-icon :icon="videoEnabled ? 'mic' : 'mic-mute'"></b-icon
+          ><b-icon :icon="audioEnabled ? 'mic' : 'mic-mute'"></b-icon
         ></b-button>
         <b-button variant="danger" @click="leave"
           ><b-icon icon="telephone"></b-icon
