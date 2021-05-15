@@ -7,21 +7,21 @@
         </b-navbar-brand>
         <!-- Right aligned nav items -->
         <b-navbar-nav class="ml-auto">
-          <b-button
-            variant="outline-secondary"
-            v-if="this.$store.state.application.profile == null"
-            href="/api/account/login"
+          <b-nav-item-dropdown
+            v-if="this.$store.state.application.profile != null"
             right
-          >SignIn</b-button>
-          <b-nav-item-dropdown v-if="this.$store.state.application.profile != null" right>
+          >
             <!-- Using 'button-content' slot -->
             <template v-slot:button-content>
               <em>
-                <b-avatar class="white-avatar" :src="$store.state.application.profile.avatar"></b-avatar>
-                {{$store.state.application.profile.name}}
+                <b-avatar
+                  class="white-avatar"
+                  :src="$store.state.application.profile.avatar"
+                ></b-avatar>
+                {{ $store.state.application.profile.name }}
               </em>
             </template>
-            <b-dropdown-item href="/api/account/SignOut">Sign Out</b-dropdown-item>
+            <b-dropdown-item @click="signOut">Sign Out</b-dropdown-item>
           </b-nav-item-dropdown>
         </b-navbar-nav>
       </b-container>
@@ -33,7 +33,12 @@
 export default {
   name: "TopMenu",
   data: () => ({}),
-  methods: {}
+  methods: {
+    signOut: function () {
+      this.$store.commit("changeProfile", null);
+      window.localStorage.removeItem("profile");
+    },
+  },
 };
 </script>
 
@@ -43,7 +48,7 @@ export default {
   margin-bottom: 5px;
   padding-right: 5px;
 }
-.white-avatar .b-avatar-img img{
+.white-avatar .b-avatar-img img {
   background-color: white;
 }
 </style>

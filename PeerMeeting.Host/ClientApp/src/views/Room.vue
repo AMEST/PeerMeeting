@@ -10,7 +10,7 @@
         <b-button variant="danger" @click="leave"
           ><b-icon icon="telephone"></b-icon
         ></b-button>
-        <b-button variant="info" @click="toggleVideo"
+        <b-button :disabled="!this.connection || this.connection.dontCaptureUserMedia" variant="info" @click="toggleVideo"
           ><b-icon
             :icon="videoEnabled ? 'camera-video' : 'camera-video-off'"
           ></b-icon
@@ -127,9 +127,22 @@ export default {
         }
       );
     },
+    addToHistory: function() {
+      var room = {
+        id : this.roomId,
+        date: new Date()
+      }
+      var existRoom = this.$store.state.application.roomHistory.find((e, i, a)=> e.id == room.id);
+      if(existRoom){
+        existRoom.date = room.date;
+        return;
+      }
+      this.$store.commit('addRoomToHistory', room);
+    }
   },
   created: function () {
     this.roomId = this.$route.params.id;
+    this.addToHistory();
     // eslint-disable-next-line
     console.info("created", "run init");
     this.initialize();
@@ -142,6 +155,7 @@ export default {
     $route(to, from) {
       this.roomId = to;
       this.connection.leave();
+      this.addToHistory();
       this.initialize();
       this.join(this.roomId);
     },

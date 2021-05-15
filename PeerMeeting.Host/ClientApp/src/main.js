@@ -23,6 +23,13 @@ var profile = window.localStorage['profile']
 if (profile !== undefined) {
   store.commit('changeProfile', JSON.parse(profile))
 }
+var roomHistory = window.localStorage['roomHistory']
+if (roomHistory !== undefined) {
+  var parsedHistory = JSON.parse(roomHistory)
+  parsedHistory.forEach(element => {
+    store.commit('addRoomToHistory', element)
+  })
+}
 
 new Vue({
   store,
