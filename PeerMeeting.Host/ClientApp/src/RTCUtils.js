@@ -20,6 +20,25 @@ var RtcConfigurationUtils = {
         participantBlock.parentNode.removeChild(participantBlock)
       }
     }
+    connection.onmute = function(e) {
+      if (!e || !e.mediaElement) {
+          return;
+      }
+
+      if (e.muteType === 'both' || e.muteType === 'video') {
+          e.mediaElement.src = null;
+          var paused = e.mediaElement.pause();
+          if (typeof paused !== 'undefined') {
+              paused.then(function() {
+                  e.mediaElement.poster = e.snapshot || '/img/transparent-muted.png';
+              });
+          } else {
+              e.mediaElement.poster = e.snapshot || '/img/transparent-muted.png';
+          }
+      } else if (e.muteType === 'audio') {
+          e.mediaElement.muted = true;
+      }
+    };
   },
   // eslint-disable-next-line
   ConfigureMediaError: function (connection, DetectRTC, callback = (videoState, audioState) => { }) {

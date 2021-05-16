@@ -2,7 +2,7 @@
   <div class="room">
     <b-container fluid>
       <h3 class="room-name">{{ this.roomId }}</h3>
-      <div id="videos-container" class="card-deck"></div>
+       <b-card-group deck id="videos-container"></b-card-group>
       <div class="room-controls">
         <b-button variant="info" @click="toggleAudio"
           ><b-icon :icon="audioEnabled ? 'mic' : 'mic-mute'"></b-icon
@@ -25,6 +25,7 @@
 // @ is an alias to /src
 import WebRtcSignalR from "@/WebRtcHub";
 import RtcConfigurationUtils from "@/RTCUtils";
+import CommonUtils from "@/CommonUtils";
 import RTCMultiConnection from "rtcmulticonnection";
 import { v4 as uuidv4 } from "uuid";
 require("adapterjs");
@@ -66,12 +67,16 @@ export default {
         userBlock.id = event.userid;
         userBlock.setAttribute(
           "class",
-          "card bg-secondary text-white user-block"
+          "card text-white user-block"
         );
         var username = document.createElement("span");
         username.innerText = event.userid.split("|")[1];
         username.setAttribute("class", "username-span");
         userBlock.appendChild(username);
+        var userAvatar = document.createElement("span");
+        userAvatar.setAttribute("class","b-avatar white-avatar badge-secondary rounded-circle b-avatar-text");
+        userAvatar.innerText = CommonUtils.getInitials(event.userid.split("|")[1]);
+        userBlock.appendChild(userAvatar);
         document.getElementById("videos-container").appendChild(userBlock);
       }
 
@@ -143,11 +148,7 @@ export default {
   created: function () {
     this.roomId = this.$route.params.id;
     this.addToHistory();
-    // eslint-disable-next-line
-    console.info("created", "run init");
     this.initialize();
-    // eslint-disable-next-line
-    console.info("created", "run join");
     this.join(this.roomId);
   },
   watch: {
@@ -183,11 +184,22 @@ export default {
   overflow: hidden;
   border-radius: 18px;
   max-height: calc(100vh - 169px);
-  height: fit-content;
+  background-color: black;
   min-height: 240px;
 }
 .user-block video {
-  background-color: black;
+  background-color: transparent;
+  height: 100%;
+  z-index: 1;
+}
+.user-block .b-avatar{
+  position: absolute;
+  z-index: 0;
+  left: calc( 50% - 100px);
+  bottom: calc( 50% - 100px);
+  width: 200px;
+  height: 200px;
+  font-size: 4em;
 }
 .username-span {
   position: absolute;
@@ -197,6 +209,7 @@ export default {
   overflow-wrap: normal;
   color: black;
   font-weight: bold;
+  z-index: 2;
 }
 .room-controls {
   position: fixed;
@@ -207,6 +220,7 @@ export default {
   background-color: rgb(0, 0, 0, 0.2);
   vertical-align: middle;
   line-height: 48px;
+  z-index: 30;
 }
 .room-name{
   padding-top: 5px;

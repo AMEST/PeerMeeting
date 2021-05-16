@@ -37,6 +37,7 @@
 </template>
 
 <script>
+import CommonUtils from "@/CommonUtils";
 export default {
   name: "TopMenu",
   data: () => ({}),
@@ -46,11 +47,7 @@ export default {
       this.$store.commit("clearHistory");
     },
     getInitials: function () {
-      var fullName = this.$store.state.application.profile.name;
-      if (!fullName) return "";
-      var splited = fullName.split(" ");
-      if (splited.length > 1) return splited[0][0] + splited[1][0];
-      return splited[0][0];
+      return CommonUtils.getInitials(this.$store.state.application.profile.name);
     },
   },
 };
