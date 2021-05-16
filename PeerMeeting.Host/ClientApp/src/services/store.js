@@ -25,6 +25,15 @@ export default new Vuex.Store({
       state.application.roomHistory.push(payload)
       window.localStorage['roomHistory'] = JSON.stringify(state.application.roomHistory)
     },
+    updateRoomHistory (state, payload) {
+      // eslint-disable-next-line
+      var existRoom = state.application.roomHistory.find((e, i, a) => e.id === payload.id)
+      if (!existRoom) {
+        return
+      }
+      existRoom.date = payload.date
+      window.localStorage['roomHistory'] = JSON.stringify(state.application.roomHistory)
+    },
     changeVersion (state, value) {
       state.application.version = value
     }

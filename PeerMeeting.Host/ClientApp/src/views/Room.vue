@@ -134,7 +134,7 @@ export default {
       }
       var existRoom = this.$store.state.application.roomHistory.find((e, i, a)=> e.id == room.id);
       if(existRoom){
-        existRoom.date = room.date;
+        this.$store.commit('updateRoomHistory', room);
         return;
       }
       this.$store.commit('addRoomToHistory', room);
