@@ -2,13 +2,13 @@
   <div class="Welcome">
     <b-container class="full-height work-shadow">
       <b-input-group class="mb-3 pt-5" prepend="Room name">
-        <b-form-input v-model="this.roomName"></b-form-input>
+        <b-form-input v-model="roomName" @keyup.enter="goToRoom(roomName)"></b-form-input>
         <b-input-group-append>
           <b-button
             size="sm"
             text="Button"
             variant="success"
-            @click="goToRoom(roomId)"
+            @click="goToRoom(roomName)"
             >Go to room</b-button
           >
         </b-input-group-append>
@@ -16,9 +16,7 @@
       <b-list-group class="history">
         <b-list-group-item
           button
-          v-for="item in this.$store.state.application.roomHistory.sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-          )"
+          v-for="item in getHistory()"
           v-bind:key="item.id"
           @click="goToRoom(item.id)"
         >
@@ -45,6 +43,11 @@ export default {
       if (id == undefined) window.location.href = "/" + this.roomName;
       else window.location.href = "/" + id;
     },
+    getHistory: function(){
+      return this.$store.state.application.roomHistory.slice().sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+          );
+    }
   },
   created: function () {
     this.roomName = uuidv4();

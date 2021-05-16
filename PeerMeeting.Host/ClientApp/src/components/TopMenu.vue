@@ -16,11 +16,18 @@
               <em>
                 <b-avatar
                   class="white-avatar"
+                  :text="getInitials()"
                   :src="$store.state.application.profile.avatar"
                 ></b-avatar>
-                {{ $store.state.application.profile.name }}
               </em>
             </template>
+            <b-dropdown-text style="width: 240px">
+              Signed in as
+              <span class="username">{{
+                $store.state.application.profile.name
+              }}</span>
+            </b-dropdown-text>
+            <b-dropdown-divider></b-dropdown-divider>
             <b-dropdown-item @click="signOut">Sign Out</b-dropdown-item>
           </b-nav-item-dropdown>
         </b-navbar-nav>
@@ -35,8 +42,15 @@ export default {
   data: () => ({}),
   methods: {
     signOut: function () {
-      this.$store.commit("changeProfile", null);
-      window.localStorage.removeItem("profile");
+      this.$store.commit("clearProfile");
+      this.$store.commit("clearHistory");
+    },
+    getInitials: function () {
+      var fullName = this.$store.state.application.profile.name;
+      if (!fullName) return "";
+      var splited = fullName.split(" ");
+      if (splited.length > 1) return splited[0][0] + splited[1][0];
+      return splited[0][0];
     },
   },
 };
@@ -50,5 +64,8 @@ export default {
 }
 .white-avatar .b-avatar-img img {
   background-color: white;
+}
+.username {
+  font-weight: bold;
 }
 </style>

@@ -5,7 +5,11 @@
     <b-container v-else>
       <b-card bg-variant="dark" text-variant="white" title="Who are you?">
         <b-card-text>
-          <b-form-input v-model="username" placeholder="Enter your name"></b-form-input>
+          <b-form-input
+            v-model="username"
+            placeholder="Enter your name"
+            @keyup.enter="applyUserName"
+          ></b-form-input>
         </b-card-text>
         <b-button @click="applyUserName" variant="primary">Ok</b-button>
       </b-card>
@@ -19,20 +23,22 @@ export default {
   components: {
     TopMenu,
   },
-  data:()=>{
+  data: () => {
     return {
-      username: null
-    }
+      username: null,
+    };
   },
-  methods:{
-    applyUserName: function(){
+  methods: {
+    applyUserName: function () {
+      if (!this.username || this.username.length < 2) return;
+
       var profile = {
-        avatar : null,
-        name : this.username,
-      }
+        avatar: null,
+        name: this.username,
+      };
       this.$store.commit("changeProfile", profile);
-    }
-  }
+    },
+  },
 };
 </script>
 

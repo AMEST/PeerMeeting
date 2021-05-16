@@ -17,6 +17,11 @@ export default new Vuex.Store({
       window.localStorage['profile'] = JSON.stringify(payload)
       state.application.profile = payload
     },
+    // eslint-disable-next-line
+    clearProfile (state) {
+      state.application.profile = null
+      window.localStorage.removeItem('profile')
+    },
     addRoomToHistory (state, payload) {
       if (state.application.roomHistory.length > 10) {
         var sliceAt = state.application.roomHistory.length - 10
@@ -33,6 +38,11 @@ export default new Vuex.Store({
       }
       existRoom.date = payload.date
       window.localStorage['roomHistory'] = JSON.stringify(state.application.roomHistory)
+    },
+    // eslint-disable-next-line
+    clearHistory (state, payload) {
+      state.application.roomHistory = []
+      window.localStorage.removeItem('roomHistory')
     },
     changeVersion (state, value) {
       state.application.version = value
