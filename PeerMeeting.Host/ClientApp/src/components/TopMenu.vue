@@ -65,4 +65,7 @@ export default {
 .username {
   font-weight: bold;
 }
+.navbar-nav .dropdown-menu {
+  position: absolute!important;
+}
 </style>
