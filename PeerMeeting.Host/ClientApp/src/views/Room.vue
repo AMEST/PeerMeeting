@@ -2,9 +2,13 @@
   <div class="room">
     <b-container fluid>
       <h3 class="room-name">{{ this.roomId }}</h3>
-       <b-card-group deck id="videos-container">
-         <participant-block v-for="[k,v] in this.participants" :key="k" :streamEvent="v"></participant-block>
-       </b-card-group>
+      <b-card-group deck id="videos-container">
+        <participant-block
+          v-for="[k, v] in this.participants"
+          :key="k"
+          :streamEvent="v"
+        ></participant-block>
+      </b-card-group>
       <div class="room-controls">
         <b-button variant="info" @click="toggleAudio"
           ><b-icon :icon="audioEnabled ? 'mic' : 'mic-mute'"></b-icon
@@ -12,7 +16,10 @@
         <b-button variant="danger" @click="leave"
           ><b-icon icon="telephone"></b-icon
         ></b-button>
-        <b-button :disabled="!this.connection || this.connection.dontCaptureUserMedia" variant="info" @click="toggleVideo"
+        <b-button
+          :disabled="!this.connection || this.connection.dontCaptureUserMedia"
+          variant="info"
+          @click="toggleVideo"
           ><b-icon
             :icon="videoEnabled ? 'camera-video' : 'camera-video-off'"
           ></b-icon
@@ -43,7 +50,7 @@ export default {
   }),
   components: {
     RTCMultiConnection,
-    ParticipantBlock
+    ParticipantBlock,
   },
   methods: {
     toggleVideo: function () {
@@ -57,24 +64,26 @@ export default {
     },
     toggleAudio: function () {
       if (this.audioEnabled) {
-        if(!this.connection.dontCaptureUserMedia) this.connection.attachStreams[0].mute("audio");
+        if (!this.connection.dontCaptureUserMedia)
+          this.connection.attachStreams[0].mute("audio");
         else this.connection.attachStreams[0].getTracks()[0].enabled = false;
         this.audioEnabled = false;
       } else {
-        if(!this.connection.dontCaptureUserMedia) this.connection.attachStreams[0].unmute("audio");
+        if (!this.connection.dontCaptureUserMedia)
+          this.connection.attachStreams[0].unmute("audio");
         else this.connection.attachStreams[0].getTracks()[0].enabled = true;
         this.audioEnabled = true;
       }
     },
     addParticipantBlock: function (event) {
-      if(this.participants.has(event.userid))
+      if (this.participants.has(event.userid))
         this.participants.delete(event.userid);
 
       this.participants.set(event.userid, event);
       this.$forceUpdate();
     },
-    streamEnded: function(event){
-      if(!this.participants.has(event.userid)) return;
+    streamEnded: function (event) {
+      if (!this.participants.has(event.userid)) return;
       this.participants.delete(event.userid);
       this.$forceUpdate();
     },
@@ -119,18 +128,20 @@ export default {
         }
       );
     },
-    addToHistory: function() {
+    addToHistory: function () {
       var room = {
-        id : this.roomId,
-        date: new Date()
-      }
-      var existRoom = this.$store.state.application.roomHistory.find((e, i, a)=> e.id == room.id);
-      if(existRoom){
-        this.$store.commit('updateRoomHistory', room);
+        id: this.roomId,
+        date: new Date(),
+      };
+      var existRoom = this.$store.state.application.roomHistory.find(
+        (e, i, a) => e.id == room.id
+      );
+      if (existRoom) {
+        this.$store.commit("updateRoomHistory", room);
         return;
       }
-      this.$store.commit('addRoomToHistory', room);
-    }
+      this.$store.commit("addRoomToHistory", room);
+    },
   },
   created: function () {
     this.roomId = this.$route.params.id;
@@ -152,51 +163,10 @@ export default {
 };
 </script>
 <style>
-.right-border {
-  border-right: 1px solid #e8e8e8;
-}
-.top-border {
-  border-top: 1px solid #e8e8e8;
-}
+
 .full-height {
   min-height: calc(100vh - 63px);
   max-height: calc(100vh - 63px);
-}
-.block-min-height {
-  min-height: 600px;
-}
-
-.user-block {
-  min-width: 355px;
-  overflow: hidden;
-  border-radius: 18px;
-  max-height: calc(100vh - 169px);
-  background-color: black;
-  min-height: 240px;
-}
-.user-block video {
-  background-color: transparent;
-  height: 100%;
-  z-index: 1;
-}
-.user-block .b-avatar{
-  position: absolute;
-  z-index: 0;
-  left: calc( 50% - 100px);
-  bottom: calc( 50% - 100px);
-  width: 200px;
-  height: 200px;
-  font-size: 4em;
-}
-.username-span {
-  position: absolute;
-  background-color: rgb(255, 255, 255, 0.32);
-  width: 100%;
-  overflow: hidden;
-  overflow-wrap: normal;
-  color: black;
-  font-weight: bold;
-  z-index: 2;
 }
 .room-controls {
   position: fixed;
@@ -209,7 +179,7 @@ export default {
   line-height: 48px;
   z-index: 30;
 }
-.room-name{
+.room-name {
   padding-top: 5px;
   color: rgb(0, 0, 0, 0.4);
   font-weight: bold;
