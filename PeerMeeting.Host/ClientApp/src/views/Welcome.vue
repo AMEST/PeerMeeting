@@ -1,18 +1,32 @@
 <template>
   <div class="Welcome">
     <b-container class="full-height work-shadow">
-      <b-input-group class="mb-3 pt-5" prepend="Room name">
-        <b-form-input v-model="roomName" @keyup.enter="goToRoom(roomName)"></b-form-input>
-        <b-input-group-append>
-          <b-button
-            size="sm"
-            text="Button"
-            variant="success"
-            @click="goToRoom(roomName)"
-            >Go to room</b-button
-          >
-        </b-input-group-append>
-      </b-input-group>
+      <br>
+      <b-jumbotron>
+        <template #header>PeerMeeting</template>
+
+        <template #lead>
+          Start & join meetings for free. No account needed, open service, write you name and open or join room!
+        </template>
+
+        <hr class="my-4" />
+        <b-input-group prepend="Room name">
+          <b-form-input
+            v-model="roomName"
+            @keyup.enter="goToRoom(roomName)"
+          ></b-form-input>
+          <b-input-group-append>
+            <b-button
+              size="sm"
+              text="Button"
+              variant="success"
+              @click="goToRoom(roomName)"
+              >Start meeting</b-button
+            >
+          </b-input-group-append>
+        </b-input-group>
+      </b-jumbotron>
+
       <b-list-group class="history">
         <b-list-group-item
           button
@@ -43,11 +57,13 @@ export default {
       if (id == undefined) window.location.href = "/" + this.roomName;
       else window.location.href = "/" + id;
     },
-    getHistory: function(){
-      return this.$store.state.application.roomHistory.slice().sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-          );
-    }
+    getHistory: function () {
+      return this.$store.state.application.roomHistory
+        .slice()
+        .sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+    },
   },
   created: function () {
     this.roomName = uuidv4();
@@ -57,6 +73,9 @@ export default {
 <style>
 .Welcome {
   font-family: Source Sans Pro, sans-serif;
+}
+.Welcome .jumbotron{
+  padding: 2rem 1rem !important;
 }
 .full-height {
   min-height: calc(100vh - 63px);
