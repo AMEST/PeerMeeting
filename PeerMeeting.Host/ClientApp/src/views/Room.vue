@@ -2,7 +2,9 @@
   <div class="room">
     <b-container fluid>
       <h3 class="room-name">{{ this.roomId }}</h3>
-       <b-card-group deck id="videos-container"></b-card-group>
+       <b-card-group deck id="videos-container">
+         <participant-block v-for="[k,v] in this.participants" :key="k" :streamEvent="v"></participant-block>
+       </b-card-group>
       <div class="room-controls">
         <b-button variant="info" @click="toggleAudio"
           ><b-icon :icon="audioEnabled ? 'mic' : 'mic-mute'"></b-icon
@@ -25,9 +27,10 @@
 // @ is an alias to /src
 import WebRtcSignalR from "@/WebRtcHub";
 import RtcConfigurationUtils from "@/RTCUtils";
-import CommonUtils from "@/CommonUtils";
+//import CommonUtils from "@/CommonUtils";
 import RTCMultiConnection from "rtcmulticonnection";
 import { v4 as uuidv4 } from "uuid";
+import ParticipantBlock from "@/components/ParticipantBlock.vue";
 require("adapterjs");
 export default {
   name: "room",
@@ -36,10 +39,11 @@ export default {
     connection: null,
     audioEnabled: true,
     videoEnabled: true,
-    participants: [],
+    participants: new Map(),
   }),
   components: {
     RTCMultiConnection,
+    ParticipantBlock
   },
   methods: {
     toggleVideo: function () {
@@ -53,39 +57,26 @@ export default {
     },
     toggleAudio: function () {
       if (this.audioEnabled) {
-        this.connection.attachStreams[0].mute("audio");
+        if(!this.connection.dontCaptureUserMedia) this.connection.attachStreams[0].mute("audio");
+        else this.connection.attachStreams[0].getTracks()[0].enabled = false;
         this.audioEnabled = false;
       } else {
-        this.connection.attachStreams[0].unmute("audio");
+        if(!this.connection.dontCaptureUserMedia) this.connection.attachStreams[0].unmute("audio");
+        else this.connection.attachStreams[0].getTracks()[0].enabled = true;
         this.audioEnabled = true;
       }
     },
     addParticipantBlock: function (event) {
-      var userBlock = document.getElementById(event.userid);
-      if (!existing) {
-        userBlock = document.createElement("div");
-        userBlock.id = event.userid;
-        userBlock.setAttribute(
-          "class",
-          "card text-white user-block"
-        );
-        var username = document.createElement("span");
-        username.innerText = event.userid.split("|")[1];
-        username.setAttribute("class", "username-span");
-        userBlock.appendChild(username);
-        var userAvatar = document.createElement("span");
-        userAvatar.setAttribute("class","b-avatar white-avatar badge-secondary rounded-circle b-avatar-text");
-        userAvatar.innerText = CommonUtils.getInitials(event.userid.split("|")[1]);
-        userBlock.appendChild(userAvatar);
-        document.getElementById("videos-container").appendChild(userBlock);
-      }
+      if(this.participants.has(event.userid))
+        this.participants.delete(event.userid);
 
-      var existing = document.getElementById(event.streamid);
-      if (existing && existing.parentNode) {
-        existing.parentNode.removeChild(existing);
-      }
-      if (event.mediaElement != null) event.mediaElement.controls = false;
-      userBlock.appendChild(event.mediaElement);
+      this.participants.set(event.userid, event);
+      this.$forceUpdate();
+    },
+    streamEnded: function(event){
+      if(!this.participants.has(event.userid)) return;
+      this.participants.delete(event.userid);
+      this.$forceUpdate();
     },
     join: function () {
       this.connection.join(this.roomId);
@@ -107,16 +98,12 @@ export default {
         uuidv4() + "|" + this.$store.state.application.profile.name;
       // using signalR for signaling
       this.connection.setCustomSocketHandler(WebRtcSignalR);
-      RtcConfigurationUtils.ConfigureBase(this.connection);
+      RtcConfigurationUtils.ConfigureBase(this.connection, this.streamEnded);
 
       this.connection.onstream = function (event) {
         // eslint-disable-next-line
         console.log("onStream", event);
         self.addParticipantBlock(event);
-        setTimeout(() => {
-          var stream = document.getElementById(event.streamid);
-          stream.play();
-        }, 1000);
       };
       RtcConfigurationUtils.ConfigureMediaError(
         this.connection,

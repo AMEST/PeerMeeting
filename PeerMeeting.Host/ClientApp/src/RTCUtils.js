@@ -1,6 +1,6 @@
 /* eslint-disable */
 var RtcConfigurationUtils = {
-  ConfigureBase: function (connection) {
+  ConfigureBase: function (connection, streamEndedCallback = (event) =>{}) {
     connection.codecs.video = 'VP8'
     connection.session = {
       audio: true,
@@ -11,6 +11,7 @@ var RtcConfigurationUtils = {
       OfferToReceiveVideo: true
     }
     connection.onstreamended = function (event) {
+      console.log('stream ended', event)
       var mediaElement = document.getElementById(event.streamid)
       if (mediaElement) {
         mediaElement.parentNode.removeChild(mediaElement)
@@ -19,6 +20,7 @@ var RtcConfigurationUtils = {
       if (participantBlock) {
         participantBlock.parentNode.removeChild(participantBlock)
       }
+      streamEndedCallback(event)
     }
     connection.onmute = function(e) {
       if (!e || !e.mediaElement) {
@@ -59,8 +61,7 @@ var RtcConfigurationUtils = {
 
         connection.join(connection.sessionid)
         return
-      }
-      if (e.message === 'Could not start video source') {
+      }else{
         callback(false, true)
         connection.dontCaptureUserMedia = true
         navigator.getUserMedia =
