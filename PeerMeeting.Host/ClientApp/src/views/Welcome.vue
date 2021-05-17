@@ -20,7 +20,7 @@
           v-bind:key="item.id"
           @click="goToRoom(item.id)"
         >
-          <span>{{ item.date }} </span>
+          <span>{{ new Date(item.date).toLocaleString() }} </span>
           <h4>{{ item.id }}</h4>
         </b-list-group-item>
       </b-list-group>
