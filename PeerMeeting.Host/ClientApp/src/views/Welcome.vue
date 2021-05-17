@@ -10,6 +10,7 @@
         </template>
 
         <hr class="my-4" />
+
         <b-input-group prepend="Room name">
           <b-form-input
             v-model="roomName"

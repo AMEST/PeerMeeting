@@ -14,6 +14,7 @@
         <b-button @click="applyUserName" variant="primary">Ok</b-button>
       </b-card>
     </b-container>
+    <a class="fork-me" href="//github.com/AMEST/PeerMeeting">Fork me on <font-awesome-icon :icon="{ prefix: 'fab', iconName: 'github' }" /></a>
   </div>
 </template>
 
@@ -62,5 +63,15 @@ export default {
 
 #nav a.router-link-exact-active {
   color: #42b983;
+}
+.fork-me{
+  position: fixed;
+  z-index: 40;
+  left: 0;
+  bottom: 0;
+  color: black;
+  background-color: rgba(0, 0, 0, 0.15);
+  width: 140px;
+  border-radius: 0px 10px 0px 0px;
 }
 </style>
