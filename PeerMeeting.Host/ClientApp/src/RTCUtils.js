@@ -89,7 +89,7 @@ var RTCUtils = {
     var self = this
     setTimeout(()=>{
       if(state){
-        navigator.mediaDevices.getDisplayMedia({video: true})
+        navigator.mediaDevices.getDisplayMedia({video: true, audio: true})
         .then(function(stream){
           connection.addStream(stream);
           var event = self.CreateVideoElementEvent(connection.userid, stream)
@@ -108,7 +108,7 @@ var RTCUtils = {
     connection.attachStreams.forEach(s => s.stop())
     var self = this
     if(state){
-      navigator.mediaDevices.getDisplayMedia({video: true})
+      navigator.mediaDevices.getDisplayMedia({video: true, audio: true})
       .then(function(stream){
         connection.addStream(stream);
         var event = self.CreateVideoElementEvent(connection.userid, stream)
