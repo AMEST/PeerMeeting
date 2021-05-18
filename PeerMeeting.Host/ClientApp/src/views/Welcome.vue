@@ -3,7 +3,7 @@
     <b-container class="full-height work-shadow">
       <br>
       <b-jumbotron>
-        <template #header>PeerMeeting</template>
+        <template #header>Peer Meeting</template>
 
         <template #lead>
           Start & join meetings for free. No account needed, open service, write you name and open or join room!

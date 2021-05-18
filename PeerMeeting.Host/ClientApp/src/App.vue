@@ -66,7 +66,7 @@ export default {
 }
 .fork-me{
   position: fixed;
-  z-index: 40;
+  z-index: 29;
   left: 0;
   bottom: 0;
   color: black;
