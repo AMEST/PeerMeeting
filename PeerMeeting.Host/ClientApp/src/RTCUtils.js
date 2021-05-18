@@ -1,6 +1,6 @@
 /* eslint-disable */
 var RTCUtils = {
-  ConfigureBase: function (connection, streamEndedCallback = (event) =>{}) {
+  ConfigureBase: function (connection, participants,  streamEndedCallback = (event) =>{}) {
     connection.codecs.video = 'VP8'
     connection.session = {
       audio: true,
@@ -17,11 +17,14 @@ var RTCUtils = {
       if (mediaElement) {
         mediaElement.parentNode.removeChild(mediaElement)
       }
-      var participantBlock = document.getElementById(event.userid)
-      if (participantBlock) {
-        participantBlock.parentNode.removeChild(participantBlock)
-      }
     }
+    setInterval(() =>{
+      var connectedParticipants = connection.getAllParticipants()
+      for(const key of participants.keys()){
+        if(connectedParticipants.indexOf(key) == -1 && connection.userid != key)
+          participants.delete(key)
+      }
+    }, 5000)
     connection.onmute = function(e) {
       if (!e || !e.mediaElement) {
           return;
@@ -80,49 +83,60 @@ var RTCUtils = {
       }
     }
   },
-  ScreenSharing: function(connection, state){
+  ScreenSharing: function(connection, state, callback){
     connection.attachStreams.forEach(s => s.stop())
-    connection.removeStream({
-      audio: true,
-      video: true
-    });
-    if(state){
-      connection.addStream({
-        audio: true,
-        video: false,
-        screen: true,
-        oneway: true
-      })
-    }else{
-      setTimeout(()=>{
+    console.log(connection.attachStreams)
+    var self = this
+    setTimeout(()=>{
+      if(state){
+        navigator.mediaDevices.getDisplayMedia({video: true})
+        .then(function(stream){
+          connection.addStream(stream);
+          var event = self.CreateVideoElementEvent(connection.userid, stream)
+          callback(event)
+        }, function(e){console.error('screen sharing', e)});
+      }else{
         connection.addStream({
           audio: true,
           video: true,
           oneway: true
         })
-      }, 500);
-    }
+      }
+    }, 500);  
   },
-  ScreenSharingManual: function(connection, state, participant){
+  ScreenSharingManual: function(connection, state, callback){
     connection.attachStreams.forEach(s => s.stop())
+    var self = this
     if(state){
       navigator.mediaDevices.getDisplayMedia({video: true})
       .then(function(stream){
         connection.addStream(stream);
-        var video = document.createElement("video");
-        video.srcObject = stream;
-        video.id = stream.id;
-        participant.get(connection.userid).mediaElement = video;
+        var event = self.CreateVideoElementEvent(connection.userid, stream)
+        callback(event)
       }, function(e){console.error('screen sharing', e)});
     }else{
       navigator.getUserMedia(
         { audio: true, video: false },
         function (stream) {
           connection.addStream(stream)
-          participant.get(connection.userid).mediaElement = document.createElement("div");
+          var event = self.CreateVideoElementEvent(connection.userid, stream)
+          callback(event)
         },
         function () { }
       )
+    }
+  },
+  CreateVideoElementEvent: function(userid, stream){
+    var video = document.createElement("video");
+    video.srcObject = stream;
+    video.id = stream.id
+    video.autoplay=true
+    video.playsinline=true
+    video.muted=true
+    return {
+      userid: userid,
+      streamid: stream.id,
+      mediaElement: video
     }
   }
 }

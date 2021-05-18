@@ -17,14 +17,23 @@
           ><b-icon icon="telephone"></b-icon
         ></b-button>
         <b-button
-          :disabled="!this.connection || this.connection.dontCaptureUserMedia"
+          :disabled="
+            !this.connection ||
+            this.connection.dontCaptureUserMedia ||
+            this.screenEnabled
+          "
           variant="info"
           @click="toggleVideo"
           ><b-icon
             :icon="videoEnabled ? 'camera-video' : 'camera-video-off'"
+          ></b-icon>
+        </b-button>
+        <b-button v-if="!this.DetectRTC.isMobileDevice" @click="shareScreen"
+          ><b-icon
+            :icon="screenEnabled ? 'display-fill' : 'display'"
+            :style="screenEnabled ? 'color: red' : ''"
           ></b-icon
         ></b-button>
-        <b-button @click="shareScreen">screen</b-button>
       </div>
     </b-container>
   </div>
@@ -48,6 +57,7 @@ export default {
     videoEnabled: true,
     screenEnabled: false,
     participants: new Map(),
+    DetectRTC: require("detectrtc"),
   }),
   components: {
     RTCMultiConnection,
@@ -56,32 +66,56 @@ export default {
   methods: {
     toggleVideo: function () {
       this.videoEnabled = !this.videoEnabled;
-      if(!this.videoEnabled) this.connection.attachStreams[0].mute("video");
+      if (!this.videoEnabled) this.connection.attachStreams[0].mute("video");
       else this.connection.attachStreams[0].unmute("video");
     },
     toggleAudio: function () {
-      this.audioEnabled = ! this.audioEnabled;
-      if(!this.dontCaptureUserMedia){
-        if(!this.audioEnabled) this.connection.attachStreams[0].mute("audio");
+      this.audioEnabled = !this.audioEnabled;
+      if (!this.dontCaptureUserMedia) {
+        if (!this.audioEnabled) this.connection.attachStreams[0].mute("audio");
         else this.connection.attachStreams[0].unmute("audio");
-        return
+        return;
       }
-      if(!this.audioEnabled){
+      if (!this.audioEnabled) {
         this.connection.attachStreams[0].getTracks()[0].enabled = this.audioEnabled;
-        this.connection.StreamsHandler.onSyncNeeded(this.connection.attachStreams[0].id, 'mute', 'both');
-      }else{
+        this.connection.StreamsHandler.onSyncNeeded(
+          this.connection.attachStreams[0].id,
+          "mute",
+          "both"
+        );
+      } else {
         this.connection.attachStreams[0].getTracks()[0].enabled = this.audioEnabled;
-        this.connection.StreamsHandler.onSyncNeeded(this.connection.attachStreams[0].id, 'unmute', 'both');
+        this.connection.StreamsHandler.onSyncNeeded(
+          this.connection.attachStreams[0].id,
+          "unmute",
+          "both"
+        );
       }
     },
-    shareScreen: function(){
-      console.log('share', this.screenEnabled)
-      this.connection.attachStreams.forEach(s => s.stop())
-      this.screenEnabled = !this.screenEnabled;
-      if (this.connection.dontCaptureUserMedia) RTCUtils.ScreenSharingManual(this.connection, this.screenEnabled, this.participants);
-      else RTCUtils.ScreenSharing(this.connection, this.screenEnabled);
+    shareScreen: function () {
+      console.log("share", this.screenEnabled);
+      var self = this;
+      this.audioEnabled = true;
+      this.videoEnabled = false;
+      this.connection.attachStreams.forEach((s) => s.stop());
+      setTimeout(() => {
+        self.screenEnabled = !self.screenEnabled;
+        if (self.connection.dontCaptureUserMedia)
+          RTCUtils.ScreenSharingManual(
+            self.connection,
+            self.screenEnabled,
+            self.addParticipantBlock
+          );
+        else
+          RTCUtils.ScreenSharing(
+            self.connection,
+            self.screenEnabled,
+            self.addParticipantBlock
+          );
+      }, 500);
     },
     addParticipantBlock: function (event) {
+      console.log("onStream", event);
       if (this.participants.has(event.userid))
         this.participants.delete(event.userid);
 
@@ -102,7 +136,6 @@ export default {
     },
     initialize: function () {
       var self = this;
-      var DetectRTC = require("detectrtc");
       try {
         this.connection = new RTCMultiConnection();
       } catch (e) {
@@ -113,13 +146,13 @@ export default {
         uuidv4() + "|" + this.$store.state.application.profile.name;
       // using signalR for signaling
       this.connection.setCustomSocketHandler(WebRtcSignalR);
-      RTCUtils.ConfigureBase(this.connection, this.streamEnded);
+      RTCUtils.ConfigureBase(
+        this.connection,
+        this.participants,
+        this.streamEnded
+      );
 
-      this.connection.onstream = function (event) {
-        // eslint-disable-next-line
-        console.log("onStream", event);
-        self.addParticipantBlock(event);
-      };
+      this.connection.onstream = this.addParticipantBlock;
       RTCUtils.ConfigureMediaError(
         this.connection,
         DetectRTC,
@@ -169,7 +202,6 @@ export default {
 };
 </script>
 <style>
-
 .full-height {
   min-height: calc(100vh - 63px);
   max-height: calc(100vh - 63px);

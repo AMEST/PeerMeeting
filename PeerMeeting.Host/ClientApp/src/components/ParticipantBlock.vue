@@ -21,12 +21,25 @@ export default {
     getInitials: function () {
       return CommonUtils.getInitials(this.streamEvent.userid.split("|")[1]);
     },
+    clearMediaElements: function(){
+      var card = document.getElementById("card-" + this.streamEvent.userid);
+      for( const el of card.getElementsByTagName("video")) el.parentNode.removeChild(el)
+      for( const el of card.getElementsByTagName("audio")) el.parentNode.removeChild(el)
+    }
   },
   watch: {
     streamEvent: function (newVal, oldVal) {
       // watch it
       // eslint-disable-next-line
       console.log("Prop changed: ", newVal, " | was: ", oldVal);
+      this.clearMediaElements();
+      var card = document.getElementById("card-" + this.streamEvent.userid);
+      if (newVal.mediaElement != null)
+        newVal.mediaElement.controls = false;
+      card.appendChild(newVal.mediaElement);
+      setTimeout(() => {
+        newVal.mediaElement.play()
+      }, 500);
     },
   },
   mounted: function () {

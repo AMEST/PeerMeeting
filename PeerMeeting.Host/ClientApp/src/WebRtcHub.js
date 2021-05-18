@@ -218,7 +218,8 @@ function WebRtcSignalR (connection, connectCallback) {
       }
 
       //Patch for deleting perticipant block on firefox
-      if (connection.DetectRTC.browser.name === 'Firefox'){
+      if (connection.DetectRTC.browser.name === 'Firefox'
+          || !connection.peers[message.sender]){
         connection.onstreamended({streamid: null, userid: message.sender})
       }
 
