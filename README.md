@@ -8,6 +8,7 @@
   - [Links](#links)
   - [Description](#description)
   - [Features](#features)
+  - [Supported browsers](#supported-browsers)
   - [Self-hosted Requirements](#self-hosted-requirements)
 
 ## Links
@@ -24,6 +25,9 @@ The service is adjusted based on the mesh model. This network is implemented to 
 1. Video conferencing over p2p with 2+ peoples
 2. Local room history on home page
 
+## Supported browsers
+1. Chomium based browsers on windows, linux and android
+2. Half support firefox on android
 
 ## Self-hosted Requirements
 * AspNet Core 3.1 runtime or Docker for service start
