@@ -1,10 +1,13 @@
-import { HubConnectionBuilder, LogLevel } from '@aspnet/signalr'
+import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr'
 /* eslint-disable */
 function WebRtcSignalR (connection, connectCallback) {
+  try{
   var signalRConnection = new HubConnectionBuilder()
     .withUrl('/ws/webrtc')
-    .configureLogging(LogLevel.Trace)
+    .withAutomaticReconnect([0, 0, 10000])
+    .configureLogging(LogLevel.Information)
     .build()
+  }catch(e){console.error(e)}
   console.info('sre created')
 
   function isData (session) {
@@ -18,13 +21,9 @@ function WebRtcSignalR (connection, connectCallback) {
       signalRConnection.invoke('Send', channelName, JSON.stringify(data))
     }
   }
-  console.log('SRC', signalRConnection)
-
   signalRConnection.on(channelName, message => {
     var data = JSON.parse(message)
     console.log('ON Deserialized', data)
-    console.log('ON', connection.socketMessageEvent)
-    console.log('ON', connection.peers.getAllParticipants())
     if (data.eventName === connection.socketMessageEvent) {
       console.log(connection.socketMessageEvent)
       onMessagesCallback(data.data)
@@ -82,7 +81,6 @@ function WebRtcSignalR (connection, connectCallback) {
   var mPeer = connection.multiPeersHandler
 
   function onMessagesCallback (message) {
-    console.warn('OMC', message)
     if (message.remoteUserId !== connection.userid && !message.message.newParticipationRequest) return
 
     if (connection.peers[message.sender] && connection.peers[message.sender].extra !== message.message.extra) {
@@ -221,7 +219,6 @@ function WebRtcSignalR (connection, connectCallback) {
 
       //Patch for deleting perticipant block on firefox
       if (connection.DetectRTC.browser.name === 'Firefox'){
-        console.log('peer', connection.peers[message.sender])
         connection.onstreamended({streamid: null, userid: message.sender})
       }
 

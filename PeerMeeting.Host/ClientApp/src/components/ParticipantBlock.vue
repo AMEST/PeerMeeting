@@ -1,28 +1,41 @@
 <template>
-  <div class="card text-white user-block" :id="'card-'+this.streamEvent.userid">
-      <span class="username-span"> {{this.streamEvent.userid.split("|")[1]}}</span>
-      <b-avatar> {{this.getInitials()}}</b-avatar>
+  <div
+    class="card text-white user-block"
+    :id="'card-' + this.streamEvent.userid"
+  >
+    <span class="username-span">
+      {{ this.streamEvent.userid.split("|")[1] }}</span
+    >
+    <b-avatar> {{ this.getInitials() }}</b-avatar>
   </div>
 </template>
 
 <script>
 import CommonUtils from "@/CommonUtils";
 export default {
-    name: "ParticipantBlock",
-    props:{
-        streamEvent: Object
+  name: "ParticipantBlock",
+  props: {
+    streamEvent: Object,
+  },
+  methods: {
+    getInitials: function () {
+      return CommonUtils.getInitials(this.streamEvent.userid.split("|")[1]);
     },
-    methods:{
-        getInitials: function(){
-            return CommonUtils.getInitials(this.streamEvent.userid.split("|")[1]);
-        }
+  },
+  watch: {
+    streamEvent: function (newVal, oldVal) {
+      // watch it
+      // eslint-disable-next-line
+      console.log("Prop changed: ", newVal, " | was: ", oldVal);
     },
-    mounted: function(){
-      var card = document.getElementById('card-'+this.streamEvent.userid)
-      if (this.streamEvent.mediaElement != null) this.streamEvent.mediaElement.controls = false;
-      card.appendChild(this.streamEvent.mediaElement);
-    }
-}
+  },
+  mounted: function () {
+    var card = document.getElementById("card-" + this.streamEvent.userid);
+    if (this.streamEvent.mediaElement != null)
+      this.streamEvent.mediaElement.controls = false;
+    card.appendChild(this.streamEvent.mediaElement);
+  },
+};
 </script>
 
 <style>
@@ -39,11 +52,11 @@ export default {
   height: 100%;
   z-index: 1;
 }
-.user-block .b-avatar{
+.user-block .b-avatar {
   position: absolute;
   z-index: 0;
-  left: calc( 50% - 100px);
-  bottom: calc( 50% - 100px);
+  left: calc(50% - 100px);
+  bottom: calc(50% - 100px);
   width: 200px;
   height: 200px;
   font-size: 4em;

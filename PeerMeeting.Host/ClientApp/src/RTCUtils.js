@@ -1,5 +1,5 @@
 /* eslint-disable */
-var RtcConfigurationUtils = {
+var RTCUtils = {
   ConfigureBase: function (connection, streamEndedCallback = (event) =>{}) {
     connection.codecs.video = 'VP8'
     connection.session = {
@@ -12,6 +12,7 @@ var RtcConfigurationUtils = {
     }
     connection.onstreamended = function (event) {
       console.log('stream ended', event)
+      streamEndedCallback(event)
       var mediaElement = document.getElementById(event.streamid)
       if (mediaElement) {
         mediaElement.parentNode.removeChild(mediaElement)
@@ -20,7 +21,6 @@ var RtcConfigurationUtils = {
       if (participantBlock) {
         participantBlock.parentNode.removeChild(participantBlock)
       }
-      streamEndedCallback(event)
     }
     connection.onmute = function(e) {
       if (!e || !e.mediaElement) {
@@ -79,7 +79,52 @@ var RtcConfigurationUtils = {
         )
       }
     }
+  },
+  ScreenSharing: function(connection, state){
+    connection.attachStreams.forEach(s => s.stop())
+    connection.removeStream({
+      audio: true,
+      video: true
+    });
+    if(state){
+      connection.addStream({
+        audio: true,
+        video: false,
+        screen: true,
+        oneway: true
+      })
+    }else{
+      setTimeout(()=>{
+        connection.addStream({
+          audio: true,
+          video: true,
+          oneway: true
+        })
+      }, 500);
+    }
+  },
+  ScreenSharingManual: function(connection, state, participant){
+    connection.attachStreams.forEach(s => s.stop())
+    if(state){
+      navigator.mediaDevices.getDisplayMedia({video: true})
+      .then(function(stream){
+        connection.addStream(stream);
+        var video = document.createElement("video");
+        video.srcObject = stream;
+        video.id = stream.id;
+        participant.get(connection.userid).mediaElement = video;
+      }, function(e){console.error('screen sharing', e)});
+    }else{
+      navigator.getUserMedia(
+        { audio: true, video: false },
+        function (stream) {
+          connection.addStream(stream)
+          participant.get(connection.userid).mediaElement = document.createElement("div");
+        },
+        function () { }
+      )
+    }
   }
 }
 
-export default RtcConfigurationUtils
+export default RTCUtils

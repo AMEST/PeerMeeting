@@ -13,6 +13,7 @@
     "@fortawesome/free-brands-svg-icons": "^5.15.3",
     "@fortawesome/free-solid-svg-icons": "^5.15.3",
     "@fortawesome/vue-fontawesome": "^2.0.2",
+    "@microsoft/signalr": "^5.0.6",
     "adapterjs": "^0.15.5",
     "core-js": "^2.6.5",
     "detectrtc": "^1.4.1",
@@ -24,7 +25,6 @@
     "vuex": "^3.6.2"
   },
   "devDependencies": {
-    "@aspnet/signalr": "^1.0.27",
     "@fortawesome/fontawesome-free": "^5.15.3",
     "@vue/cli-plugin-babel": "^3.0.5",
     "@vue/cli-plugin-eslint": "^3.0.5",
