@@ -99,15 +99,13 @@ var RTCUtils = {
   },
   SwitchVideoMuteManualStream: function(connection, state){
     connection.attachStreams.forEach( s =>{
-      s.getTracks().forEach( t =>{
-        if(t.kind == 'video'){
-          t.enabled = state
-          connection.StreamsHandler.onSyncNeeded(
-            s.id,
-            state? "unmute" : "mute",
-            "video"
-          )
-        }
+      s.getAudioTracks().forEach( t =>{
+        t.enabled = state
+        connection.StreamsHandler.onSyncNeeded(
+          s.id,
+          state? "unmute" : "mute",
+          "video"
+        )
       })
     })
   },
