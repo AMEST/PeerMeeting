@@ -66,31 +66,11 @@ export default {
   methods: {
     toggleVideo: function () {
       this.videoEnabled = !this.videoEnabled;
-      if (!this.videoEnabled) this.connection.attachStreams[0].mute("video");
-      else this.connection.attachStreams[0].unmute("video");
+      RTCUtils.SwitchVideoMuteManualStream(this.connection, this.audioEnabled);
     },
     toggleAudio: function () {
       this.audioEnabled = !this.audioEnabled;
-      if (!this.connection.dontCaptureUserMedia && this.connection.attachStreams[0].mute && this.connection.attachStreams[0].unmute) {
-        if (!this.audioEnabled) this.connection.attachStreams[0].mute("audio");
-        else this.connection.attachStreams[0].unmute("audio");
-        return;
-      }
-      if (!this.audioEnabled) {
-        this.connection.attachStreams[0].getTracks()[0].enabled = this.audioEnabled;
-        this.connection.StreamsHandler.onSyncNeeded(
-          this.connection.attachStreams[0].id,
-          "mute",
-          "both"
-        );
-      } else {
-        this.connection.attachStreams[0].getTracks()[0].enabled = this.audioEnabled;
-        this.connection.StreamsHandler.onSyncNeeded(
-          this.connection.attachStreams[0].id,
-          "unmute",
-          "both"
-        );
-      }
+      RTCUtils.SwitchAudioMuteManualStream(this.connection, this.audioEnabled);
     },
     shareScreen: function () {
       console.log("share", this.screenEnabled);

@@ -83,6 +83,32 @@ var RTCUtils = {
       }
     }
   },
+  SwitchAudioMuteManualStream: function(connection, state){
+    connection.attachStreams.forEach( s =>{
+      s.getTracks().forEach( t =>{
+        if(t.kind == 'audio')
+          t.enabled = state
+      })
+    })
+    connection.StreamsHandler.onSyncNeeded(
+      connection.attachStreams[0].id,
+      state? "unmute" : "mute",
+      "audio"
+    )
+  },
+  SwitchVideoMuteManualStream: function(connection, state){
+    connection.attachStreams.forEach( s =>{
+      s.getTracks().forEach( t =>{
+        if(t.kind == 'video')
+          t.enabled = state
+      })
+    })
+    connection.StreamsHandler.onSyncNeeded(
+      connection.attachStreams[0].id,
+      state? "unmute" : "mute",
+      "video"
+    )
+  },
   ScreenSharing: function(connection, state, callback){
     connection.attachStreams.forEach(s => s.stop())
     console.log(connection.attachStreams)
@@ -91,11 +117,13 @@ var RTCUtils = {
       if(state){
         navigator.mediaDevices.getDisplayMedia({video: true, audio: true})
         .then(function(stream){
+          connection.attachStreams = []
           connection.addStream(stream);
           var event = self.CreateVideoElementEvent(connection.userid, stream)
           callback(event)
         }, function(e){console.error('screen sharing', e)});
       }else{
+        connection.attachStreams = []
         connection.addStream({
           audio: true,
           video: true,
@@ -110,6 +138,7 @@ var RTCUtils = {
     if(state){
       navigator.mediaDevices.getDisplayMedia({video: true, audio: true})
       .then(function(stream){
+        connection.attachStreams = []
         connection.addStream(stream);
         var event = self.CreateVideoElementEvent(connection.userid, stream)
         callback(event)
@@ -118,6 +147,7 @@ var RTCUtils = {
       navigator.getUserMedia(
         { audio: true, video: false },
         function (stream) {
+          connection.attachStreams = []
           connection.addStream(stream)
           var event = self.CreateVideoElementEvent(connection.userid, stream)
           callback(event)
