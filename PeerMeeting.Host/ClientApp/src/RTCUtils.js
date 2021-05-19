@@ -86,28 +86,30 @@ var RTCUtils = {
   SwitchAudioMuteManualStream: function(connection, state){
     connection.attachStreams.forEach( s =>{
       s.getTracks().forEach( t =>{
-        if(t.kind == 'audio')
+        if(t.kind == 'audio'){
           t.enabled = state
+          connection.StreamsHandler.onSyncNeeded(
+            s.id,
+            state? "unmute" : "mute",
+            "audio"
+          )
+        }
       })
     })
-    connection.StreamsHandler.onSyncNeeded(
-      connection.attachStreams[0].id,
-      state? "unmute" : "mute",
-      "audio"
-    )
   },
   SwitchVideoMuteManualStream: function(connection, state){
     connection.attachStreams.forEach( s =>{
       s.getTracks().forEach( t =>{
-        if(t.kind == 'video')
+        if(t.kind == 'video'){
           t.enabled = state
+          connection.StreamsHandler.onSyncNeeded(
+            s.id,
+            state? "unmute" : "mute",
+            "video"
+          )
+        }
       })
     })
-    connection.StreamsHandler.onSyncNeeded(
-      connection.attachStreams[0].id,
-      state? "unmute" : "mute",
-      "video"
-    )
   },
   ScreenSharing: function(connection, state, callback){
     connection.attachStreams.forEach(s => s.stop())
