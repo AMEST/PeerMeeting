@@ -24,10 +24,11 @@ The service is adjusted based on the mesh model. This network is implemented to 
 ## Features
 1. Video conferencing over p2p with 2+ peoples
 2. Local room history on home page
+3. Screen sharing
 
 ## Supported browsers
 1. Chomium based browsers on windows, linux and android
-2. Half support firefox on android
+2. Half support firefox (work all function with some bugs)
 
 ## Self-hosted Requirements
 * AspNet Core 3.1 runtime or Docker for service start

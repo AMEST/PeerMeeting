@@ -95,11 +95,11 @@ export default {
     shareScreen: function () {
       console.log("share", this.screenEnabled);
       var self = this;
-      this.audioEnabled = true;
-      this.videoEnabled = false;
       this.connection.attachStreams.forEach((s) => s.stop());
       setTimeout(() => {
         self.screenEnabled = !self.screenEnabled;
+        self.audioEnabled = true;
+        self.videoEnabled = self.connection.dontCaptureUserMedia ? false : !self.screenEnabled;
         if (self.connection.dontCaptureUserMedia)
           RTCUtils.ScreenSharingManual(
             self.connection,
@@ -224,5 +224,8 @@ export default {
 }
 .room-controls button {
   margin-right: 0.3em;
+}
+.fork-me{
+  display: none;
 }
 </style>
