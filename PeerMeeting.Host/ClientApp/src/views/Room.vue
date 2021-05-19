@@ -9,7 +9,7 @@
           :streamEvent="v"
         ></participant-block>
       </b-card-group>
-      
+
       <div class="room-controls">
         <b-button variant="info" @click="toggleAudio"
           ><b-icon :icon="audioEnabled ? 'mic' : 'mic-mute'"></b-icon
@@ -68,11 +68,12 @@ export default {
   methods: {
     toggleVideo: function () {
       this.videoEnabled = !this.videoEnabled;
-      RTCUtils.SwitchVideoMuteManualStream(this.connection, this.videoEnabled);
+      RTCUtils.SwitchVideoMute(this.connection, this.videoEnabled);
+      RTCUtils.SwitchAudioMute(this.connection, this.audioEnabled); // Temporaty patch for enable (if enabled) mic after video disabled
     },
     toggleAudio: function () {
       this.audioEnabled = !this.audioEnabled;
-      RTCUtils.SwitchAudioMuteManualStream(this.connection, this.audioEnabled);
+      RTCUtils.SwitchAudioMute(this.connection, this.audioEnabled);
     },
     shareScreen: function () {
       var self = this;
@@ -200,5 +201,11 @@ export default {
 }
 .fork-me {
   display: none;
+}
+@media (max-width: 380px) { 
+  .container-fluid{
+    padding-left: 0px!important;
+    padding-right: 0px!important;
+  }
 }
 </style>

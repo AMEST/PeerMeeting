@@ -1,5 +1,6 @@
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr'
 /* eslint-disable */
+// Custom SignalR connection handler
 function WebRtcSignalR (connection, connectCallback) {
   try{
   var signalRConnection = new HubConnectionBuilder()
@@ -228,12 +229,5 @@ function WebRtcSignalR (connection, connectCallback) {
 
     mPeer.addNegotiatedMessage(message.message, message.sender)
   }
-
-  window.addEventListener('beforeunload', function () {
-    connection.socket.emit('presence', {
-      userid: connection.userid,
-      isOnline: false
-    })
-  }, false)
 }
 export default WebRtcSignalR

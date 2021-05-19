@@ -10,14 +10,17 @@ var RTCUtils = {
       OfferToReceiveAudio: true,
       OfferToReceiveVideo: true
     }
+
+    // Custom on stream ended event
     connection.onstreamended = function (event) {
-      console.log('stream ended', event)
       streamEndedCallback(event)
       var mediaElement = document.getElementById(event.streamid)
       if (mediaElement) {
         mediaElement.parentNode.removeChild(mediaElement)
       }
     }
+    
+    // Fix for clear participant cards who disconnected without event
     setInterval(() =>{
       var connectedParticipants = connection.getAllParticipants()
       for(const key of participants.keys()){
@@ -25,26 +28,33 @@ var RTCUtils = {
           participants.delete(key)
       }
     }, 5000)
+
+    // overriding the event to replace the poster XD
     connection.onmute = function(e) {
       if (!e || !e.mediaElement) {
           return;
       }
 
       if (e.muteType === 'both' || e.muteType === 'video') {
-          e.mediaElement.src = null;
-          var paused = e.mediaElement.pause();
-          if (typeof paused !== 'undefined') {
-              paused.then(function() {
-                  e.mediaElement.poster = e.snapshot || '/img/transparent-muted.png';
-              });
-          } else {
-              e.mediaElement.poster = e.snapshot || '/img/transparent-muted.png';
-          }
+          e.mediaElement.hidden = true;
       } else if (e.muteType === 'audio') {
           e.mediaElement.muted = true;
       }
     };
+
+    // Overriding the event for fix mute local media element after unmute on all
+    var originalOnUnmute = connection.onunmute
+    connection.onunmute = function(e){
+      originalOnUnmute(e)
+      if(!e || !e.mediaElement) return
+      if(e.userid == connection.userid)
+        e.mediaElement.muted = true;
+      if(e.mediaElement.tagName == "VIDEO" && e.unmuteType == 'video')
+        e.mediaElement.hidden = false
+    }
+
   },
+  // Configure media error event for try use another microfon or if webcam not available, connect without it
   // eslint-disable-next-line
   ConfigureMediaError: function (connection, DetectRTC, callback = (videoState, audioState) => { }) {
     connection.onMediaError = function (e) {
@@ -56,15 +66,14 @@ var RTCUtils = {
           )
           return
         }
-
         var secondaryMic = DetectRTC.audioInputDevices[1].deviceId
         connection.mediaConstraints.audio = {
           deviceId: secondaryMic
         }
-
         connection.join(connection.sessionid)
         return
       }else{
+        var mPeer = connection.multiPeersHandler
         callback(false, true)
         connection.dontCaptureUserMedia = true
         navigator.getUserMedia =
@@ -75,7 +84,7 @@ var RTCUtils = {
           { audio: true, video: false },
           function (stream) {
             connection.addStream(stream)
-            console.log('STREAM', stream)
+            mPeer.onGettingLocalMedia(stream)
             connection.join(connection.sessionid)
           },
           function () { }
@@ -83,42 +92,37 @@ var RTCUtils = {
       }
     }
   },
-  SwitchAudioMuteManualStream: function(connection, state){
+  // Switch mute/unmute audio
+  SwitchAudioMute: function(connection, state){
     connection.attachStreams.forEach( s =>{
-      s.getTracks().forEach( t =>{
-        if(t.kind == 'audio'){
-          t.enabled = state
-          connection.StreamsHandler.onSyncNeeded(
-            s.id,
-            state? "unmute" : "mute",
-            "audio"
-          )
-        }
-      })
+      if(state)
+        s.unmute("audio")
+      else
+        s.mute("audio")
     })
   },
-  SwitchVideoMuteManualStream: function(connection, state){
+  // Switch mute/unmute video
+  SwitchVideoMute: function(connection, state){
     connection.attachStreams.forEach( s =>{
-      s.getAudioTracks().forEach( t =>{
-        t.enabled = state
-        connection.StreamsHandler.onSyncNeeded(
-          s.id,
-          state? "unmute" : "mute",
-          "video"
-        )
-      })
+      if(state)
+        s.unmute("video")
+      else
+        s.mute("video")
     })
   },
+  // Start screen sharing or stop and back to video + audio
   ScreenSharing: function(connection, state, callback){
     connection.attachStreams.forEach(s => s.stop())
     console.log(connection.attachStreams)
+    var mPeer = connection.multiPeersHandler
     var self = this
     setTimeout(()=>{
       if(state){
         navigator.mediaDevices.getDisplayMedia({video: true, audio: true})
         .then(function(stream){
           connection.attachStreams = []
-          connection.addStream(stream);
+          connection.addStream(stream)
+          mPeer.onGettingLocalMedia(stream)
           var event = self.CreateVideoElementEvent(connection.userid, stream)
           callback(event)
         }, function(e){console.error('screen sharing', e)});
@@ -127,19 +131,25 @@ var RTCUtils = {
         connection.addStream({
           audio: true,
           video: true,
-          oneway: true
+          oneway: true,
+          streamCallback: function(stream){
+            mPeer.onGettingLocalMedia(stream)
+          }
         })
       }
     }, 500);  
   },
+  // Start screen sharing or stop and back to  only audio mode
   ScreenSharingManual: function(connection, state, callback){
     connection.attachStreams.forEach(s => s.stop())
+    var mPeer = connection.multiPeersHandler
     var self = this
     if(state){
       navigator.mediaDevices.getDisplayMedia({video: true, audio: true})
       .then(function(stream){
         connection.attachStreams = []
         connection.addStream(stream);
+        mPeer.onGettingLocalMedia(stream)
         var event = self.CreateVideoElementEvent(connection.userid, stream)
         callback(event)
       }, function(e){console.error('screen sharing', e)});
@@ -149,6 +159,7 @@ var RTCUtils = {
         function (stream) {
           connection.attachStreams = []
           connection.addStream(stream)
+          mPeer.onGettingLocalMedia(stream)
           var event = self.CreateVideoElementEvent(connection.userid, stream)
           callback(event)
         },

@@ -21,11 +21,13 @@ export default {
     getInitials: function () {
       return CommonUtils.getInitials(this.streamEvent.userid.split("|")[1]);
     },
-    clearMediaElements: function(){
+    clearMediaElements: function () {
       var card = document.getElementById("card-" + this.streamEvent.userid);
-      for( const el of card.getElementsByTagName("video")) el.parentNode.removeChild(el)
-      for( const el of card.getElementsByTagName("audio")) el.parentNode.removeChild(el)
-    }
+      for (const el of card.getElementsByTagName("video"))
+        el.parentNode.removeChild(el);
+      for (const el of card.getElementsByTagName("audio"))
+        el.parentNode.removeChild(el);
+    },
   },
   watch: {
     streamEvent: function (newVal, oldVal) {
@@ -34,19 +36,30 @@ export default {
       console.log("Prop changed: ", newVal, " | was: ", oldVal);
       this.clearMediaElements();
       var card = document.getElementById("card-" + this.streamEvent.userid);
-      if (newVal.mediaElement != null)
+      if (newVal.mediaElement != null) {
         newVal.mediaElement.controls = false;
+        if (newVal.type == "local") newVal.mediaElement.muted = true;
+      }
       card.appendChild(newVal.mediaElement);
       setTimeout(() => {
-        newVal.mediaElement.play()
+        newVal.mediaElement.play();
+        newVal.mediaElement.muted = true;
       }, 500);
     },
   },
   mounted: function () {
+    var self = this
     var card = document.getElementById("card-" + this.streamEvent.userid);
-    if (this.streamEvent.mediaElement != null)
+    if (this.streamEvent.mediaElement != null) {
       this.streamEvent.mediaElement.controls = false;
+      if (this.streamEvent.type == "local")
+        this.streamEvent.mediaElement.muted = true;
+    }
     card.appendChild(this.streamEvent.mediaElement);
+    setTimeout(() => {
+      self.streamEvent.mediaElement.play();
+      self.streamEvent.mediaElement.muted = true;
+    }, 500);
   },
 };
 </script>
