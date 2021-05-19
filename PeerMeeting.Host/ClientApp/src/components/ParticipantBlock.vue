@@ -1,12 +1,21 @@
 <template>
   <div
     class="card text-white user-block"
+    :class="this.fullscreen ? 'pseudo-fullscreen' : ''"
     :id="'card-' + this.streamEvent.userid"
   >
     <span class="username-span">
       {{ this.streamEvent.userid.split("|")[1] }}</span
     >
     <b-avatar> {{ this.getInitials() }}</b-avatar>
+    <b-button class="fullscreen-button" size="sm" variant="outline-secondary">
+      <b-icon
+        v-if="!this.fullscreen"
+        icon="fullscreen"
+        @click="switchFullscreen"
+      />
+      <b-icon v-else icon="fullscreen-exit" @click="switchFullscreen" />
+    </b-button>
   </div>
 </template>
 
@@ -14,10 +23,18 @@
 import CommonUtils from "@/CommonUtils";
 export default {
   name: "ParticipantBlock",
+  data: () => {
+    return {
+      fullscreen: false,
+    };
+  },
   props: {
     streamEvent: Object,
   },
   methods: {
+    switchFullscreen: function () {
+      this.fullscreen = !this.fullscreen;
+    },
     getInitials: function () {
       return CommonUtils.getInitials(this.streamEvent.userid.split("|")[1]);
     },
@@ -43,12 +60,13 @@ export default {
       card.appendChild(newVal.mediaElement);
       setTimeout(() => {
         newVal.mediaElement.play();
-        newVal.mediaElement.muted = true;
+        if (newVal.type == "local")
+          newVal.mediaElement.muted = true;
       }, 500);
     },
   },
   mounted: function () {
-    var self = this
+    var self = this;
     var card = document.getElementById("card-" + this.streamEvent.userid);
     if (this.streamEvent.mediaElement != null) {
       this.streamEvent.mediaElement.controls = false;
@@ -58,7 +76,8 @@ export default {
     card.appendChild(this.streamEvent.mediaElement);
     setTimeout(() => {
       self.streamEvent.mediaElement.play();
-      self.streamEvent.mediaElement.muted = true;
+      if (self.streamEvent.type == "local")
+        self.streamEvent.mediaElement.muted = true;
     }, 500);
   },
 };
@@ -96,5 +115,23 @@ export default {
   color: black;
   font-weight: bold;
   z-index: 2;
+}
+.pseudo-fullscreen {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  min-height: 100%;
+  padding: 0px!important;
+  margin: 0px!important;
+  border-radius: 0px;
+}
+.fullscreen-button {
+  position: absolute;
+  bottom: 1em;
+  right: 1em;
+  z-index: 40;
+  color: white;
 }
 </style>
