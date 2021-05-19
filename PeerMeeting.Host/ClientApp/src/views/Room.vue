@@ -71,7 +71,7 @@ export default {
     },
     toggleAudio: function () {
       this.audioEnabled = !this.audioEnabled;
-      if (!this.connection.dontCaptureUserMedia) {
+      if (!this.connection.dontCaptureUserMedia && this.connection.attachStreams[0].mute && this.connection.attachStreams[0].unmute) {
         if (!this.audioEnabled) this.connection.attachStreams[0].mute("audio");
         else this.connection.attachStreams[0].unmute("audio");
         return;
