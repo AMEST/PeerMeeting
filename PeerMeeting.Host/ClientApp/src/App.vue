@@ -3,7 +3,7 @@
     <TopMenu />
     <router-view v-if="this.$store.state.application.profile != null" />
     <b-container v-else>
-      <b-card bg-variant="dark" text-variant="white" title="Who are you?">
+      <b-card bg-variant="secondary" text-variant="white" title="Who are you?" style='margin-top: 3em'>
         <b-card-text>
           <b-form-input
             v-model="username"
@@ -14,7 +14,7 @@
         <b-button @click="applyUserName" variant="primary">Ok</b-button>
       </b-card>
     </b-container>
-    <a class="fork-me" href="//github.com/AMEST/PeerMeeting">Fork me on <font-awesome-icon :icon="{ prefix: 'fab', iconName: 'github' }" /></a>
+    <a class="fork-me" href="https://github.com/AMEST/PeerMeeting">Fork me on <font-awesome-icon :icon="{ prefix: 'fab', iconName: 'github' }" /></a>
   </div>
 </template>
 

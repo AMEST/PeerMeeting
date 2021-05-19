@@ -9,6 +9,7 @@
           :streamEvent="v"
         ></participant-block>
       </b-card-group>
+      
       <div class="room-controls">
         <b-button variant="info" @click="toggleAudio"
           ><b-icon :icon="audioEnabled ? 'mic' : 'mic-mute'"></b-icon
@@ -45,6 +46,7 @@
 import WebRtcSignalR from "@/WebRtcHub";
 import RTCUtils from "@/RTCUtils";
 import RTCMultiConnection from "rtcmulticonnection";
+import CommonUtils from "@/CommonUtils";
 import { v4 as uuidv4 } from "uuid";
 import ParticipantBlock from "@/components/ParticipantBlock.vue";
 require("adapterjs");
@@ -73,29 +75,27 @@ export default {
       RTCUtils.SwitchAudioMuteManualStream(this.connection, this.audioEnabled);
     },
     shareScreen: function () {
-      console.log("share", this.screenEnabled);
       var self = this;
       this.connection.attachStreams.forEach((s) => s.stop());
-      setTimeout(() => {
-        self.screenEnabled = !self.screenEnabled;
-        self.audioEnabled = true;
-        self.videoEnabled = self.connection.dontCaptureUserMedia ? false : !self.screenEnabled;
-        if (self.connection.dontCaptureUserMedia)
-          RTCUtils.ScreenSharingManual(
-            self.connection,
-            self.screenEnabled,
-            self.addParticipantBlock
-          );
-        else
-          RTCUtils.ScreenSharing(
-            self.connection,
-            self.screenEnabled,
-            self.addParticipantBlock
-          );
-      }, 500);
+      self.screenEnabled = !self.screenEnabled;
+      self.audioEnabled = true;
+      self.videoEnabled = self.connection.dontCaptureUserMedia
+        ? false
+        : !self.screenEnabled;
+      if (self.connection.dontCaptureUserMedia)
+        RTCUtils.ScreenSharingManual(
+          self.connection,
+          self.screenEnabled,
+          self.addParticipantBlock
+        );
+      else
+        RTCUtils.ScreenSharing(
+          self.connection,
+          self.screenEnabled,
+          self.addParticipantBlock
+        );
     },
     addParticipantBlock: function (event) {
-      console.log("onStream", event);
       if (this.participants.has(event.userid))
         this.participants.delete(event.userid);
 
@@ -131,8 +131,8 @@ export default {
         this.participants,
         this.streamEnded
       );
-
       this.connection.onstream = this.addParticipantBlock;
+
       RTCUtils.ConfigureMediaError(
         this.connection,
         DetectRTC,
@@ -152,14 +152,7 @@ export default {
         id: this.roomId,
         date: new Date(),
       };
-      var existRoom = this.$store.state.application.roomHistory.find(
-        (e, i, a) => e.id == room.id
-      );
-      if (existRoom) {
-        this.$store.commit("updateRoomHistory", room);
-        return;
-      }
-      this.$store.commit("addRoomToHistory", room);
+      CommonUtils.addToHistory(this.$store, room);
     },
   },
   created: function () {
@@ -205,7 +198,7 @@ export default {
 .room-controls button {
   margin-right: 0.3em;
 }
-.fork-me{
+.fork-me {
   display: none;
 }
 </style>
