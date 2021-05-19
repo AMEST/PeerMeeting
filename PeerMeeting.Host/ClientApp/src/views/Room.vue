@@ -66,7 +66,7 @@ export default {
   methods: {
     toggleVideo: function () {
       this.videoEnabled = !this.videoEnabled;
-      RTCUtils.SwitchVideoMuteManualStream(this.connection, this.audioEnabled);
+      RTCUtils.SwitchVideoMuteManualStream(this.connection, this.videoEnabled);
     },
     toggleAudio: function () {
       this.audioEnabled = !this.audioEnabled;
