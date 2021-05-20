@@ -122,7 +122,8 @@ export default {
   left: 0;
   top: 0;
   width: 100%;
-  min-height: 100%;
+  min-height: calc( 100% - 48px);
+  max-height: calc( 100% - 48px);
   padding: 0px!important;
   margin: 0px!important;
   border-radius: 0px;
