@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace PeerMeeting.Host.Hubs
 {
@@ -12,11 +13,20 @@ namespace PeerMeeting.Host.Hubs
             _logger = logger;
         }
 
-        public void Send(string name, string message)
+        public Task Send(string name, string message)
         {
-            // Call the broadcastMessage method to update clients.
             _logger.LogInformation("Command: {CommandName} \t\t Message: {Message}", name, message);
-            Clients.All.SendAsync(name, message);
+            return Clients.Group(name).SendAsync(name, message);
+        }
+
+        public Task JoinRoom(string name)
+        {
+            return Groups.AddToGroupAsync(Context.ConnectionId, name);
+        }
+
+        public Task LeavRoom(string name)
+        {
+            return Groups.RemoveFromGroupAsync(Context.ConnectionId, name);
         }
     }
 }

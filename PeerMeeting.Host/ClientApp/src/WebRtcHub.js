@@ -46,13 +46,15 @@ function WebRtcSignalR (connection, connectCallback) {
     if (connection.enableLogs) {
       console.info('SignalR connection is opened.')
     }
+    signalRConnection.invoke('JoinRoom', channelName).then(function(){
 
-    connection.socket.emit('presence', {
-      userid: connection.userid,
-      isOnline: true
+      connection.socket.emit('presence', {
+        userid: connection.userid,
+        isOnline: true
+      })
+
+      if (connectCallback) connectCallback(connection.socket)
     })
-
-    if (connectCallback) connectCallback(connection.socket)
   }).catch( e => {
     console.error('Error while establishing connection. Error: ' + e.message)
     console.error(JSON.stringify(e, Object.getOwnPropertyNames(e)))
