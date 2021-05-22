@@ -8,13 +8,12 @@
       {{ this.streamEvent.userid.split("|")[1] }}</span
     >
     <b-avatar> {{ this.getInitials() }}</b-avatar>
-    <b-button class="fullscreen-button" size="sm" variant="outline-secondary">
+    <b-button class="fullscreen-button" size="sm" variant="outline-secondary" @click="switchFullscreen">
       <b-icon
         v-if="!this.fullscreen"
         icon="fullscreen"
-        @click="switchFullscreen"
       />
-      <b-icon v-else icon="fullscreen-exit" @click="switchFullscreen" />
+      <b-icon v-else icon="fullscreen-exit"/>
     </b-button>
   </div>
 </template>
@@ -88,6 +87,7 @@ export default {
   min-width: 355px;
   overflow: hidden;
   border-radius: 18px;
+  border-style: hidden;
   max-height: calc(100vh - 169px);
   background-color: black;
   min-height: 240px;
@@ -134,5 +134,9 @@ export default {
   right: 1em;
   z-index: 40;
   color: white;
+  border-style: hidden;
+}
+.fullscreen-button .b-icon{
+  padding-top: 1px;
 }
 </style>

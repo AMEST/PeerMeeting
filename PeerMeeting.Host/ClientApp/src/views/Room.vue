@@ -9,33 +9,7 @@
           :streamEvent="v"
         ></participant-block>
       </b-card-group>
-
-      <div class="room-controls">
-        <b-button variant="info" @click="toggleAudio"
-          ><b-icon :icon="audioEnabled ? 'mic' : 'mic-mute'"></b-icon
-        ></b-button>
-        <b-button variant="danger" @click="leave"
-          ><b-icon icon="telephone"></b-icon
-        ></b-button>
-        <b-button
-          :disabled="
-            !this.connection ||
-            this.connection.dontCaptureUserMedia ||
-            this.screenEnabled
-          "
-          variant="info"
-          @click="toggleVideo"
-          ><b-icon
-            :icon="videoEnabled ? 'camera-video' : 'camera-video-off'"
-          ></b-icon>
-        </b-button>
-        <b-button v-if="!this.DetectRTC.isMobileDevice" @click="shareScreen"
-          ><b-icon
-            :icon="screenEnabled ? 'display-fill' : 'display'"
-            :style="screenEnabled ? 'color: red' : ''"
-          ></b-icon
-        ></b-button>
-      </div>
+      <control-bar :connection="this.connection" :state="this.state" :DetectRTC="this.DetectRTC"/>
     </b-container>
   </div>
 </template>
@@ -49,53 +23,27 @@ import RTCMultiConnection from "rtcmulticonnection";
 import CommonUtils from "@/CommonUtils";
 import { v4 as uuidv4 } from "uuid";
 import ParticipantBlock from "@/components/ParticipantBlock.vue";
+import ControlBar from "@/components/ControlBar.vue";
 require("adapterjs");
 export default {
   name: "room",
   data: () => ({
     roomId: "",
     connection: null,
-    audioEnabled: true,
-    videoEnabled: true,
-    screenEnabled: false,
+    state: {
+      audioEnabled: true,
+      videoEnabled: true,
+      screenEnabled: false,
+    },
     participants: new Map(),
     DetectRTC: require("detectrtc"),
   }),
   components: {
     RTCMultiConnection,
     ParticipantBlock,
+    ControlBar
   },
   methods: {
-    toggleVideo: function () {
-      this.videoEnabled = !this.videoEnabled;
-      RTCUtils.SwitchVideoMute(this.connection, this.videoEnabled);
-      RTCUtils.SwitchAudioMute(this.connection, this.audioEnabled); // Temporaty patch for enable (if enabled) mic after video disabled
-    },
-    toggleAudio: function () {
-      this.audioEnabled = !this.audioEnabled;
-      RTCUtils.SwitchAudioMute(this.connection, this.audioEnabled);
-    },
-    shareScreen: function () {
-      var self = this;
-      this.connection.attachStreams.forEach((s) => s.stop());
-      self.screenEnabled = !self.screenEnabled;
-      self.audioEnabled = true;
-      self.videoEnabled = self.connection.dontCaptureUserMedia
-        ? false
-        : !self.screenEnabled;
-      if (self.connection.dontCaptureUserMedia)
-        RTCUtils.ScreenSharingManual(
-          self.connection,
-          self.screenEnabled,
-          self.addParticipantBlock
-        );
-      else
-        RTCUtils.ScreenSharing(
-          self.connection,
-          self.screenEnabled,
-          self.addParticipantBlock
-        );
-    },
     addParticipantBlock: function (event) {
       if (this.participants.has(event.userid))
         this.participants.delete(event.userid);
@@ -107,13 +55,6 @@ export default {
       if (!this.participants.has(event.userid)) return;
       this.participants.delete(event.userid);
       this.$forceUpdate();
-    },
-    join: function () {
-      this.connection.join(this.roomId);
-    },
-    leave: function () {
-      this.connection.leave();
-      window.location.href = "/";
     },
     initialize: function () {
       var self = this;
@@ -138,8 +79,8 @@ export default {
         this.connection,
         DetectRTC,
         (videoState, audioState) => {
-          self.videoEnabled = videoState;
-          self.audioEnabled = audioState;
+          self.state.videoEnabled = videoState;
+          self.state.audioEnabled = audioState;
           self.addParticipantBlock({
             streamid: null,
             userid: self.connection.userid,
@@ -160,7 +101,7 @@ export default {
     this.roomId = this.$route.params.id;
     this.addToHistory();
     this.initialize();
-    this.join(this.roomId);
+    this.connection.join(this.roomId);
   },
   watch: {
     // eslint-disable-next-line
@@ -169,7 +110,7 @@ export default {
       this.connection.leave();
       this.addToHistory();
       this.initialize();
-      this.join(this.roomId);
+      this.connection.join(this.roomId);
     },
   },
   destroyed: function () {},
@@ -179,25 +120,6 @@ export default {
 .full-height {
   min-height: calc(100vh - 63px);
   max-height: calc(100vh - 63px);
-}
-.room-controls {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 48px;
-  background-color: rgb(0, 0, 0, 0.2);
-  vertical-align: middle;
-  line-height: 48px;
-  z-index: 30;
-}
-.room-name {
-  padding-top: 5px;
-  color: rgb(0, 0, 0, 0.4);
-  font-weight: bold;
-}
-.room-controls button {
-  margin-right: 0.3em;
 }
 .fork-me {
   display: none;
