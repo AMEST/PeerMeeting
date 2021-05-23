@@ -1,7 +1,7 @@
 <template>
   <div
     class="card text-white user-block"
-    :class="this.fullscreen ? 'pseudo-fullscreen' : ''"
+    :class="[this.fullscreen ? 'pseudo-fullscreen' : '', this.halfscreen ? 'half-screen' : '']"
     :id="'card-' + this.streamEvent.userid"
   >
     <span class="username-span">
@@ -15,6 +15,7 @@
       />
       <b-icon v-else icon="fullscreen-exit"/>
     </b-button>
+    <div class="switch-half-screen" @click="switchHalfScreen"></div>
   </div>
 </template>
 
@@ -25,14 +26,25 @@ export default {
   data: () => {
     return {
       fullscreen: false,
+      halfscreen: false,
     };
   },
   props: {
     streamEvent: Object,
+    state: Object,
+    DetectRTC: Object,
+    participants: Map  
   },
   methods: {
     switchFullscreen: function () {
       this.fullscreen = !this.fullscreen;
+    },
+    switchHalfScreen: function(){
+      if(this.participants.size <= 1) return;
+      if(this.DetectRTC.isMobileDevice) return;
+      if(this.state.halfScreenMode && !this.halfscreen) return;
+      this.state.halfScreenMode = !this.state.halfScreenMode;
+      this.halfscreen = !this.halfscreen;
     },
     getInitials: function () {
       return CommonUtils.getInitials(this.streamEvent.userid.split("|")[1]);
@@ -79,6 +91,10 @@ export default {
         self.streamEvent.mediaElement.muted = true;
     }, 500);
   },
+  destroyed: function(){
+    if(!this.halfscreen) return;
+    this.state.halfScreenMode = false;
+  }
 };
 </script>
 
@@ -121,7 +137,7 @@ export default {
   z-index: 1000;
   left: 0;
   top: 0;
-  width: 100%;
+  width: 100% !important;
   min-height: calc( 100% - 48px);
   max-height: calc( 100% - 48px);
   padding: 0px!important;
@@ -138,5 +154,22 @@ export default {
 }
 .fullscreen-button .b-icon{
   padding-top: 1px;
+}
+.switch-half-screen{
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 39;
+  background-color: transparent;
+  cursor: pointer;
+}
+.half-screen{
+  position: fixed;
+  width: calc( 100% - 285px);
+  height: 100%;
+  z-index: -1;
+  padding: 0px;
+  left: 0;
+  margin: 0px 0px 0px 1.5em;
 }
 </style>

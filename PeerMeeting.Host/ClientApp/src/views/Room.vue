@@ -2,11 +2,14 @@
   <div class="room">
     <b-container fluid>
       <h3 class="room-name">{{ this.roomId }}</h3>
-      <b-card-group deck id="videos-container">
+      <b-card-group deck id="videos-container" :class="this.state.halfScreenMode? 'half-screen-container':''">
         <participant-block
           v-for="[k, v] in this.participants"
           :key="k"
           :streamEvent="v"
+          :state="state"
+          :DetectRTC="DetectRTC"
+          :participants="participants"
         ></participant-block>
       </b-card-group>
       <control-bar :connection="this.connection" :state="this.state" :DetectRTC="this.DetectRTC"/>
@@ -34,6 +37,7 @@ export default {
       audioEnabled: true,
       videoEnabled: true,
       screenEnabled: false,
+      halfScreenMode: false,
     },
     participants: new Map(),
     DetectRTC: require("detectrtc"),
@@ -129,5 +133,17 @@ export default {
     padding-left: 0px!important;
     padding-right: 0px!important;
   }
+}
+.half-screen-container{
+  position: absolute;
+  right: 1.5em;
+  width: 249px!important;
+  max-height: calc( 100% - 152px );
+  overflow-y: scroll;
+}
+.half-screen-container .user-block{
+  min-width: 215px!important;
+  min-height: 160px!important;
+  margin-top: 5px;
 }
 </style>
