@@ -1,6 +1,6 @@
 <template>
     <div class="room-controls">
-    <b-button variant="info" @click="toggleAudio"
+    <b-button :disabled="this.DetectRTC.hasMicrophone" variant="info" @click="toggleAudio"
         ><b-icon :icon="state.audioEnabled ? 'mic' : 'mic-mute'"></b-icon
     ></b-button>
     <b-button variant="danger" @click="leave"
@@ -10,7 +10,8 @@
         :disabled="
         !this.connection ||
         this.connection.dontCaptureUserMedia ||
-        this.state.screenEnabled
+        this.state.screenEnabled ||
+        !this.DetectRTC.hasWebcam
         "
         variant="info"
         @click="toggleVideo"

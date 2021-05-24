@@ -59,6 +59,12 @@ var RTCUtils = {
   ConfigureMediaError: function (connection, DetectRTC, callback = (videoState, audioState) => { }) {
     connection.onMediaError = function (e) {
       console.error('Media Error', e)
+      if (e.message === 'Requested device not found' || (!DetectRTC.hasWebcam && !DetectRTC.hasMicrophone)){
+        connection.dontCaptureUserMedia = true
+        callback(false, false)
+        connection.join(connection.sessionid)
+        return
+      }
       if (e.message === 'Concurrent mic process limit.') {
         if (DetectRTC.audioInputDevices.length <= 1) {
           alert(
