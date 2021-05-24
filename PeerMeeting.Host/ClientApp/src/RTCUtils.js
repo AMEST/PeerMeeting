@@ -62,6 +62,9 @@ var RTCUtils = {
       if (e.message === 'Requested device not found' || (!DetectRTC.hasWebcam && !DetectRTC.hasMicrophone)){
         connection.dontCaptureUserMedia = true
         callback(false, false)
+        var emptyStream = new MediaStream()
+        connection.addStream(emptyStream)
+        mPeer.onGettingLocalMedia(emptyStream)
         connection.join(connection.sessionid)
         return
       }
