@@ -175,7 +175,7 @@ var RTCUtils = {
     var emptyStream = new MediaStream()
     connection.addStream(emptyStream)
     mPeer.onGettingLocalMedia(emptyStream)
-    var event = this.CreateVideoElementEvent(connection.userid, stream)
+    var event = this.CreateVideoElementEvent(connection.userid, emptyStream)
     callback(event)
   },
   CreateVideoElementEvent: function(userid, stream){
