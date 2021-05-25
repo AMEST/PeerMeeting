@@ -8,6 +8,7 @@
   - [Links](#links)
   - [Description](#description)
   - [Features](#features)
+  - [Security](#security)
   - [Supported browsers](#supported-browsers)
   - [Self-hosted Requirements](#self-hosted-requirements)
 
@@ -25,6 +26,12 @@ The service is adjusted based on the mesh model. This network is implemented to 
 1. Video conferencing over p2p with 2+ peoples
 2. Local room history on home page
 3. Screen sharing
+4. Pseudo fullscreen and half screen mode for prticipants blocks
+
+## Security 
+High level of security: all connections are protected and encrypted according to the DTLS and SRTP protocols. At the same time, WebRTC works only over the HTTPS protocol, and the site using the technology must be signed with a certificate.
+All media traffic goes from user to user (p2p) and does not go through the service infrastructure.
+Web sockets for signaling also go only via https.
 
 ## Supported browsers
 1. Chomium based browsers on windows, linux and android
