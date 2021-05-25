@@ -38,6 +38,8 @@ export default {
       videoEnabled: true,
       screenEnabled: false,
       halfScreenMode: false,
+      hasWebcam: true,
+      hasMicrophone: true
     },
     participants: new Map(),
     DetectRTC: require("detectrtc"),
@@ -78,13 +80,22 @@ export default {
         this.streamEnded
       );
       this.connection.onstream = this.addParticipantBlock;
-
+      this.connection.onUserStatusChanged = function(event) {
+        if(self.participants.has(event.userid)) return;
+        self.addParticipantBlock({
+          userid: event.userid,
+          mediaElement: document.createElement('div'),
+          streamid: null
+        })
+      };
       RTCUtils.ConfigureMediaError(
         this.connection,
         DetectRTC,
         (videoState, audioState) => {
           self.state.videoEnabled = videoState;
           self.state.audioEnabled = audioState;
+          self.state.hasWebcam = videoState;
+          self.state.hasMicrophone = audioState;
           self.addParticipantBlock({
             streamid: null,
             userid: self.connection.userid,

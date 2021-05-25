@@ -24,19 +24,19 @@ var RTCUtils = {
     setInterval(() =>{
       var connectedParticipants = connection.getAllParticipants()
       for(const key of participants.keys()){
-        if(connectedParticipants.indexOf(key) == -1 && connection.userid != key)
-          participants.delete(key)
+        if(connectedParticipants.indexOf(key) == -1 
+          && connection.userid != key
+          || (connection.peers[key] 
+            && connection.peers[key].peer.connectionState === "failed"))
+          streamEndedCallback({userid: key})
       }
     }, 5000)
 
     // overriding the event to replace the poster XD
     connection.onmute = function(e) {
-      if (!e || !e.mediaElement) {
-          return;
-      }
-
+      if (!e || !e.mediaElement) return
       if (e.muteType === 'both' || e.muteType === 'video') {
-          e.mediaElement.hidden = true;
+          e.mediaElement.hidden = true
       } else if (e.muteType === 'audio') {
           e.mediaElement.muted = true;
       }
@@ -48,7 +48,7 @@ var RTCUtils = {
       originalOnUnmute(e)
       if(!e || !e.mediaElement) return
       if(e.userid == connection.userid)
-        e.mediaElement.muted = true;
+        e.mediaElement.muted = true
       if(e.mediaElement.tagName == "VIDEO" && e.unmuteType == 'video')
         e.mediaElement.hidden = false
     }
@@ -58,16 +58,20 @@ var RTCUtils = {
   // eslint-disable-next-line
   ConfigureMediaError: function (connection, DetectRTC, callback = (videoState, audioState) => { }) {
     connection.onMediaError = function (e) {
-      console.error('Media Error', e)
-      if (e.message === 'Requested device not found' || (!DetectRTC.hasWebcam && !DetectRTC.hasMicrophone)){
+      var mPeer = connection.multiPeersHandler
+      console.error('Media Error', e.message)
+
+      //If all media device unvailable or not allowed
+      if (e.message === 'Requested device not found' 
+          || e.message === 'The object can not be found here.'
+          || e.message === 'The request is not allowed by the user agent or the platform in the current context.'){
         connection.dontCaptureUserMedia = true
         callback(false, false)
-        var emptyStream = new MediaStream()
-        connection.addStream(emptyStream)
-        mPeer.onGettingLocalMedia(emptyStream)
         connection.join(connection.sessionid)
         return
       }
+
+      // Fix Mic cuncurrent limit
       if (e.message === 'Concurrent mic process limit.') {
         if (DetectRTC.audioInputDevices.length <= 1) {
           alert(
@@ -81,24 +85,24 @@ var RTCUtils = {
         }
         connection.join(connection.sessionid)
         return
-      }else{
-        var mPeer = connection.multiPeersHandler
-        callback(false, true)
-        connection.dontCaptureUserMedia = true
-        navigator.getUserMedia =
-                    navigator.getUserMedia ||
-                    navigator.webkitGetUserMedia ||
-                    navigator.mozGetUserMedia
-        navigator.getUserMedia(
-          { audio: true, video: false },
-          function (stream) {
-            connection.addStream(stream)
-            mPeer.onGettingLocalMedia(stream)
-            connection.join(connection.sessionid)
-          },
-          function () { }
-        )
       }
+
+      // Case if webcam not available
+      callback(false, true)
+      connection.dontCaptureUserMedia = true
+      navigator.getUserMedia =
+                  navigator.getUserMedia ||
+                  navigator.webkitGetUserMedia ||
+                  navigator.mozGetUserMedia
+      navigator.getUserMedia(
+        { audio: true, video: false },
+        function (stream) {
+          connection.addStream(stream)
+          mPeer.onGettingLocalMedia(stream)
+          connection.join(connection.sessionid)
+        },
+        function () { }
+      )
     }
   },
   // Switch mute/unmute audio
@@ -119,8 +123,8 @@ var RTCUtils = {
         s.mute("video")
     })
   },
-  // Start screen sharing or stop and back to video + audio
-  ScreenSharing: function(connection, state, callback){
+  // Start screen sharing or stop and back to video + audio or audio only or empty
+  ScreenSharing: function(connection, state, mediaState, callback){
     connection.attachStreams.forEach(s => s.stop())
     console.log(connection.attachStreams)
     var mPeer = connection.multiPeersHandler
@@ -135,8 +139,26 @@ var RTCUtils = {
           var event = self.CreateVideoElementEvent(connection.userid, stream)
           callback(event)
         }, function(e){console.error('screen sharing', e)});
+        return
       }else{
         connection.attachStreams = []
+        if(!mediaState.hasMicrophone && !mediaState.hasWebcam){
+          self.CreateFakeStream(connection, mPeer, callback)
+          return
+        }
+        if(mediaState.hasMicrophone && !mediaState.hasWebcam && connection.dontCaptureUserMedia){
+          navigator.getUserMedia(
+            { audio: true, video: false },
+            function (stream) {
+              connection.addStream(stream)
+              mPeer.onGettingLocalMedia(stream)
+              var event = self.CreateVideoElementEvent(connection.userid, stream)
+              callback(event)
+            },
+            function () { }
+          )
+          return
+        }
         connection.addStream({
           audio: true,
           video: true,
@@ -148,33 +170,13 @@ var RTCUtils = {
       }
     }, 500);  
   },
-  // Start screen sharing or stop and back to  only audio mode
-  ScreenSharingManual: function(connection, state, callback){
-    connection.attachStreams.forEach(s => s.stop())
-    var mPeer = connection.multiPeersHandler
-    var self = this
-    if(state){
-      navigator.mediaDevices.getDisplayMedia({video: true, audio: true})
-      .then(function(stream){
-        connection.attachStreams = []
-        connection.addStream(stream);
-        mPeer.onGettingLocalMedia(stream)
-        var event = self.CreateVideoElementEvent(connection.userid, stream)
-        callback(event)
-      }, function(e){console.error('screen sharing', e)});
-    }else{
-      navigator.getUserMedia(
-        { audio: true, video: false },
-        function (stream) {
-          connection.attachStreams = []
-          connection.addStream(stream)
-          mPeer.onGettingLocalMedia(stream)
-          var event = self.CreateVideoElementEvent(connection.userid, stream)
-          callback(event)
-        },
-        function () { }
-      )
-    }
+  CreateFakeStream: function(connection, mPeer, callback){
+    connection.attachStreams = []
+    var emptyStream = new MediaStream()
+    connection.addStream(emptyStream)
+    mPeer.onGettingLocalMedia(emptyStream)
+    var event = this.CreateVideoElementEvent(connection.userid, stream)
+    callback(event)
   },
   CreateVideoElementEvent: function(userid, stream){
     var video = document.createElement("video");

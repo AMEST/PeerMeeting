@@ -1,6 +1,6 @@
 <template>
     <div class="room-controls">
-    <b-button :disabled="this.DetectRTC.hasMicrophone" variant="info" @click="toggleAudio"
+    <b-button :disabled="!this.state.hasMicrophone" variant="info" @click="toggleAudio"
         ><b-icon :icon="state.audioEnabled ? 'mic' : 'mic-mute'"></b-icon
     ></b-button>
     <b-button variant="danger" @click="leave"
@@ -11,7 +11,7 @@
         !this.connection ||
         this.connection.dontCaptureUserMedia ||
         this.state.screenEnabled ||
-        !this.DetectRTC.hasWebcam
+        !this.state.hasWebcam
         "
         variant="info"
         @click="toggleVideo"
@@ -50,22 +50,16 @@ export default {
     shareScreen: function () {
       this.connection.attachStreams.forEach((s) => s.stop());
       this.state.screenEnabled = !this.state.screenEnabled;
-      this.state.audioEnabled = true;
-      this.state.videoEnabled = this.connection.dontCaptureUserMedia
+      this.state.audioEnabled = this.state.hasMicrophone;
+      this.state.videoEnabled = this.connection.dontCaptureUserMedia && !this.state.hasWebcam
         ? false
         : !this.state.screenEnabled;
-      if (this.connection.dontCaptureUserMedia)
-        RTCUtils.ScreenSharingManual(
+      RTCUtils.ScreenSharing(
           this.connection,
           this.state.screenEnabled,
+          this.state,
           this.addParticipantBlock
-        );
-      else
-        RTCUtils.ScreenSharing(
-          this.connection,
-          this.state.screenEnabled,
-          this.addParticipantBlock
-        );
+      );
     },
     leave: function () {
       this.connection.leave();
@@ -85,7 +79,7 @@ export default {
   background-color: rgb(0, 0, 0, 0.2);
   vertical-align: middle;
   line-height: 48px;
-  z-index: 30;
+  z-index: 100;
 }
 .room-name {
   padding-top: 5px;

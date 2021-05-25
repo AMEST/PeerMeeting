@@ -7,7 +7,7 @@
     <span class="username-span">
       {{ this.streamEvent.userid.split("|")[1] }}</span
     >
-    <b-avatar> {{ this.getInitials() }}</b-avatar>
+    <b-avatar :class="this.state.halfScreenMode && !this.halfscreen ? 'b-avatar-half' : ''"> {{ this.getInitials() }}</b-avatar>
     <b-button class="fullscreen-button" size="sm" variant="outline-secondary" @click="switchFullscreen">
       <b-icon
         v-if="!this.fullscreen"
@@ -70,7 +70,8 @@ export default {
       }
       card.appendChild(newVal.mediaElement);
       setTimeout(() => {
-        newVal.mediaElement.play();
+        if(newVal.mediaElement.play)
+          newVal.mediaElement.play();
         if (newVal.type == "local")
           newVal.mediaElement.muted = true;
       }, 500);
@@ -86,7 +87,8 @@ export default {
     }
     card.appendChild(this.streamEvent.mediaElement);
     setTimeout(() => {
-      self.streamEvent.mediaElement.play();
+      if(self.streamEvent.mediaElement.play)
+        self.streamEvent.mediaElement.play();
       if (self.streamEvent.type == "local")
         self.streamEvent.mediaElement.muted = true;
     }, 500);
@@ -121,6 +123,12 @@ export default {
   width: 200px;
   height: 200px;
   font-size: 4em;
+}
+.b-avatar-half{
+  left: calc(50% - 50px)!important;
+  bottom: calc(50% - 50px)!important;
+  width: 100px!important;
+  height: 100px!important;
 }
 .username-span {
   position: absolute;
