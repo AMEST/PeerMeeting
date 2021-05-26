@@ -2,7 +2,11 @@
   <div class="room">
     <b-container fluid>
       <h3 class="room-name">{{ this.roomId }}</h3>
-      <b-card-group deck id="videos-container" :class="this.state.halfScreenMode? 'half-screen-container':''">
+      <b-card-group
+        deck
+        id="videos-container"
+        :class="this.state.halfScreenMode ? 'half-screen-container' : ''"
+      >
         <participant-block
           v-for="[k, v] in this.participants"
           :key="k"
@@ -12,7 +16,11 @@
           :participants="participants"
         ></participant-block>
       </b-card-group>
-      <control-bar :connection="this.connection" :state="this.state" :DetectRTC="this.DetectRTC"/>
+      <control-bar
+        :connection="this.connection"
+        :state="this.state"
+        :DetectRTC="this.DetectRTC"
+      />
     </b-container>
   </div>
 </template>
@@ -39,7 +47,7 @@ export default {
       screenEnabled: false,
       halfScreenMode: false,
       hasWebcam: true,
-      hasMicrophone: true
+      hasMicrophone: true,
     },
     participants: new Map(),
     DetectRTC: require("detectrtc"),
@@ -47,7 +55,7 @@ export default {
   components: {
     RTCMultiConnection,
     ParticipantBlock,
-    ControlBar
+    ControlBar,
   },
   methods: {
     addParticipantBlock: function (event) {
@@ -80,13 +88,14 @@ export default {
         this.streamEnded
       );
       this.connection.onstream = this.addParticipantBlock;
-      this.connection.onUserStatusChanged = function(event) {
-        if(self.participants.has(event.userid)) return;
+      this.connection.onUserStatusChanged = function (event) {
+        if (self.participants.has(event.userid) || event.status === "offline")
+          return;
         self.addParticipantBlock({
           userid: event.userid,
-          mediaElement: document.createElement('div'),
-          streamid: null
-        })
+          mediaElement: document.createElement("div"),
+          streamid: null,
+        });
       };
       RTCUtils.ConfigureMediaError(
         this.connection,
@@ -139,22 +148,22 @@ export default {
 .fork-me {
   display: none;
 }
-@media (max-width: 380px) { 
-  .container-fluid{
-    padding-left: 0px!important;
-    padding-right: 0px!important;
+@media (max-width: 380px) {
+  .container-fluid {
+    padding-left: 0px !important;
+    padding-right: 0px !important;
   }
 }
-.half-screen-container{
+.half-screen-container {
   position: absolute;
   right: 1.5em;
-  width: 249px!important;
-  max-height: calc( 100% - 152px );
+  width: 249px !important;
+  max-height: calc(100% - 152px);
   overflow-y: scroll;
 }
-.half-screen-container .user-block{
-  min-width: 215px!important;
-  min-height: 160px!important;
+.half-screen-container .user-block {
+  min-width: 215px !important;
+  min-height: 160px !important;
   margin-top: 5px;
 }
 </style>

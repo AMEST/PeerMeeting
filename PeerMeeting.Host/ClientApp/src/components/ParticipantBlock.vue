@@ -74,7 +74,7 @@ export default {
           newVal.mediaElement.play();
         if (newVal.type == "local")
           newVal.mediaElement.muted = true;
-      }, 500);
+      }, 1000);
     },
   },
   mounted: function () {
@@ -91,7 +91,7 @@ export default {
         self.streamEvent.mediaElement.play();
       if (self.streamEvent.type == "local")
         self.streamEvent.mediaElement.muted = true;
-    }, 500);
+    }, 1000);
   },
   destroyed: function(){
     if(!this.halfscreen) return;
