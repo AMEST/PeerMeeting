@@ -5,6 +5,7 @@
       <b-card-group
         deck
         id="videos-container"
+        class="justify-content-center"
         :class="this.state.halfScreenMode ? 'half-screen-container' : ''"
       >
         <participant-block
@@ -14,6 +15,7 @@
           :state="state"
           :DetectRTC="DetectRTC"
           :participants="participants"
+          :class="participants.size <= 1 ? 'only-local-participant' : ''"
         ></participant-block>
       </b-card-group>
       <control-bar
@@ -168,5 +170,8 @@ export default {
   min-width: 215px !important;
   min-height: 160px !important;
   margin-top: 5px;
+}
+.only-local-participant {
+  height: 100vw;
 }
 </style>

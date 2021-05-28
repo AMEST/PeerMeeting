@@ -80,6 +80,7 @@ export default {
         el.parentNode.removeChild(el);
     },
     tryGetProfile: function(){
+      /*eslint-disable*/
       try{
         if(this.streamEvent.extra.profile.avatar)
           this.profile.avatar = this.streamEvent.extra.profile.avatar;
@@ -88,6 +89,7 @@ export default {
         if(this.streamEvent.extra.profile.name)
           this.profile.username = this.streamEvent.extra.profile.name;
       }catch{}
+      /*eslint-enable*/
     }
   },
   watch: {
@@ -141,7 +143,7 @@ export default {
   border-style: hidden;
   max-height: calc(100vh - 169px);
   background-color: black;
-  min-height: 240px;
+  min-height: 250px;
 }
 .user-block video {
   background-color: transparent;
