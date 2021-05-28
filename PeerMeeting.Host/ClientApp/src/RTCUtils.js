@@ -90,10 +90,6 @@ var RTCUtils = {
       // Case if webcam not available
       callback(false, true)
       connection.dontCaptureUserMedia = true
-      navigator.getUserMedia =
-                  navigator.getUserMedia ||
-                  navigator.webkitGetUserMedia ||
-                  navigator.mozGetUserMedia
       navigator.getUserMedia(
         { audio: true, video: false },
         function (stream) {
@@ -129,46 +125,62 @@ var RTCUtils = {
     console.log(connection.attachStreams)
     var mPeer = connection.multiPeersHandler
     var self = this
-    setTimeout(()=>{
-      if(state){
-        navigator.mediaDevices.getDisplayMedia({video: true, audio: true})
-        .then(function(stream){
-          connection.attachStreams = []
-          connection.addStream(stream)
-          mPeer.onGettingLocalMedia(stream)
-          var event = self.CreateVideoElementEvent(connection.userid, stream)
-          callback(event)
-        }, function(e){console.error('screen sharing', e)});
-        return
-      }else{
-        connection.attachStreams = []
-        if(!mediaState.hasMicrophone && !mediaState.hasWebcam){
-          self.CreateFakeStream(connection, mPeer, callback)
+    if(state){
+      //Getting screen stream with system audio
+      navigator.mediaDevices.getDisplayMedia({video: true, audio: true})
+      .then(function(screenStream){
+        if(!mediaState.hasMicrophone){
+          self.AddStream(connection, screenStream, mPeer, callback)
           return
         }
-        if(mediaState.hasMicrophone && !mediaState.hasWebcam && connection.dontCaptureUserMedia){
-          navigator.getUserMedia(
-            { audio: true, video: false },
-            function (stream) {
-              connection.addStream(stream)
-              mPeer.onGettingLocalMedia(stream)
-              var event = self.CreateVideoElementEvent(connection.userid, stream)
-              callback(event)
-            },
-            function () { }
-          )
-          return
-        }
-        connection.addStream({
-          audio: true,
-          video: true,
-          oneway: true,
-          streamCallback: function(stream){
-            mPeer.onGettingLocalMedia(stream)
-          }
+        //On succes getting microphone stream, for add to screen stream
+        navigator.getUserMedia(
+          { audio: true, video: false },
+          function (microphoneStream) {
+            screenStream.addTrack(microphoneStream.getAudioTracks()[0])
+            self.AddStream(connection, screenStream, mPeer, callback)
+          },
+          function (e){
+            console.error('screen sharing with mic error', e)
+            self.AddStream(connection, screenStream, mPeer, callback)
         })
+      }, function(e){console.error('screen sharing', e)});
+      return
+    }else{
+      connection.attachStreams = []
+      if(!mediaState.hasMicrophone && !mediaState.hasWebcam){
+        self.CreateFakeStream(connection, mPeer, callback)
+        return
       }
-    }, 500);  
+
+      if(mediaState.hasMicrophone && !mediaState.hasWebcam && connection.dontCaptureUserMedia){
+        navigator.getUserMedia(
+          { audio: true, video: false },
+          function (stream) {
+            self.AddStream(connection, stream, mPeer, callback)
+          },
+          function () { }
+        )
+        return
+      }
+
+      connection.addStream({
+        audio: true,
+        video: true,
+        oneway: true,
+        streamCallback: function(stream){
+          mPeer.onGettingLocalMedia(stream)
+        }
+      })
+      
+    }
+  },
+  AddStream: function(connection, stream, mPeer, callback){
+    connection.attachStreams = []
+    connection.addStream(stream)
+    mPeer.onGettingLocalMedia(stream)
+    var event = self.CreateVideoElementEvent(connection.userid, stream)
+    callback(event)
   },
   CreateFakeStream: function(connection, mPeer, callback){
     connection.attachStreams = []

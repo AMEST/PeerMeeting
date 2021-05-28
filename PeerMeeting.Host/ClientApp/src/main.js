@@ -31,6 +31,9 @@ if (roomHistory !== undefined) {
     store.commit('addRoomToHistory', element)
   })
 }
+navigator.getUserMedia = navigator.getUserMedia ||
+  navigator.webkitGetUserMedia ||
+  navigator.mozGetUserMedia
 
 new Vue({
   store,

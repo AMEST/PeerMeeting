@@ -25,7 +25,7 @@ The service is adjusted based on the mesh model. This network is implemented to 
 ## Features
 1. Video conferencing over p2p with 2+ peoples
 2. Local room history on home page
-3. Screen sharing
+3. Screen sharing (with microphone)
 4. Pseudo fullscreen and half screen mode for prticipants blocks
 
 ## Security 

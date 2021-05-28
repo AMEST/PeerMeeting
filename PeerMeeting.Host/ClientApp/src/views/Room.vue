@@ -136,8 +136,7 @@ export default {
       this.initialize();
       this.connection.join(this.roomId);
     },
-  },
-  destroyed: function () {},
+  }
 };
 </script>
 <style>
