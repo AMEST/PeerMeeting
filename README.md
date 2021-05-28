@@ -27,6 +27,7 @@ The service is adjusted based on the mesh model. This network is implemented to 
 2. Local room history on home page
 3. Screen sharing (with microphone)
 4. Pseudo fullscreen and half screen mode for prticipants blocks
+5. Gravatar user avatars
 
 ## Security 
 High level of security: all connections are protected and encrypted according to the DTLS and SRTP protocols. At the same time, WebRTC works only over the HTTPS protocol, and the site using the technology must be signed with a certificate.

@@ -1,19 +1,37 @@
 <template>
   <div
     class="card text-white user-block"
-    :class="[this.fullscreen ? 'pseudo-fullscreen' : '', this.halfscreen ? 'half-screen' : '']"
+    :class="[
+      this.fullscreen ? 'pseudo-fullscreen' : '',
+      this.halfscreen ? 'half-screen' : '',
+    ]"
     :id="'card-' + this.streamEvent.userid"
   >
     <span class="username-span">
-      {{ this.streamEvent.userid.split("|")[1] }}</span
+      {{
+        this.profile.username
+          ? this.profile.username
+          : this.streamEvent.userid.split("|")[1] 
+      }}</span
     >
-    <b-avatar :class="this.state.halfScreenMode && !this.halfscreen ? 'b-avatar-half' : ''"> {{ this.getInitials() }}</b-avatar>
-    <b-button class="fullscreen-button" size="sm" variant="outline-secondary" @click="switchFullscreen">
-      <b-icon
-        v-if="!this.fullscreen"
-        icon="fullscreen"
-      />
-      <b-icon v-else icon="fullscreen-exit"/>
+    <b-avatar
+      :class="
+        [
+        this.state.halfScreenMode && !this.halfscreen ? 'b-avatar-half' : '',
+        this.profile.avatar ? 'has-avatar' : ''
+        ]
+      "
+      :src="this.profile.avatar"
+      :text="this.getInitials()"
+    ></b-avatar>
+    <b-button
+      class="fullscreen-button"
+      size="sm"
+      variant="outline-secondary"
+      @click="switchFullscreen"
+    >
+      <b-icon v-if="!this.fullscreen" icon="fullscreen" />
+      <b-icon v-else icon="fullscreen-exit" />
     </b-button>
     <div class="switch-half-screen" @click="switchHalfScreen"></div>
   </div>
@@ -27,27 +45,32 @@ export default {
     return {
       fullscreen: false,
       halfscreen: false,
+      profile: {
+        username: null,
+        avatar: null
+      }
     };
   },
   props: {
     streamEvent: Object,
     state: Object,
     DetectRTC: Object,
-    participants: Map  
+    participants: Map,
   },
   methods: {
     switchFullscreen: function () {
       this.fullscreen = !this.fullscreen;
     },
-    switchHalfScreen: function(){
-      if(this.participants.size <= 1) return;
-      if(this.DetectRTC.isMobileDevice) return;
-      if(this.state.halfScreenMode && !this.halfscreen) return;
+    switchHalfScreen: function () {
+      if (this.participants.size <= 1) return;
+      if (this.DetectRTC.isMobileDevice) return;
+      if (this.state.halfScreenMode && !this.halfscreen) return;
       this.state.halfScreenMode = !this.state.halfScreenMode;
       this.halfscreen = !this.halfscreen;
     },
     getInitials: function () {
-      return CommonUtils.getInitials(this.streamEvent.userid.split("|")[1]);
+      var username = this.profile.username ? this.profile.username : this.streamEvent.userid.split("|")[1];
+      return CommonUtils.getInitials(username);
     },
     clearMediaElements: function () {
       var card = document.getElementById("card-" + this.streamEvent.userid);
@@ -56,6 +79,16 @@ export default {
       for (const el of card.getElementsByTagName("audio"))
         el.parentNode.removeChild(el);
     },
+    tryGetProfile: function(){
+      try{
+        if(this.streamEvent.extra.profile.avatar)
+          this.profile.avatar = this.streamEvent.extra.profile.avatar;
+      }catch{}
+      try{
+        if(this.streamEvent.extra.profile.name)
+          this.profile.username = this.streamEvent.extra.profile.name;
+      }catch{}
+    }
   },
   watch: {
     streamEvent: function (newVal, oldVal) {
@@ -70,11 +103,10 @@ export default {
       }
       card.appendChild(newVal.mediaElement);
       setTimeout(() => {
-        if(newVal.mediaElement.play)
-          newVal.mediaElement.play();
-        if (newVal.type == "local")
-          newVal.mediaElement.muted = true;
+        if (newVal.mediaElement.play) newVal.mediaElement.play();
+        if (newVal.type == "local") newVal.mediaElement.muted = true;
       }, 1000);
+      this.tryGetProfile();
     },
   },
   mounted: function () {
@@ -87,16 +119,17 @@ export default {
     }
     card.appendChild(this.streamEvent.mediaElement);
     setTimeout(() => {
-      if(self.streamEvent.mediaElement.play)
+      if (self.streamEvent.mediaElement.play)
         self.streamEvent.mediaElement.play();
       if (self.streamEvent.type == "local")
         self.streamEvent.mediaElement.muted = true;
     }, 1000);
+    this.tryGetProfile();
   },
-  destroyed: function(){
-    if(!this.halfscreen) return;
+  destroyed: function () {
+    if (!this.halfscreen) return;
     this.state.halfScreenMode = false;
-  }
+  },
 };
 </script>
 
@@ -124,11 +157,11 @@ export default {
   height: 200px;
   font-size: 4em;
 }
-.b-avatar-half{
-  left: calc(50% - 50px)!important;
-  bottom: calc(50% - 50px)!important;
-  width: 100px!important;
-  height: 100px!important;
+.b-avatar-half {
+  left: calc(50% - 50px) !important;
+  bottom: calc(50% - 50px) !important;
+  width: 100px !important;
+  height: 100px !important;
 }
 .username-span {
   position: absolute;
@@ -146,10 +179,10 @@ export default {
   left: 0;
   top: 0;
   width: 100% !important;
-  min-height: calc( 100% - 48px);
-  max-height: calc( 100% - 48px);
-  padding: 0px!important;
-  margin: 0px!important;
+  min-height: calc(100% - 48px);
+  max-height: calc(100% - 48px);
+  padding: 0px !important;
+  margin: 0px !important;
   border-radius: 0px;
 }
 .fullscreen-button {
@@ -160,10 +193,10 @@ export default {
   color: white;
   border-style: hidden;
 }
-.fullscreen-button .b-icon{
+.fullscreen-button .b-icon {
   padding-top: 1px;
 }
-.switch-half-screen{
+.switch-half-screen {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -171,13 +204,16 @@ export default {
   background-color: transparent;
   cursor: pointer;
 }
-.half-screen{
+.half-screen {
   position: fixed;
-  width: calc( 100% - 285px);
+  width: calc(100% - 285px);
   height: 100%;
   z-index: -1;
   padding: 0px;
   left: 0;
   margin: 0px 0px 0px 1.5em;
+}
+.has-avatar{
+  background-color: transparent !important;
 }
 </style>

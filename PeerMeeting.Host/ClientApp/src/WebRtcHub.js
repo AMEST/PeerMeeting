@@ -39,7 +39,6 @@ function WebRtcSignalR (connection, connectCallback) {
         extra: connection.peers[data.userid] ? connection.peers[data.userid].extra : {}
       })
     }
-    console.info('ON', connection)
   })
   // start the hub
   signalRConnection.start().then(function () {
@@ -86,11 +85,12 @@ function WebRtcSignalR (connection, connectCallback) {
   function onMessagesCallback (message) {
     if (message.remoteUserId !== connection.userid && !message.message.newParticipationRequest) return
 
-    if (connection.peers[message.sender] && connection.peers[message.sender].extra !== message.message.extra) {
-      connection.peers[message.sender].extra = message.extra
+    if (connection.peers[message.sender] && connection.peers[message.sender].extra !== message.message.extra 
+      && message.message.extra) {
+      connection.peers[message.sender].extra = message.message.extra
       connection.onExtraDataUpdated({
         userid: message.sender,
-        extra: message.extra
+        extra: message.message.extra
       })
     }
 

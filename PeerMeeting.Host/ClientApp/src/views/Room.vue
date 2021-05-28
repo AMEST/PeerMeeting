@@ -80,6 +80,10 @@ export default {
       }
       this.connection.userid =
         uuidv4() + "|" + this.$store.state.application.profile.name;
+
+      this.connection.extra = {
+          profile: this.$store.state.application.profile
+      };
       // using signalR for signaling
       this.connection.setCustomSocketHandler(WebRtcSignalR);
       RTCUtils.ConfigureBase(

@@ -8,6 +8,7 @@ export default new Vuex.Store({
     application: {
       profile: null,
       roomHistory: [],
+      mediaDevices: [],
       version: ''
     }
   },
@@ -43,6 +44,9 @@ export default new Vuex.Store({
     clearHistory (state, payload) {
       state.application.roomHistory = []
       window.localStorage.removeItem('roomHistory')
+    },
+    updateMediaDevices (state, payload) {
+      state.application.mediaDevices = payload
     },
     changeVersion (state, value) {
       state.application.version = value

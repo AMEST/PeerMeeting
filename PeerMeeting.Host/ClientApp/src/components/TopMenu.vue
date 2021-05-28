@@ -28,6 +28,7 @@
               }}</span>
             </b-dropdown-text>
             <b-dropdown-divider></b-dropdown-divider>
+            <b-dropdown-item v-b-modal.settings-modal>Settings</b-dropdown-item>
             <b-dropdown-item @click="signOut">Sign Out</b-dropdown-item>
           </b-nav-item-dropdown>
         </b-navbar-nav>
