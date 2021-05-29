@@ -15,6 +15,22 @@ var CommonUtils = {
         return;
       }
       store.commit("addRoomToHistory", room);
+    },
+    getUserNameFromEvent: function(event){
+      try{
+        if(event.extra && event.extra.profile && event.extra.profile.name)
+          return event.extra.profile.name
+        return event.userid.split("|")[1]
+      }catch(e){
+        return event.userid
+      }
+    },
+    getAvatarFromEvent: function(event){
+      try{
+        if(event.extra && event.extra.profile && event.extra.profile.avatar)
+          return event.extra.profile.avatar
+      }catch(e){}
+      return null;
     }
 }
 export default CommonUtils

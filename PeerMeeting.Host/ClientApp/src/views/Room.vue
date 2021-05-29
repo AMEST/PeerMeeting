@@ -63,7 +63,6 @@ export default {
     addParticipantBlock: function (event) {
       if (this.participants.has(event.userid))
         this.participants.delete(event.userid);
-
       this.participants.set(event.userid, event);
       this.$forceUpdate();
     },
@@ -71,6 +70,28 @@ export default {
       if (!this.participants.has(event.userid)) return;
       this.participants.delete(event.userid);
       this.$forceUpdate();
+
+      var username = CommonUtils.getUserNameFromEvent(event);
+      this.$bvToast.toast("User " + username + " left", {
+        title: `Room notification`,
+        variant: "info",
+        solid: true,
+      });
+    },
+    userStatusChanged: function (event) {
+      if (this.participants.has(event.userid) || event.status === "offline")
+        return;
+      var username = CommonUtils.getUserNameFromEvent(event);
+      this.$bvToast.toast("User " + username + " joined", {
+        title: `Room notification`,
+        variant: "info",
+        solid: true,
+      });
+      this.addParticipantBlock({
+        userid: event.userid,
+        mediaElement: document.createElement("div"),
+        streamid: null,
+      });
     },
     initialize: function () {
       var self = this;
@@ -84,25 +105,16 @@ export default {
         uuidv4() + "|" + this.$store.state.application.profile.name;
 
       this.connection.extra = {
-          profile: this.$store.state.application.profile
+        profile: this.$store.state.application.profile,
       };
       // using signalR for signaling
       this.connection.setCustomSocketHandler(WebRtcSignalR);
-      RTCUtils.ConfigureBase(
-        this.connection,
-        this.participants,
-        this.streamEnded
-      );
+      // Configure base callbacks
+      RTCUtils.ConfigureBase(this.connection, this.participants,
+        this.streamEnded);
       this.connection.onstream = this.addParticipantBlock;
-      this.connection.onUserStatusChanged = function (event) {
-        if (self.participants.has(event.userid) || event.status === "offline")
-          return;
-        self.addParticipantBlock({
-          userid: event.userid,
-          mediaElement: document.createElement("div"),
-          streamid: null,
-        });
-      };
+      this.connection.onUserStatusChanged = this.userStatusChanged;
+      // Configure media error
       RTCUtils.ConfigureMediaError(
         this.connection,
         DetectRTC,
@@ -142,7 +154,7 @@ export default {
       this.initialize();
       this.connection.join(this.roomId);
     },
-  }
+  },
 };
 </script>
 <style>

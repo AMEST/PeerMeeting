@@ -7,12 +7,7 @@
     ]"
     :id="'card-' + this.streamEvent.userid"
   >
-    <span class="username-span">
-      {{
-        this.profile.username
-          ? this.profile.username
-          : this.streamEvent.userid.split("|")[1] 
-      }}</span
+    <span class="username-span">{{this.profile.username}}</span
     >
     <b-avatar
       :class="
@@ -69,7 +64,7 @@ export default {
       this.halfscreen = !this.halfscreen;
     },
     getInitials: function () {
-      var username = this.profile.username ? this.profile.username : this.streamEvent.userid.split("|")[1];
+      var username = CommonUtils.getUserNameFromEvent(this.streamEvent);
       return CommonUtils.getInitials(username);
     },
     clearMediaElements: function () {
@@ -80,16 +75,8 @@ export default {
         el.parentNode.removeChild(el);
     },
     tryGetProfile: function(){
-      /*eslint-disable*/
-      try{
-        if(this.streamEvent.extra.profile.avatar)
-          this.profile.avatar = this.streamEvent.extra.profile.avatar;
-      }catch{}
-      try{
-        if(this.streamEvent.extra.profile.name)
-          this.profile.username = this.streamEvent.extra.profile.name;
-      }catch{}
-      /*eslint-enable*/
+      this.profile.avatar = CommonUtils.getAvatarFromEvent(this.streamEvent);
+      this.profile.username = CommonUtils.getUserNameFromEvent(this.streamEvent);
     }
   },
   watch: {
