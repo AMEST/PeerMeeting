@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeerMeeting.Host", "PeerMeeting.Host\PeerMeeting.Host.csproj", "{AC3CAC08-7873-4304-936A-C89A6D74D13D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PeerMeeting.Host", "src\PeerMeeting.Host\PeerMeeting.Host.csproj", "{AC3CAC08-7873-4304-936A-C89A6D74D13D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B564EF2C-4CA8-4A6B-832A-BB1E048FD016}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,6 +20,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{AC3CAC08-7873-4304-936A-C89A6D74D13D} = {B564EF2C-4CA8-4A6B-832A-BB1E048FD016}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4583051D-A9CF-4960-ADDB-E3D97CDE43CC}
