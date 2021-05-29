@@ -6,7 +6,10 @@
         deck
         id="videos-container"
         class="justify-content-center"
-        :class="this.state.halfScreenMode ? 'half-screen-container' : ''"
+        :class="[
+          this.state.halfScreenMode ? 'half-screen-container' : '',
+          !this.state.fullScreenMode ? 'card-deck-center' : ''
+        ]"
       >
         <participant-block
           v-for="[k, v] in this.participants"
@@ -15,7 +18,7 @@
           :state="state"
           :DetectRTC="DetectRTC"
           :participants="participants"
-          :class="participants.size <= 1 ? 'only-local-participant' : ''"
+          :class="participants.size <= 2 ? 'only-local-participant' : 'many-participants'"
         ></participant-block>
       </b-card-group>
       <control-bar
@@ -48,6 +51,7 @@ export default {
       videoEnabled: true,
       screenEnabled: false,
       halfScreenMode: false,
+      fullScreenMode: false,
       hasWebcam: true,
       hasMicrophone: true,
     },
@@ -158,6 +162,9 @@ export default {
 };
 </script>
 <style>
+.card-deck{
+  max-height: calc(100vh - 110px);
+}
 .full-height {
   min-height: calc(100vh - 63px);
   max-height: calc(100vh - 63px);
@@ -177,13 +184,40 @@ export default {
   width: 249px !important;
   max-height: calc(100% - 152px);
   overflow-y: scroll;
+  top: unset !important; 
+  -webkit-transform: inherit!important;
+  transform: inherit!important;
 }
 .half-screen-container .user-block {
   min-width: 215px !important;
   min-height: 160px !important;
   margin-top: 5px;
 }
+.half-screen-container .only-local-participant{
+  height: inherit!important;
+}
+.half-screen-container .many-participants{
+  height: inherit!important;
+}
 .only-local-participant {
   height: 100vw;
+}
+.many-participants {
+  height: 20vw !important;
+  max-height: 20vw !important;
+}
+@media (min-width: 578px) {
+  .many-participants {
+    max-width: 35vw;
+  }
+}
+@media (min-width: 770px) {
+  .card-deck-center {
+    position: absolute;
+    width: 100%;
+    top: 25%;
+    -ms-transform: translateY(-15%);
+    transform: translateY(-15%);
+  }
 }
 </style>

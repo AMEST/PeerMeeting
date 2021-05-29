@@ -1,3 +1,6 @@
+// Copyright 2021 klabukov.
+// SPDX-License-Identifier: GPL-3.0-only
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;

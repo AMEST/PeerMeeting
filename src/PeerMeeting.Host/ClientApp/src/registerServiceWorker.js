@@ -1,3 +1,6 @@
+// Copyright 2021 Klabukov Erik.
+// SPDX-License-Identifier: GPL-3.0-only
+
 /* eslint-disable no-console */
 
 import { register } from 'register-service-worker'

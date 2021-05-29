@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿// Copyright 2021 Klabukov Erik.
+// SPDX-License-Identifier: GPL-3.0-only
+
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 

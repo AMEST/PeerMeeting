@@ -1,3 +1,6 @@
+// Copyright 2021 Klabukov Erik.
+// SPDX-License-Identifier: GPL-3.0-only
+
 import Vue from 'vue'
 import Router from 'vue-router'
 import Welcome from './views/Welcome.vue'

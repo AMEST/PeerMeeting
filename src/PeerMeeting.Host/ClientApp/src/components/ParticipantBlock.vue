@@ -5,6 +5,7 @@
       this.fullscreen ? 'pseudo-fullscreen' : '',
       this.halfscreen ? 'half-screen' : '',
     ]"
+    :style="this.halfscreen ? 'max-height: unset!important;height: 80%!important; max-width: unset;' : ''"
     :id="'card-' + this.streamEvent.userid"
   >
     <span class="username-span">{{this.profile.username}}</span
@@ -24,6 +25,7 @@
       size="sm"
       variant="outline-secondary"
       @click="switchFullscreen"
+      :disabled="this.state.halfScreenMode"
     >
       <b-icon v-if="!this.fullscreen" icon="fullscreen" />
       <b-icon v-else icon="fullscreen-exit" />
@@ -55,11 +57,13 @@ export default {
   methods: {
     switchFullscreen: function () {
       this.fullscreen = !this.fullscreen;
+      this.state.fullScreenMode = !this.state.fullScreenMode;
     },
     switchHalfScreen: function () {
       if (this.participants.size <= 1) return;
       if (this.DetectRTC.isMobileDevice) return;
       if (this.state.halfScreenMode && !this.halfscreen) return;
+      if (this.state.fullScreenMode) return;
       this.state.halfScreenMode = !this.state.halfScreenMode;
       this.halfscreen = !this.halfscreen;
     },
@@ -131,6 +135,7 @@ export default {
   max-height: calc(100vh - 169px);
   background-color: black;
   min-height: 250px;
+  margin-bottom: 1em!important;
 }
 .user-block video {
   background-color: transparent;
@@ -173,6 +178,7 @@ export default {
   padding: 0px !important;
   margin: 0px !important;
   border-radius: 0px;
+  max-width: unset!important;
 }
 .fullscreen-button {
   position: absolute;
