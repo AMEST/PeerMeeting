@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  host:
+    image: eluki/peer-meeting
+    ports:
+     - target: 80
+       published: 30005
+       protocol: tcp
+       mode: host
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: stop-first
+      placement:
+        max_replicas_per_node: 1
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "3m"
+        max-file: "3"

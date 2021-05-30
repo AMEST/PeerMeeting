@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  peer-meeting:
+    image: eluki/peer-meeting
+    
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+    ports:
+      - "80:80"
+      - "443:443"
+    
