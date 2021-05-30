@@ -58,6 +58,7 @@ export default {
           this.connection,
           this.state.screenEnabled,
           this.state,
+          this.$store.state.application.deviceSettings,
           this.addParticipantBlock
       );
     },

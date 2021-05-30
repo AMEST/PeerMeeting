@@ -3,12 +3,21 @@
 
 /* eslint-disable */
 var RTCUtils = {
-  ConfigureBase: function (connection, participants,  streamEndedCallback = (event) =>{}) {
+  ConfigureBase: function (connection, participants, deviceSettings,  streamEndedCallback = (event) =>{}) {
     connection.codecs.video = 'VP8'
     connection.session = {
       audio: true,
       video: true
     }
+    connection.mediaConstraints = {
+      audio: deviceSettings.audioInput 
+        ? { deviceId: deviceSettings.audioInput }
+        : true,
+      video: deviceSettings.videoInput 
+        ? { deviceId: deviceSettings.videoInput }
+        : true
+    }
+
     connection.sdpConstraints.mandatory = {
       OfferToReceiveAudio: true,
       OfferToReceiveVideo: true
@@ -34,6 +43,17 @@ var RTCUtils = {
           streamEndedCallback({userid: key})
       }
     }, 5000)
+    // Fix for close peer connections without cards
+    /*setInterval(() =>{
+      connection.peers.getAllParticipants().forEach( e =>{
+        if(!participants.has(e) 
+          && connection.peers[e]
+          && connection.peers[e].peer
+          && connection.peers[e].peer.connectionState
+          && connection.peers[e].peer.connectionState === "connected")
+          connection.peers[e].peer.close()
+      })
+    }, 1000)*/
 
     // overriding the event to replace the poster XD
     connection.onmute = function(e) {
@@ -59,7 +79,7 @@ var RTCUtils = {
   },
   // Configure media error event for try use another microfon or if webcam not available, connect without it
   // eslint-disable-next-line
-  ConfigureMediaError: function (connection, DetectRTC, callback = (videoState, audioState) => { }) {
+  ConfigureMediaError: function (connection, DetectRTC, deviceSettings, callback = (videoState, audioState) => { }) {
     connection.onMediaError = function (e) {
       var mPeer = connection.multiPeersHandler
       console.error('Media Error', e.message)
@@ -93,8 +113,9 @@ var RTCUtils = {
       // Case if webcam not available
       callback(false, true)
       connection.dontCaptureUserMedia = true
+      var audioDevice = deviceSettings.audioInput ? {deviceId: deviceSettings.audioInput} : true
       navigator.getUserMedia(
-        { audio: true, video: false },
+        { audio: audioDevice, video: false },
         function (stream) {
           connection.addStream(stream)
           mPeer.onGettingLocalMedia(stream)
@@ -123,7 +144,7 @@ var RTCUtils = {
     })
   },
   // Start screen sharing or stop and back to video + audio or audio only or empty
-  ScreenSharing: function(connection, state, mediaState, callback){
+  ScreenSharing: function (connection, state, mediaState, deviceSettings, callback){
     connection.attachStreams.forEach(s => s.stop())
     console.log(connection.attachStreams)
     var mPeer = connection.multiPeersHandler
@@ -137,8 +158,9 @@ var RTCUtils = {
           return
         }
         //On succes getting microphone stream, for add to screen stream
+        var audioDevice = deviceSettings.audioInput ? {deviceId: deviceSettings.audioInput} : true
         navigator.getUserMedia(
-          { audio: true, video: false },
+          { audio: audioDevice, video: false },
           function (microphoneStream) {
             screenStream.addTrack(microphoneStream.getAudioTracks()[0])
             self.AddStream(connection, screenStream, mPeer, callback)
@@ -155,10 +177,10 @@ var RTCUtils = {
         self.CreateFakeStream(connection, mPeer, callback)
         return
       }
-
       if(mediaState.hasMicrophone && !mediaState.hasWebcam && connection.dontCaptureUserMedia){
+        var audioDevice = deviceSettings.audioInput ? {deviceId: deviceSettings.audioInput} : true
         navigator.getUserMedia(
-          { audio: true, video: false },
+          { audio: audioDevice, video: false },
           function (stream) {
             self.AddStream(connection, stream, mPeer, callback)
           },
@@ -182,7 +204,7 @@ var RTCUtils = {
     connection.attachStreams = []
     connection.addStream(stream)
     mPeer.onGettingLocalMedia(stream)
-    var event = self.CreateVideoElementEvent(connection.userid, stream)
+    var event = this.CreateVideoElementEvent(connection.userid, stream)
     callback(event)
   },
   CreateFakeStream: function(connection, mPeer, callback){

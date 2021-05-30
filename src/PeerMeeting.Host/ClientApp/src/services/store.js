@@ -10,6 +10,10 @@ export default new Vuex.Store({
   state: {
     application: {
       profile: null,
+      deviceSettings: {
+        audioInput: null,
+        videoInput: null
+      },
       roomHistory: [],
       mediaDevices: [],
       version: ''
@@ -20,6 +24,10 @@ export default new Vuex.Store({
     changeProfile (state, payload) {
       window.localStorage['profile'] = JSON.stringify(payload)
       state.application.profile = payload
+    },
+    changeDeviceSettings (state, payload) {
+      window.localStorage['deviceSettings'] = JSON.stringify(payload)
+      state.application.deviceSettings = payload
     },
     // eslint-disable-next-line
     clearProfile (state) {

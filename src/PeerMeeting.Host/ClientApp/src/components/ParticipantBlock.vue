@@ -203,7 +203,7 @@ export default {
   position: fixed;
   width: calc(100% - 285px);
   height: 100%;
-  z-index: -1;
+  z-index: 0;
   padding: 0px;
   left: 0;
   margin: 0px 0px 0px 1.5em;

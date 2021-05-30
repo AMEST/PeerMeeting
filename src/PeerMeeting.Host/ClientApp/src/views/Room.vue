@@ -114,7 +114,10 @@ export default {
       // using signalR for signaling
       this.connection.setCustomSocketHandler(WebRtcSignalR);
       // Configure base callbacks
-      RTCUtils.ConfigureBase(this.connection, this.participants,
+      RTCUtils.ConfigureBase(
+        this.connection, 
+        this.participants,
+        this.$store.state.application.deviceSettings,
         this.streamEnded);
       this.connection.onstream = this.addParticipantBlock;
       this.connection.onUserStatusChanged = this.userStatusChanged;
@@ -122,6 +125,7 @@ export default {
       RTCUtils.ConfigureMediaError(
         this.connection,
         DetectRTC,
+        this.$store.state.application.deviceSettings,
         (videoState, audioState) => {
           self.state.videoEnabled = videoState;
           self.state.audioEnabled = audioState;

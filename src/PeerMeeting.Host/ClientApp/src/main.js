@@ -27,6 +27,10 @@ var profile = window.localStorage['profile']
 if (profile !== undefined) {
   store.commit('changeProfile', JSON.parse(profile))
 }
+var deviceSettings = window.localStorage['deviceSettings']
+if (deviceSettings !== undefined) {
+  store.commit('changeDeviceSettings', JSON.parse(deviceSettings))
+}
 var roomHistory = window.localStorage['roomHistory']
 if (roomHistory !== undefined) {
   var parsedHistory = JSON.parse(roomHistory)
