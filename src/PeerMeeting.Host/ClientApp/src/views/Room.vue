@@ -18,6 +18,7 @@
           :state="state"
           :DetectRTC="DetectRTC"
           :participants="participants"
+          :connection="connection"
           :class="participants.size <= 2 ? 'only-local-participant' : 'many-participants'"
         ></participant-block>
       </b-card-group>

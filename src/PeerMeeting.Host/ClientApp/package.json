@@ -17,6 +17,7 @@
     "adapterjs": "^0.15.5",
     "core-js": "^2.6.5",
     "detectrtc": "^1.4.1",
+    "getstats": "^1.2.0",
     "md5": "^2.3.0",
     "register-service-worker": "^1.6.2",
     "rtcmulticonnection": "^3.7.0",
