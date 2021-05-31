@@ -8,7 +8,7 @@ function WebRtcSignalR (connection, connectCallback) {
   try{
   var signalRConnection = new HubConnectionBuilder()
     .withUrl('/ws/webrtc')
-    .withAutomaticReconnect([0, 0, 10000])
+    .withAutomaticReconnect()
     .configureLogging(LogLevel.Information)
     .build()
   }catch(e){console.error(e)}
