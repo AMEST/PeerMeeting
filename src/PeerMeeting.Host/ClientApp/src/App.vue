@@ -1,28 +1,14 @@
 <template>
   <div id="app">
-    <TopMenu />
+    <top-menu />
     <router-view v-if="this.$store.state.application.profile != null" />
     <b-container v-else>
-      <b-card
-        bg-variant="secondary"
-        text-variant="white"
-        title="Who are you?"
-        style="margin-top: 3em"
-      >
-        <b-card-text>
-          <b-form-input
-            v-model="username"
-            placeholder="Enter your name"
-            @keyup.enter="applyUserName"
-          ></b-form-input>
-        </b-card-text>
-        <b-button @click="applyUserName" variant="primary">Ok</b-button>
-      </b-card>
+      <log-in/>
     </b-container>
     <a class="fork-me" href="https://github.com/AMEST/PeerMeeting"
       >Fork me on
-      <font-awesome-icon :icon="{ prefix: 'fab', iconName: 'github' }"
-    /></a>
+      <font-awesome-icon :icon="{ prefix: 'fab', iconName: 'github' }"/>
+    </a>
     <settings/>
   </div>
 </template>
@@ -30,26 +16,12 @@
 <script>
 import TopMenu from "@/components/TopMenu.vue";
 import Settings from "@/components/Settings.vue";
+import LogIn from "@/components/LogIn.vue";
 export default {
   components: {
     TopMenu,
-    Settings
-  },
-  data: () => {
-    return {
-      username: null,
-    };
-  },
-  methods: {
-    applyUserName: function () {
-      if (!this.username || this.username.length < 2) return;
-
-      var profile = {
-        avatar: null,
-        name: this.username,
-      };
-      this.$store.commit("changeProfile", profile);
-    },
+    Settings,
+    LogIn
   },
   mounted: function () {
     var self = this;

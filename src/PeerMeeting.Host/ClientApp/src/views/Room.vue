@@ -74,7 +74,14 @@ export default {
       if (!this.participants.has(event.userid)) return;
       this.participants.delete(event.userid);
       this.$forceUpdate();
-
+      
+      if(this.connection.userid === event.userid
+        || this.connection.peers[event.userid]
+          && this.connection.peers[event.userid].peer
+          && this.connection.peers[event.userid].peer.connectionState
+          && this.connection.peers[event.userid].peer.connectionState === "connected")
+          return;
+      
       var username = CommonUtils.getUserNameFromEvent(event);
       this.$bvToast.toast("User " + username + " left", {
         title: `Room notification`,

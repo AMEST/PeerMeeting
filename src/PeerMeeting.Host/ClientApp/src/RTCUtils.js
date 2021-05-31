@@ -4,6 +4,7 @@
 /* eslint-disable */
 var RTCUtils = {
   ConfigureBase: function (connection, participants, deviceSettings,  streamEndedCallback = (event) =>{}) {
+    var self = this
     connection.codecs.video = 'VP8'
     connection.session = {
       audio: true,
@@ -43,17 +44,25 @@ var RTCUtils = {
           streamEndedCallback({userid: key})
       }
     }, 5000)
-    // Fix for close peer connections without cards
-    /*setInterval(() =>{
+    // Fix peer connections without cards
+    setInterval(() =>{
       connection.peers.getAllParticipants().forEach( e =>{
         if(!participants.has(e) 
           && connection.peers[e]
           && connection.peers[e].peer
           && connection.peers[e].peer.connectionState
           && connection.peers[e].peer.connectionState === "connected")
-          connection.peers[e].peer.close()
+          connection.onstream({
+            streamid: null,
+            userid: e,
+            extra: connection.peers[e].extra,
+            mediaElement: document.createElement("div"),
+          })
       })
-    }, 1000)*/
+      if(!participants.has(connection.userid)){
+        self.CreateFakeStream(connection, connection.multiPeersHandler, connection.onstream)
+      }
+    }, 2000)
 
     // overriding the event to replace the poster XD
     connection.onmute = function(e) {
@@ -171,34 +180,33 @@ var RTCUtils = {
         })
       }, function(e){console.error('screen sharing', e)});
       return
-    }else{
-      connection.attachStreams = []
-      if(!mediaState.hasMicrophone && !mediaState.hasWebcam){
-        self.CreateFakeStream(connection, mPeer, callback)
-        return
-      }
-      if(mediaState.hasMicrophone && !mediaState.hasWebcam && connection.dontCaptureUserMedia){
-        var audioDevice = deviceSettings.audioInput ? {deviceId: deviceSettings.audioInput} : true
-        navigator.getUserMedia(
-          { audio: audioDevice, video: false },
-          function (stream) {
-            self.AddStream(connection, stream, mPeer, callback)
-          },
-          function () { }
-        )
-        return
-      }
-
-      connection.addStream({
-        audio: true,
-        video: true,
-        oneway: true,
-        streamCallback: function(stream){
-          mPeer.onGettingLocalMedia(stream)
-        }
-      })
-      
     }
+    connection.attachStreams = []
+    if(!mediaState.hasMicrophone && !mediaState.hasWebcam){
+      self.CreateFakeStream(connection, mPeer, callback)
+      return
+    }
+    if(mediaState.hasMicrophone && !mediaState.hasWebcam && connection.dontCaptureUserMedia){
+      var audioDevice = deviceSettings.audioInput ? {deviceId: deviceSettings.audioInput} : true
+      navigator.getUserMedia(
+        { audio: audioDevice, video: false },
+        function (stream) {
+          self.AddStream(connection, stream, mPeer, callback)
+        },
+        function () { }
+      )
+      return
+    }
+
+    connection.addStream({
+      audio: true,
+      video: true,
+      oneway: true,
+      streamCallback: function(stream){
+        mPeer.onGettingLocalMedia(stream)
+      }
+    })
+      
   },
   AddStream: function(connection, stream, mPeer, callback){
     connection.attachStreams = []
