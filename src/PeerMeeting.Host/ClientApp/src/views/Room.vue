@@ -68,6 +68,11 @@ export default {
     addParticipantBlock: function (event) {
       if (this.participants.has(event.userid))
         this.participants.delete(event.userid);
+      if(this.connection.userid == event.userid
+        && !event.extra)
+        event.extra = this.connection.extra;
+      if(!event.extra && this.connection.peers[event.userid])
+        event.extra = this.connection.peers[event.userid].extra;
       this.participants.set(event.userid, event);
       this.$forceUpdate();
     },
@@ -91,6 +96,11 @@ export default {
       });
     },
     userStatusChanged: function (event) {
+      if (this.participants.has(event.userid) && event.status === 'online'
+          && event.extra){
+        this.participants.get(event.userid).extra = event.extra;
+        return;
+      }
       if (this.participants.has(event.userid) || event.status === "offline")
         return;
       var username = CommonUtils.getUserNameFromEvent(event);
@@ -118,6 +128,8 @@ export default {
 
       this.connection.extra = {
         profile: this.$store.state.application.profile,
+        audioMuted: false,
+        videoMuted: false
       };
       // using signalR for signaling
       this.connection.setCustomSocketHandler(WebRtcSignalR);
@@ -139,6 +151,8 @@ export default {
           self.state.audioEnabled = audioState;
           self.state.hasWebcam = videoState;
           self.state.hasMicrophone = audioState;
+          self.connection.extra.audioMuted = !audioState;
+          self.connection.extra.videoMuted = !videoState;
           self.addParticipantBlock({
             streamid: null,
             userid: self.connection.userid,

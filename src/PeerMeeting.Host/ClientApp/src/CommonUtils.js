@@ -52,7 +52,7 @@ var CommonUtils = {
         data: { send: 0, receive: 0 },
         codecs: {local: "", remote: ""},
         connectionState: "",
-        nomore: () => {},
+        nomore: result.nomore,
       }
       stats.bandwidth = result.bandwidth.speed
       stats.stunOrTurn.remote =

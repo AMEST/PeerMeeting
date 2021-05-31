@@ -141,6 +141,9 @@ var RTCUtils = {
         s.unmute("audio")
       else
         s.mute("audio")
+
+      connection.extra.audioMuted = !state
+      connection.updateExtraData()
     })
   },
   // Switch mute/unmute video
@@ -150,6 +153,9 @@ var RTCUtils = {
         s.unmute("video")
       else
         s.mute("video")
+      
+      connection.extra.videoMuted = !state
+      connection.updateExtraData()
     })
   },
   // Start screen sharing or stop and back to video + audio or audio only or empty

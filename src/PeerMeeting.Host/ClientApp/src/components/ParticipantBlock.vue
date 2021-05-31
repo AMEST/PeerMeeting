@@ -63,6 +63,17 @@
       {{this.stats.codecs.local}}<br/>
     </b-toast>
 
+    <b-icon
+      class="audio-muted-icon"
+      :icon="this.streamEvent.extra.audioMuted ? 'mic-mute' : 'mic'"
+      :style="this.streamEvent.extra.audioMuted ? 'color: red' : ''"
+    ></b-icon>
+    <b-icon
+      class="video-muted-icon"
+      :icon="this.streamEvent.extra.videoMuted ? 'camera-video-off' : 'camera-video'"
+      :style="this.streamEvent.extra.videoMuted ? 'color: red' : ''"
+    ></b-icon>
+
     <div class="switch-half-screen" @click="switchHalfScreen"></div>
   </div>
 </template>
@@ -117,11 +128,16 @@ export default {
       return CommonUtils.getInitials(username);
     },
     clearMediaElements: function () {
+      try{
       var card = document.getElementById("card-" + this.streamEvent.userid);
       for (const el of card.getElementsByTagName("video"))
         el.parentNode.removeChild(el);
       for (const el of card.getElementsByTagName("audio"))
         el.parentNode.removeChild(el);
+      }catch(e){
+        // eslint-disable-next-line
+        console.error('ClearMediaElements Error', e.message);
+      }
     },
     tryGetProfile: function () {
       this.profile.avatar = CommonUtils.getAvatarFromEvent(this.streamEvent);
@@ -163,16 +179,22 @@ export default {
   watch: {
     // eslint-disable-next-line
     streamEvent: function (newVal, oldVal) {
-      this.clearMediaElements();
-      this.prepare(newVal);
-      this.tryGetProfile();
-      this.startGetStats(newVal);
+      var self = this
+      setTimeout( ()=>{
+        self.clearMediaElements();
+        self.prepare(newVal);
+        self.tryGetProfile();
+        self.startGetStats(newVal);
+      },400);
     },
   },
   mounted: function () {
-    this.prepare(this.streamEvent);
-    this.tryGetProfile();
-    this.startGetStats(this.streamEvent);
+    var self = this
+    setTimeout( ()=>{
+      self.prepare(this.streamEvent);
+      self.tryGetProfile();
+      self.startGetStats(this.streamEvent);
+    },400);
   },
   destroyed: function () {
     this.stats.nomore();
@@ -249,6 +271,18 @@ export default {
   left: 1em;
   position: absolute;
   text-align: left;
+}
+.audio-muted-icon{
+  position: absolute;
+  left: 1em;
+  bottom: 1em;
+  z-index: 30;
+}
+.video-muted-icon{
+  z-index: 30;
+  position: absolute;
+  left: 2.5em;
+  bottom: 1em;
 }
 .fullscreen-button {
   position: absolute;
