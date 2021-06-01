@@ -9,18 +9,18 @@
       >Fork me on
       <font-awesome-icon :icon="{ prefix: 'fab', iconName: 'github' }"/>
     </a>
-    <settings/>
+    <settings-dialog/>
   </div>
 </template>
 
 <script>
 import TopMenu from "@/components/TopMenu.vue";
-import Settings from "@/components/Settings.vue";
+import SettingsDialog from "@/components/settings/SettingsDialog.vue";
 import LogIn from "@/components/LogIn.vue";
 export default {
   components: {
     TopMenu,
-    Settings,
+    SettingsDialog,
     LogIn
   },
   mounted: function () {

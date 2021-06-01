@@ -34,7 +34,7 @@
     </b-button>
 
     <b-button
-      v-if="this.streamEvent.type != 'local' && this.connection.DetectRTC.browser.name != 'Firefox'"
+      v-if="this.streamEvent.type != 'local'"
       class="connection-info"
       variant="outline-light"
       size="sm"
@@ -51,17 +51,29 @@
       static
       no-auto-hide
     >
-      Bandwidth: {{this.bytesToSize(this.stats.bandwidth)}}<br />
-      State: {{this.stats.connectionState}}<br/>
-      Local: {{this.stats.ips.local}} {{this.stats.transport.local}}<br />
-      Remote: {{this.stats.ips.remote}} {{this.stats.transport.remote}}<br />
+      Bandwidth: {{ this.bytesToSize(this.stats.bandwidth) }}<br />
+      State: {{ this.stats.connectionState }}<br />
+      Local: {{ this.stats.ips.local }} {{ this.stats.transport.local }}<br />
+      Remote: {{ this.stats.ips.remote }} {{ this.stats.transport.remote
+      }}<br />
       Data: {{ this.bytesToSize(this.stats.data.receive) }}
       <b-icon icon="arrow-down-up" />
-      {{this.bytesToSize(this.stats.data.send)}} <br/>
-      Codecs: {{this.stats.codecs.remote}}
-      <b-icon icon="arrow-down-up" />
-      {{this.stats.codecs.local}}<br/>
+      {{ this.bytesToSize(this.stats.data.send) }} <br />
+      RTT: {{ this.stats.rtt }}
     </b-toast>
+
+    <b-icon
+      class="audio-muted-icon"
+      :icon="this.streamEvent.extra.audioMuted ? 'mic-mute' : 'mic'"
+      :style="this.streamEvent.extra.audioMuted ? 'color: red' : ''"
+    ></b-icon>
+    <b-icon
+      class="video-muted-icon"
+      :icon="
+        this.streamEvent.extra.videoMuted ? 'camera-video-off' : 'camera-video'
+      "
+      :style="this.streamEvent.extra.videoMuted ? 'color: red' : ''"
+    ></b-icon>
 
     <div class="switch-half-screen" @click="switchHalfScreen"></div>
   </div>
@@ -69,7 +81,7 @@
 
 <script>
 import CommonUtils from "@/CommonUtils";
-import getStats from "getstats";
+import PeerStats from "@/services/PeerStats";
 export default {
   name: "ParticipantBlock",
   data: () => {
@@ -86,10 +98,12 @@ export default {
         ips: { local: "", remote: "" },
         transport: { local: "", remote: "" },
         data: { send: 0, receive: 0 },
-        codecs: {local: "", remote: ""},
+        packets: { send: 0, receive: 0 },
+        codecs: { local: "", remote: "" },
         connectionState: "",
-        nomore: () => {},
+        rtt: 0.0,
       },
+      peerStats: null,
     };
   },
   props: {
@@ -117,11 +131,16 @@ export default {
       return CommonUtils.getInitials(username);
     },
     clearMediaElements: function () {
-      var card = document.getElementById("card-" + this.streamEvent.userid);
-      for (const el of card.getElementsByTagName("video"))
-        el.parentNode.removeChild(el);
-      for (const el of card.getElementsByTagName("audio"))
-        el.parentNode.removeChild(el);
+      try {
+        var card = document.getElementById("card-" + this.streamEvent.userid);
+        for (const el of card.getElementsByTagName("video"))
+          el.parentNode.removeChild(el);
+        for (const el of card.getElementsByTagName("audio"))
+          el.parentNode.removeChild(el);
+      } catch (e) {
+        // eslint-disable-next-line
+        console.error("ClearMediaElements Error", e.message);
+      }
     },
     tryGetProfile: function () {
       this.profile.avatar = CommonUtils.getAvatarFromEvent(this.streamEvent);
@@ -130,24 +149,18 @@ export default {
       );
     },
     bytesToSize: CommonUtils.bytesToSize,
-    parsePeerStatResult: CommonUtils.parsePeerStatResult,
-    startGetStats: function (event) {
-      if(this.connection.DetectRTC.browser.name === 'Firefox') return;
+    enablePeerStats: function (event) {
       if (event.type && event.type == "local") return;
       if (this.connection.userid === event.userid) return;
       if (!this.connection.peers[event.userid]) return;
-      this.stats.nomore();
+      if (this.peerStats) this.peerStats.stop();
       var self = this;
-      getStats(
-        this.connection.peers[event.userid].peer,
-        function (result) {
-          self.stats = self.parsePeerStatResult(result);
-          self.stats.connectionState = self.connection.peers[event.userid].peer.connectionState;
-        },
-        3000
-      ); //Get stats every 3 sec
+      this.peerStats = new PeerStats(this.connection.peers[event.userid].peer);
+      this.peerStats.start((stats) => {
+        self.stats = stats;
+      }, 3000);
     },
-    prepare: function(event){
+    prepare: function (event) {
       var card = document.getElementById("card-" + event.userid);
       if (event.mediaElement != null) {
         event.mediaElement.controls = false;
@@ -158,24 +171,30 @@ export default {
         if (event.mediaElement.play) event.mediaElement.play();
         if (event.type == "local") event.mediaElement.muted = true;
       }, 1000);
-    }
+    },
   },
   watch: {
     // eslint-disable-next-line
     streamEvent: function (newVal, oldVal) {
-      this.clearMediaElements();
-      this.prepare(newVal);
-      this.tryGetProfile();
-      this.startGetStats(newVal);
+      var self = this;
+      setTimeout(() => {
+        self.clearMediaElements();
+        self.prepare(newVal);
+        self.tryGetProfile();
+        self.enablePeerStats(newVal);
+      }, 400);
     },
   },
   mounted: function () {
-    this.prepare(this.streamEvent);
-    this.tryGetProfile();
-    this.startGetStats(this.streamEvent);
+    var self = this;
+    setTimeout(() => {
+      self.prepare(this.streamEvent);
+      self.tryGetProfile();
+      self.enablePeerStats(this.streamEvent);
+    }, 400);
   },
   destroyed: function () {
-    this.stats.nomore();
+    if (this.peerStats) this.peerStats.stop();
     if (!this.halfscreen) return;
     this.state.halfScreenMode = false;
   },
@@ -249,6 +268,18 @@ export default {
   left: 1em;
   position: absolute;
   text-align: left;
+}
+.audio-muted-icon {
+  position: absolute;
+  left: 1em;
+  bottom: 1em;
+  z-index: 30;
+}
+.video-muted-icon {
+  z-index: 30;
+  position: absolute;
+  left: 2.5em;
+  bottom: 1em;
 }
 .fullscreen-button {
   position: absolute;

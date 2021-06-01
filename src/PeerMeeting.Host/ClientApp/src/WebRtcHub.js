@@ -12,7 +12,6 @@ function WebRtcSignalR (connection, connectCallback) {
     .configureLogging(LogLevel.Information)
     .build()
   }catch(e){console.error(e)}
-  console.info('sre created')
 
   function isData (session) {
     return !session.audio && !session.video && !session.screen && session.data
@@ -25,24 +24,36 @@ function WebRtcSignalR (connection, connectCallback) {
       signalRConnection.invoke('Send', channelName, JSON.stringify(data))
     }
   }
+
   signalRConnection.on(channelName, message => {
     var data = JSON.parse(message)
     console.log('ON Deserialized', data)
-    if (data.eventName === connection.socketMessageEvent) {
-      console.log(connection.socketMessageEvent)
-      onMessagesCallback(data.data)
-    }
 
-    if (data.eventName === 'presence') {
-      data = data.data
-      if (data.userid === connection.userid) return
-      connection.onUserStatusChanged({
-        userid: data.userid,
-        status: data.isOnline === true ? 'online' : 'offline',
-        extra: connection.peers[data.userid] ? connection.peers[data.userid].extra : {}
-      })
+    switch(data.eventName){
+      case connection.socketMessageEvent:
+        onMessagesCallback(data.data)
+        break
+      case 'presence':
+        data = data.data
+        if (data.userid === connection.userid) return
+        connection.onUserStatusChanged({
+          userid: data.userid,
+          status: data.isOnline === true ? 'online' : 'offline',
+          extra: connection.peers[data.userid] ? connection.peers[data.userid].extra : {}
+        })
+        break
+      case 'extra-data-updated':
+        if(connection.userid === data.data.remoteUserId) return
+        if(!connection.peers[data.data.remoteUserId] || !data.data.extra) return
+        connection.peers[data.data.remoteUserId].extra = data.data.extra
+        connection.onExtraDataUpdated({
+          userid: data.data.remoteUserId,
+          extra: data.data.extra
+        })
+        break
     }
   })
+
   // start the hub
   signalRConnection.start().then(function () {
     if (connection.enableLogs) {
@@ -66,6 +77,13 @@ function WebRtcSignalR (connection, connectCallback) {
   connection.socket.emit = function (eventName, data, callback) {
     if (eventName === 'changed-uuid') return
     if (data.message && data.message.shiftedModerationControl) return
+
+    if (eventName === 'extra-data-updated'){
+      data = {
+        extra: data,
+        remoteUserId: connection.userid
+      }
+    }
 
     connection.socket.send({
       eventName: eventName,
