@@ -241,6 +241,16 @@ var RTCUtils = {
       streamid: stream.id,
       mediaElement: video
     }
+  },
+  ExtractExtraData: function(connection, userid){
+    var extra = undefined
+    if(connection.userid == userid) extra = connection.extra
+    else extra = connection.getExtraData(userid)
+    if(!extra.audioMuted)
+      extra.audioMuted = false
+    if(!extra.videoMuted)
+      extra.videoMuted = false
+    return extra
   }
 }
 

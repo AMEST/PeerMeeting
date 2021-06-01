@@ -34,7 +34,7 @@
     </b-button>
 
     <b-button
-      v-if="this.streamEvent.type != 'local' && this.connection.DetectRTC.browser.name != 'Firefox'"
+      v-if="this.streamEvent.type != 'local'"
       class="connection-info"
       variant="outline-light"
       size="sm"
@@ -58,9 +58,7 @@
       Data: {{ this.bytesToSize(this.stats.data.receive) }}
       <b-icon icon="arrow-down-up" />
       {{this.bytesToSize(this.stats.data.send)}} <br/>
-      Codecs: {{this.stats.codecs.remote}}
-      <b-icon icon="arrow-down-up" />
-      {{this.stats.codecs.local}}<br/>
+      RTT: {{this.stats.rtt}}
     </b-toast>
 
     <b-icon
@@ -80,7 +78,7 @@
 
 <script>
 import CommonUtils from "@/CommonUtils";
-import getStats from "getstats";
+import PeerStats from "@/services/PeerStats";
 export default {
   name: "ParticipantBlock",
   data: () => {
@@ -97,10 +95,12 @@ export default {
         ips: { local: "", remote: "" },
         transport: { local: "", remote: "" },
         data: { send: 0, receive: 0 },
+        packets: { send: 0, receive: 0 },
         codecs: {local: "", remote: ""},
         connectionState: "",
-        nomore: () => {},
+        rtt: 0.0,
       },
+      peerStats: null
     };
   },
   props: {
@@ -146,22 +146,16 @@ export default {
       );
     },
     bytesToSize: CommonUtils.bytesToSize,
-    parsePeerStatResult: CommonUtils.parsePeerStatResult,
-    startGetStats: function (event) {
-      if(this.connection.DetectRTC.browser.name === 'Firefox') return;
+    enablePeerStats: function(event){
       if (event.type && event.type == "local") return;
       if (this.connection.userid === event.userid) return;
       if (!this.connection.peers[event.userid]) return;
-      this.stats.nomore();
+      if(this.peerStats) this.peerStats.stop();
       var self = this;
-      getStats(
-        this.connection.peers[event.userid].peer,
-        function (result) {
-          self.stats = self.parsePeerStatResult(result);
-          self.stats.connectionState = self.connection.peers[event.userid].peer.connectionState;
-        },
-        3000
-      ); //Get stats every 3 sec
+      this.peerStats = new PeerStats(this.connection.peers[event.userid].peer);
+      this.peerStats.start(stats =>{
+        self.stats = stats;
+      }, 3000);
     },
     prepare: function(event){
       var card = document.getElementById("card-" + event.userid);
@@ -184,7 +178,7 @@ export default {
         self.clearMediaElements();
         self.prepare(newVal);
         self.tryGetProfile();
-        self.startGetStats(newVal);
+        self.enablePeerStats(newVal);
       },400);
     },
   },
@@ -193,11 +187,12 @@ export default {
     setTimeout( ()=>{
       self.prepare(this.streamEvent);
       self.tryGetProfile();
-      self.startGetStats(this.streamEvent);
+      self.enablePeerStats(this.streamEvent);
     },400);
   },
   destroyed: function () {
-    this.stats.nomore();
+    if(this.peerStats)
+      this.peerStats.stop();
     if (!this.halfscreen) return;
     this.state.halfScreenMode = false;
   },

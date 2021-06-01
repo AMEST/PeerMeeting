@@ -39,8 +39,8 @@ import RTCUtils from "@/RTCUtils";
 import RTCMultiConnection from "rtcmulticonnection";
 import CommonUtils from "@/CommonUtils";
 import { v4 as uuidv4 } from "uuid";
-import ParticipantBlock from "@/components/ParticipantBlock.vue";
-import ControlBar from "@/components/ControlBar.vue";
+import ParticipantBlock from "@/components/room/participant/ParticipantBlock.vue";
+import ControlBar from "@/components/room/ControlBar.vue";
 require("adapterjs");
 export default {
   name: "room",
@@ -68,11 +68,7 @@ export default {
     addParticipantBlock: function (event) {
       if (this.participants.has(event.userid))
         this.participants.delete(event.userid);
-      if(this.connection.userid == event.userid
-        && !event.extra)
-        event.extra = this.connection.extra;
-      if(!event.extra && this.connection.peers[event.userid])
-        event.extra = this.connection.peers[event.userid].extra;
+      event.extra = RTCUtils.ExtractExtraData(this.connection, event.userid);
       this.participants.set(event.userid, event);
       this.$forceUpdate();
     },
