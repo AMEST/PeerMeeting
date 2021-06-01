@@ -51,14 +51,15 @@
       static
       no-auto-hide
     >
-      Bandwidth: {{this.bytesToSize(this.stats.bandwidth)}}<br />
-      State: {{this.stats.connectionState}}<br/>
-      Local: {{this.stats.ips.local}} {{this.stats.transport.local}}<br />
-      Remote: {{this.stats.ips.remote}} {{this.stats.transport.remote}}<br />
+      Bandwidth: {{ this.bytesToSize(this.stats.bandwidth) }}<br />
+      State: {{ this.stats.connectionState }}<br />
+      Local: {{ this.stats.ips.local }} {{ this.stats.transport.local }}<br />
+      Remote: {{ this.stats.ips.remote }} {{ this.stats.transport.remote
+      }}<br />
       Data: {{ this.bytesToSize(this.stats.data.receive) }}
       <b-icon icon="arrow-down-up" />
-      {{this.bytesToSize(this.stats.data.send)}} <br/>
-      RTT: {{this.stats.rtt}}
+      {{ this.bytesToSize(this.stats.data.send) }} <br />
+      RTT: {{ this.stats.rtt }}
     </b-toast>
 
     <b-icon
@@ -68,7 +69,9 @@
     ></b-icon>
     <b-icon
       class="video-muted-icon"
-      :icon="this.streamEvent.extra.videoMuted ? 'camera-video-off' : 'camera-video'"
+      :icon="
+        this.streamEvent.extra.videoMuted ? 'camera-video-off' : 'camera-video'
+      "
       :style="this.streamEvent.extra.videoMuted ? 'color: red' : ''"
     ></b-icon>
 
@@ -96,11 +99,11 @@ export default {
         transport: { local: "", remote: "" },
         data: { send: 0, receive: 0 },
         packets: { send: 0, receive: 0 },
-        codecs: {local: "", remote: ""},
+        codecs: { local: "", remote: "" },
         connectionState: "",
         rtt: 0.0,
       },
-      peerStats: null
+      peerStats: null,
     };
   },
   props: {
@@ -128,15 +131,15 @@ export default {
       return CommonUtils.getInitials(username);
     },
     clearMediaElements: function () {
-      try{
-      var card = document.getElementById("card-" + this.streamEvent.userid);
-      for (const el of card.getElementsByTagName("video"))
-        el.parentNode.removeChild(el);
-      for (const el of card.getElementsByTagName("audio"))
-        el.parentNode.removeChild(el);
-      }catch(e){
+      try {
+        var card = document.getElementById("card-" + this.streamEvent.userid);
+        for (const el of card.getElementsByTagName("video"))
+          el.parentNode.removeChild(el);
+        for (const el of card.getElementsByTagName("audio"))
+          el.parentNode.removeChild(el);
+      } catch (e) {
         // eslint-disable-next-line
-        console.error('ClearMediaElements Error', e.message);
+        console.error("ClearMediaElements Error", e.message);
       }
     },
     tryGetProfile: function () {
@@ -146,18 +149,18 @@ export default {
       );
     },
     bytesToSize: CommonUtils.bytesToSize,
-    enablePeerStats: function(event){
+    enablePeerStats: function (event) {
       if (event.type && event.type == "local") return;
       if (this.connection.userid === event.userid) return;
       if (!this.connection.peers[event.userid]) return;
-      if(this.peerStats) this.peerStats.stop();
+      if (this.peerStats) this.peerStats.stop();
       var self = this;
       this.peerStats = new PeerStats(this.connection.peers[event.userid].peer);
-      this.peerStats.start(stats =>{
+      this.peerStats.start((stats) => {
         self.stats = stats;
       }, 3000);
     },
-    prepare: function(event){
+    prepare: function (event) {
       var card = document.getElementById("card-" + event.userid);
       if (event.mediaElement != null) {
         event.mediaElement.controls = false;
@@ -168,31 +171,30 @@ export default {
         if (event.mediaElement.play) event.mediaElement.play();
         if (event.type == "local") event.mediaElement.muted = true;
       }, 1000);
-    }
+    },
   },
   watch: {
     // eslint-disable-next-line
     streamEvent: function (newVal, oldVal) {
-      var self = this
-      setTimeout( ()=>{
+      var self = this;
+      setTimeout(() => {
         self.clearMediaElements();
         self.prepare(newVal);
         self.tryGetProfile();
         self.enablePeerStats(newVal);
-      },400);
+      }, 400);
     },
   },
   mounted: function () {
-    var self = this
-    setTimeout( ()=>{
+    var self = this;
+    setTimeout(() => {
       self.prepare(this.streamEvent);
       self.tryGetProfile();
       self.enablePeerStats(this.streamEvent);
-    },400);
+    }, 400);
   },
   destroyed: function () {
-    if(this.peerStats)
-      this.peerStats.stop();
+    if (this.peerStats) this.peerStats.stop();
     if (!this.halfscreen) return;
     this.state.halfScreenMode = false;
   },
@@ -267,13 +269,13 @@ export default {
   position: absolute;
   text-align: left;
 }
-.audio-muted-icon{
+.audio-muted-icon {
   position: absolute;
   left: 1em;
   bottom: 1em;
   z-index: 30;
 }
-.video-muted-icon{
+.video-muted-icon {
   z-index: 30;
   position: absolute;
   left: 2.5em;
