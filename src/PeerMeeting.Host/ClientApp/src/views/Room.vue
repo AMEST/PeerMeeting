@@ -8,7 +8,7 @@
         class="justify-content-center"
         :class="[
           this.state.halfScreenMode ? 'half-screen-container' : '',
-          !this.state.fullScreenMode ? 'card-deck-center' : ''
+          !this.state.fullScreenMode ? 'card-deck-center' : '',
         ]"
       >
         <participant-block
@@ -19,7 +19,11 @@
           :DetectRTC="DetectRTC"
           :participants="participants"
           :connection="connection"
-          :class="participants.size <= 2 ? 'only-local-participant' : 'many-participants'"
+          :class="
+            participants.size <= 2
+              ? 'only-local-participant'
+              : 'many-participants'
+          "
         ></participant-block>
       </b-card-group>
       <control-bar
@@ -66,9 +70,11 @@ export default {
   },
   methods: {
     addParticipantBlock: function (event) {
+      if (this.participants.has(event.userid) && event.cardfix)
+        return;
       if (this.participants.has(event.userid))
         this.participants.delete(event.userid);
-      event.extra = RTCUtils.ExtractExtraData(this.connection, event.userid);
+      event.extra = CommonUtils.extractExtraData(this.connection, event.userid);
       this.participants.set(event.userid, event);
       this.$forceUpdate();
     },
@@ -76,14 +82,15 @@ export default {
       if (!this.participants.has(event.userid)) return;
       this.participants.delete(event.userid);
       this.$forceUpdate();
-      
-      if(this.connection.userid === event.userid
-        || this.connection.peers[event.userid]
-          && this.connection.peers[event.userid].peer
-          && this.connection.peers[event.userid].peer.connectionState
-          && this.connection.peers[event.userid].peer.connectionState === "connected")
-          return;
-      
+
+      var peer = this.connection.peers[event.userid];
+      if (
+        this.connection.userid === event.userid ||
+        (peer && peer.peer && peer.peer.connectionState &&
+          peer.peer.connectionState === "connected")
+      )
+        return;
+
       var username = CommonUtils.getUserNameFromEvent(event);
       this.$bvToast.toast("User " + username + " left", {
         title: `Room notification`,
@@ -92,8 +99,11 @@ export default {
       });
     },
     userStatusChanged: function (event) {
-      if (this.participants.has(event.userid) && event.status === 'online'
-          && event.extra){
+      if (
+        this.participants.has(event.userid) &&
+        event.status === "online" &&
+        event.extra
+      ) {
         this.participants.get(event.userid).extra = event.extra;
         return;
       }
@@ -108,11 +118,11 @@ export default {
       this.addParticipantBlock({
         userid: event.userid,
         mediaElement: document.createElement("div"),
+        cardfix: true,
         streamid: null,
       });
     },
     initialize: function () {
-      var self = this;
       try {
         this.connection = new RTCMultiConnection();
       } catch (e) {
@@ -125,44 +135,69 @@ export default {
       this.connection.extra = {
         profile: this.$store.state.application.profile,
         audioMuted: false,
-        videoMuted: false
+        videoMuted: false,
       };
       // using signalR for signaling
       this.connection.setCustomSocketHandler(WebRtcSignalR);
       // Configure base callbacks
       RTCUtils.ConfigureBase(
-        this.connection, 
+        this.connection,
         this.participants,
         this.$store.state.application.deviceSettings,
-        this.streamEnded);
+        this.streamEnded
+      );
       this.connection.onstream = this.addParticipantBlock;
       this.connection.onUserStatusChanged = this.userStatusChanged;
       // Configure media error
+      this.configureMediaError();
+    },
+    configureMediaError: function () {
       RTCUtils.ConfigureMediaError(
         this.connection,
         DetectRTC,
         this.$store.state.application.deviceSettings,
-        (videoState, audioState) => {
-          self.state.videoEnabled = videoState;
-          self.state.audioEnabled = audioState;
-          self.state.hasWebcam = videoState;
-          self.state.hasMicrophone = audioState;
-          self.connection.extra.audioMuted = !audioState;
-          self.connection.extra.videoMuted = !videoState;
-          self.addParticipantBlock({
-            streamid: null,
-            userid: self.connection.userid,
-            mediaElement: document.createElement("div"),
-          });
-        }
+        this.mediaErrorCallback
       );
     },
+    mediaErrorCallback: function (videoState, audioState) {
+      this.state.videoEnabled = videoState;
+      this.state.audioEnabled = audioState;
+      this.state.hasWebcam = videoState;
+      this.state.hasMicrophone = audioState;
+      this.connection.extra.audioMuted = !audioState;
+      this.connection.extra.videoMuted = !videoState;
+      this.addParticipantBlock({
+        streamid: null,
+        userid: this.connection.userid,
+        mediaElement: document.createElement("div"),
+      });
+    },
     addToHistory: function () {
-      var room = {
+      CommonUtils.addToHistory(this.$store, {
         id: this.roomId,
         date: new Date(),
-      };
-      CommonUtils.addToHistory(this.$store, room);
+      });
+    },
+    inputDeviceChanged: function () {
+      this.configureMediaError();
+      RTCUtils.ConfigureMediaConstraints(
+        this.connection,
+        this.$store.state.application.deviceSettings
+      );
+      this.connection.dontCaptureUserMedia = false;
+      this.state.hasWebcam = true;
+      this.state.hasMicrophone = true;
+
+      if(this.state.screenEnabled) return;
+
+      this.state.audioEnabled = true;
+      this.state.videoEnabled = true;
+      RTCUtils.AddBaseStream(
+        this.connection,
+        this.state,
+        this.$store.state.application.deviceSettings,
+        this.addParticipantBlock
+      );
     },
   },
   created: function () {
@@ -170,6 +205,7 @@ export default {
     this.addToHistory();
     this.initialize();
     this.connection.join(this.roomId);
+    this.$store.commit("addDeviceChangedCallback", this.inputDeviceChanged);
   },
   watch: {
     // eslint-disable-next-line
@@ -184,10 +220,10 @@ export default {
 };
 </script>
 <style>
-#app{
-  height: calc(100vh - 48px)!important;
+#app {
+  height: calc(100vh - 48px) !important;
 }
-.card-deck{
+.card-deck {
   max-height: calc(100vh - 110px);
 }
 .full-height {
@@ -209,20 +245,20 @@ export default {
   width: 249px !important;
   max-height: calc(100% - 152px);
   overflow-y: scroll;
-  top: unset !important; 
-  -webkit-transform: inherit!important;
-  transform: inherit!important;
+  top: unset !important;
+  -webkit-transform: inherit !important;
+  transform: inherit !important;
 }
 .half-screen-container .user-block {
   min-width: 215px !important;
   min-height: 160px !important;
   margin-top: 5px;
 }
-.half-screen-container .only-local-participant{
-  height: inherit!important;
+.half-screen-container .only-local-participant {
+  height: inherit !important;
 }
-.half-screen-container .many-participants{
-  height: inherit!important;
+.half-screen-container .many-participants {
+  height: inherit !important;
 }
 .only-local-participant {
   height: 100vw;

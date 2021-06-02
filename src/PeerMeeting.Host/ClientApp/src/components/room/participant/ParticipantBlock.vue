@@ -56,10 +56,10 @@
       Local: {{ this.stats.ips.local }} {{ this.stats.transport.local }}<br />
       Remote: {{ this.stats.ips.remote }} {{ this.stats.transport.remote
       }}<br />
-      Data: {{ this.bytesToSize(this.stats.data.receive) }}
+      Data transfered: {{ this.bytesToSize(this.stats.data.receive) }}
       <b-icon icon="arrow-down-up" />
       {{ this.bytesToSize(this.stats.data.send) }} <br />
-      RTT: {{ this.stats.rtt }}
+      RTT: {{ this.stats.rtt }} s.
     </b-toast>
 
     <b-icon
@@ -89,6 +89,7 @@ export default {
       fullscreen: false,
       halfscreen: false,
       halfscreenTimer: null,
+      streamValidateTimer: null,
       profile: {
         username: null,
         avatar: null,
@@ -164,6 +165,19 @@ export default {
       );
     },
     bytesToSize: CommonUtils.bytesToSize,
+    streamValidate: function(){
+      if (this.connection.userid === this.streamEvent.userid) return;
+      if(!this.streamEvent.mediaElement) return;
+      if(!this.streamEvent.mediaElement.srcObject) return;
+      var hasVideoTracks = this.streamEvent.mediaElement.srcObject.getVideoTracks().length > 0;
+      var hasAudioTracks = this.streamEvent.mediaElement.srcObject.getAudioTracks().length > 0;
+      if((!this.streamEvent.extra.videoMuted && !hasVideoTracks)
+          || (!this.streamEvent.extra.audioMuted && !hasAudioTracks))
+          this.connection.socket.emit('renegotiate-needed', {
+            remoteUserId: this.streamEvent.userid,
+            sender: this.connection.userid
+          });
+    },
     enablePeerStats: function (event) {
       if (event.type && event.type == "local") return;
       if (this.connection.userid === event.userid) return;
@@ -212,6 +226,10 @@ export default {
       self.prepare(this.streamEvent);
       self.tryGetProfile();
       self.enablePeerStats(this.streamEvent);
+      self.streamValidateTimer = setInterval(
+        self.streamValidate,
+        2000
+      );
     }, 400);
   },
   destroyed: function () {
@@ -221,6 +239,10 @@ export default {
     if(this.halfscreenTimer != null){
       clearInterval(this.halfscreenTimer);
       this.halfscreenTimer = null;
+    }
+    if(this.streamValidateTimer != null){
+      clearInterval(this.streamValidateTimer);
+      this.streamValidateTimer = null;
     }
   },
 };

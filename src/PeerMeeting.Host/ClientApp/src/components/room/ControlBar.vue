@@ -42,10 +42,12 @@ export default {
       this.state.videoEnabled = !this.state.videoEnabled;
       RTCUtils.SwitchVideoMute(this.connection, this.state.videoEnabled);
       RTCUtils.SwitchAudioMute(this.connection, this.state.audioEnabled); // Temporaty patch for enable (if enabled) mic after video disabled
+      if(this.state.videoEnabled) this.connection.renegotiate();
     },
     toggleAudio: function () {
       this.state.audioEnabled = !this.state.audioEnabled;
       RTCUtils.SwitchAudioMute(this.connection, this.state.audioEnabled);
+      if(this.state.audioEnabled) this.connection.renegotiate();
     },
     shareScreen: function () {
       this.connection.attachStreams.forEach((s) => s.stop());

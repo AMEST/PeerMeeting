@@ -16,6 +16,7 @@ export default new Vuex.Store({
       },
       roomHistory: [],
       mediaDevices: [],
+      inputDeviceChangedCallbacks: [],
       version: ''
     }
   },
@@ -58,6 +59,9 @@ export default new Vuex.Store({
     },
     updateMediaDevices (state, payload) {
       state.application.mediaDevices = payload
+    },
+    addDeviceChangedCallback (state, payload) {
+      state.application.inputDeviceChangedCallbacks.push(payload)
     },
     changeVersion (state, value) {
       state.application.version = value
