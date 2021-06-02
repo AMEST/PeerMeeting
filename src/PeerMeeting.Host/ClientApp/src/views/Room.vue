@@ -184,6 +184,9 @@ export default {
 };
 </script>
 <style>
+#app{
+  height: calc(100vh - 48px)!important;
+}
 .card-deck{
   max-height: calc(100vh - 110px);
 }

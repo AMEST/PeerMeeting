@@ -88,6 +88,7 @@ export default {
     return {
       fullscreen: false,
       halfscreen: false,
+      halfscreenTimer: null,
       profile: {
         username: null,
         avatar: null,
@@ -119,12 +120,26 @@ export default {
       this.state.fullScreenMode = !this.state.fullScreenMode;
     },
     switchHalfScreen: function () {
-      if (this.participants.size <= 1) return;
+      if (this.participants.size <= 1 && !this.halfscreen) return;
       if (this.DetectRTC.isMobileDevice) return;
       if (this.state.halfScreenMode && !this.halfscreen) return;
       if (this.state.fullScreenMode) return;
+      
       this.state.halfScreenMode = !this.state.halfScreenMode;
       this.halfscreen = !this.halfscreen;
+
+      if(!this.halfscreen && this.halfscreenTimer != null ){
+        clearInterval(this.halfscreenTimer);
+        this.halfscreenTimer = null;
+        return;
+      }
+      if(this.halfscreen && this.halfscreenTimer == null){
+        var self = this;
+        this.halfscreenTimer = setInterval(() =>{
+          if (self.halfscreen && self.participants.size <= 1)
+            self.switchHalfScreen();
+        }, 2000)
+      }
     },
     getInitials: function () {
       var username = CommonUtils.getUserNameFromEvent(this.streamEvent);
@@ -162,6 +177,12 @@ export default {
     },
     prepare: function (event) {
       var card = document.getElementById("card-" + event.userid);
+      if(card == null){
+        var self = this;
+        setTimeout(() =>{
+          self.prepare(event);
+        }, 1000)
+      }
       if (event.mediaElement != null) {
         event.mediaElement.controls = false;
         if (event.type == "local") event.mediaElement.muted = true;
@@ -197,6 +218,10 @@ export default {
     if (this.peerStats) this.peerStats.stop();
     if (!this.halfscreen) return;
     this.state.halfScreenMode = false;
+    if(this.halfscreenTimer != null){
+      clearInterval(this.halfscreenTimer);
+      this.halfscreenTimer = null;
+    }
   },
 };
 </script>
@@ -214,8 +239,18 @@ export default {
 }
 .user-block video {
   background-color: transparent;
-  height: 100%;
   z-index: 1;
+  height: 100%;
+}
+@-moz-document url-prefix() {
+  .user-block video {
+    background-color: transparent;
+    z-index: 1;
+    height: inherit;
+  }
+  .half-screen video{
+    height: unset;
+  }
 }
 .user-block .b-avatar {
   position: absolute;
