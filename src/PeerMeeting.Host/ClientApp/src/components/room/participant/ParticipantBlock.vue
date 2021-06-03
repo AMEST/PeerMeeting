@@ -42,26 +42,7 @@
     >
       <b-icon icon="bar-chart-fill" />
     </b-button>
-
-    <b-toast
-      :id="'toast-' + this.streamEvent.userid"
-      class="connection-toast"
-      title="Connection Info"
-      variant="secondary"
-      static
-      no-auto-hide
-    >
-      Bandwidth: {{ this.bytesToSize(this.stats.bandwidth) }}<br />
-      State: {{ this.stats.connectionState }}<br />
-      Local: {{ this.stats.ips.local }} {{ this.stats.transport.local }}<br />
-      Remote: {{ this.stats.ips.remote }} {{ this.stats.transport.remote
-      }}<br />
-      Data transfered: {{ this.bytesToSize(this.stats.data.receive) }}
-      <b-icon icon="arrow-down-up" />
-      {{ this.bytesToSize(this.stats.data.send) }} <br />
-      RTT: {{ this.stats.rtt }} s.
-    </b-toast>
-
+    <connection-info :userId="this.streamEvent.userid" :stats="this.stats"/>
     <b-icon
       class="audio-muted-icon"
       :icon="this.streamEvent.extra.audioMuted ? 'mic-mute' : 'mic'"
@@ -82,8 +63,12 @@
 <script>
 import CommonUtils from "@/CommonUtils";
 import PeerStats from "@/services/PeerStats";
+import ConnectionInfo from "@/components/room/participant/ConnectionInfo";
 export default {
   name: "ParticipantBlock",
+  components:{
+    ConnectionInfo
+  },
   data: () => {
     return {
       fullscreen: false,
@@ -164,7 +149,6 @@ export default {
         this.streamEvent
       );
     },
-    bytesToSize: CommonUtils.bytesToSize,
     streamValidate: function(){
       if (this.connection.userid === this.streamEvent.userid) return;
       if(!this.streamEvent.mediaElement) return;
@@ -189,7 +173,11 @@ export default {
         self.stats = stats;
       }, 3000);
     },
+    streamEventChangeCallback: function(){
+      this.$forceUpdate();
+    },
     prepare: function (event) {
+      event.changeCallback = this.streamEventChangeCallback;
       var card = document.getElementById("card-" + event.userid);
       if(card == null){
         var self = this;
@@ -218,7 +206,7 @@ export default {
         self.tryGetProfile();
         self.enablePeerStats(newVal);
       }, 400);
-    },
+    }
   },
   mounted: function () {
     var self = this;
@@ -318,13 +306,6 @@ export default {
   top: 1.8em;
   z-index: 40;
   border-style: hidden;
-}
-.connection-toast {
-  z-index: 41;
-  top: 3.4em;
-  left: 1em;
-  position: absolute;
-  text-align: left;
 }
 .audio-muted-icon {
   position: absolute;

@@ -99,12 +99,12 @@ export default {
       });
     },
     userStatusChanged: function (event) {
-      if (
-        this.participants.has(event.userid) &&
+      if (this.participants.has(event.userid) &&
         event.status === "online" &&
-        event.extra
-      ) {
-        this.participants.get(event.userid).extra = event.extra;
+        event.extra) {
+        var participant = this.participants.get(event.userid);
+        participant.extra = event.extra;
+        if(participant.changeCallback) participant.changeCallback();
         return;
       }
       if (this.participants.has(event.userid) || event.status === "offline")
