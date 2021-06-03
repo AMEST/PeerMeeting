@@ -253,11 +253,6 @@ export default {
   height: 100%;
 }
 @-moz-document url-prefix() {
-  .user-block video {
-    background-color: transparent;
-    z-index: 1;
-    height: inherit;
-  }
   .half-screen video{
     height: unset;
   }
