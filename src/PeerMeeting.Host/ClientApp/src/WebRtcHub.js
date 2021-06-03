@@ -24,7 +24,6 @@ function WebRtcSignalR (connection, connectCallback) {
       signalRConnection.invoke('Send', channelName, JSON.stringify(data))
     }
   }
-
   signalRConnection.on(channelName, message => {
     var data = JSON.parse(message)
     console.log('ON Deserialized', data)
@@ -51,9 +50,22 @@ function WebRtcSignalR (connection, connectCallback) {
           extra: data.data.extra
         })
         break
+      case 'renegotiate-needed':
+        if(connection.userid !== data.data.remoteUserId) return
+        if(!connection.peers[data.data.sender]) return
+        connection.renegotiate(data.data.sender)
+        break
     }
   })
-
+  signalRConnection.onreconnected(connectionId => {
+    console.log('signalr reconnected. state' + signalRConnection.state);
+    signalRConnection.invoke('JoinRoom', channelName).then(function(){
+      connection.socket.emit('presence', {
+        userid: connection.userid,
+        isOnline: true
+      })
+    })
+  });
   // start the hub
   signalRConnection.start().then(function () {
     if (connection.enableLogs) {

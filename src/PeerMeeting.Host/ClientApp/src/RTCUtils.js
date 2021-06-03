@@ -10,14 +10,8 @@ var RTCUtils = {
       audio: true,
       video: true
     }
-    connection.mediaConstraints = {
-      audio: deviceSettings.audioInput 
-        ? { deviceId: deviceSettings.audioInput }
-        : true,
-      video: deviceSettings.videoInput 
-        ? { deviceId: deviceSettings.videoInput }
-        : true
-    }
+    
+    this.ConfigureMediaConstraints(connection, deviceSettings)
 
     connection.sdpConstraints.mandatory = {
       OfferToReceiveAudio: true,
@@ -56,6 +50,7 @@ var RTCUtils = {
             streamid: null,
             userid: e,
             extra: connection.peers[e].extra,
+            cardfix: true,
             mediaElement: document.createElement("div"),
           })
       })
@@ -86,6 +81,16 @@ var RTCUtils = {
     }
 
   },
+  ConfigureMediaConstraints: function(connection, deviceSettings){
+    connection.mediaConstraints = {
+      audio: deviceSettings.audioInput 
+        ? { deviceId: deviceSettings.audioInput }
+        : true,
+      video: deviceSettings.videoInput 
+        ? { deviceId: deviceSettings.videoInput }
+        : true
+    }
+  },
   // Configure media error event for try use another microfon or if webcam not available, connect without it
   // eslint-disable-next-line
   ConfigureMediaError: function (connection, DetectRTC, deviceSettings, callback = (videoState, audioState) => { }) {
@@ -99,7 +104,10 @@ var RTCUtils = {
           || e.message === 'The request is not allowed by the user agent or the platform in the current context.'){
         connection.dontCaptureUserMedia = true
         callback(false, false)
-        connection.join(connection.sessionid)
+        if(connection.getAllParticipants().length <= 0 )
+          connection.join(connection.sessionid)
+        else
+          connection.renegotiate()
         return
       }
 
@@ -115,7 +123,10 @@ var RTCUtils = {
         connection.mediaConstraints.audio = {
           deviceId: secondaryMic
         }
-        connection.join(connection.sessionid)
+        if(connection.getAllParticipants().length <= 0 )
+          connection.join(connection.sessionid)
+        else
+          connection.renegotiate()
         return
       }
 
@@ -128,7 +139,10 @@ var RTCUtils = {
         function (stream) {
           connection.addStream(stream)
           mPeer.onGettingLocalMedia(stream)
-          connection.join(connection.sessionid)
+          if(connection.getAllParticipants().length <= 0 )
+            connection.join(connection.sessionid)
+          else
+            connection.renegotiate()
         },
         function () { }
       )
@@ -188,8 +202,14 @@ var RTCUtils = {
       return
     }
     connection.attachStreams = []
+    this.AddBaseStream(connection, mediaState, deviceSettings, callback)
+  },
+  AddBaseStream: function(connection, mediaState, deviceSettings, callback){
+    connection.attachStreams.forEach((s) => s.stop());
+    connection.attachStreams = []
+    var self = this
     if(!mediaState.hasMicrophone && !mediaState.hasWebcam){
-      self.CreateFakeStream(connection, mPeer, callback)
+      this.CreateFakeStream(connection, connection.multiPeersHandler, callback)
       return
     }
     if(mediaState.hasMicrophone && !mediaState.hasWebcam && connection.dontCaptureUserMedia){
@@ -197,22 +217,19 @@ var RTCUtils = {
       navigator.getUserMedia(
         { audio: audioDevice, video: false },
         function (stream) {
-          self.AddStream(connection, stream, mPeer, callback)
+          self.AddStream(connection, stream, connection.multiPeersHandler, callback)
         },
-        function () { }
+        function (e) { connection.onMediaError(e) }
       )
       return
     }
 
-    connection.addStream({
-      audio: true,
-      video: true,
-      oneway: true,
-      streamCallback: function(stream){
-        mPeer.onGettingLocalMedia(stream)
-      }
-    })
-      
+    navigator.getUserMedia(connection.mediaConstraints,
+      function (stream) {
+        self.AddStream(connection, stream, connection.multiPeersHandler, callback)
+      },
+      function (e) { connection.onMediaError(e) }
+    )
   },
   AddStream: function(connection, stream, mPeer, callback){
     connection.attachStreams = []
@@ -241,16 +258,6 @@ var RTCUtils = {
       streamid: stream.id,
       mediaElement: video
     }
-  },
-  ExtractExtraData: function(connection, userid){
-    var extra = undefined
-    if(connection.userid == userid) extra = connection.extra
-    else extra = connection.getExtraData(userid)
-    if(!extra.audioMuted)
-      extra.audioMuted = false
-    if(!extra.videoMuted)
-      extra.videoMuted = false
-    return extra
   }
 }
 

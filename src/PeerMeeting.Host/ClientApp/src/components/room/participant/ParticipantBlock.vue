@@ -42,26 +42,7 @@
     >
       <b-icon icon="bar-chart-fill" />
     </b-button>
-
-    <b-toast
-      :id="'toast-' + this.streamEvent.userid"
-      class="connection-toast"
-      title="Connection Info"
-      variant="secondary"
-      static
-      no-auto-hide
-    >
-      Bandwidth: {{ this.bytesToSize(this.stats.bandwidth) }}<br />
-      State: {{ this.stats.connectionState }}<br />
-      Local: {{ this.stats.ips.local }} {{ this.stats.transport.local }}<br />
-      Remote: {{ this.stats.ips.remote }} {{ this.stats.transport.remote
-      }}<br />
-      Data: {{ this.bytesToSize(this.stats.data.receive) }}
-      <b-icon icon="arrow-down-up" />
-      {{ this.bytesToSize(this.stats.data.send) }} <br />
-      RTT: {{ this.stats.rtt }}
-    </b-toast>
-
+    <connection-info :userId="this.streamEvent.userid" :stats="this.stats"/>
     <b-icon
       class="audio-muted-icon"
       :icon="this.streamEvent.extra.audioMuted ? 'mic-mute' : 'mic'"
@@ -82,13 +63,18 @@
 <script>
 import CommonUtils from "@/CommonUtils";
 import PeerStats from "@/services/PeerStats";
+import ConnectionInfo from "@/components/room/participant/ConnectionInfo";
 export default {
   name: "ParticipantBlock",
+  components:{
+    ConnectionInfo
+  },
   data: () => {
     return {
       fullscreen: false,
       halfscreen: false,
       halfscreenTimer: null,
+      streamValidateTimer: null,
       profile: {
         username: null,
         avatar: null,
@@ -163,7 +149,19 @@ export default {
         this.streamEvent
       );
     },
-    bytesToSize: CommonUtils.bytesToSize,
+    streamValidate: function(){
+      if (this.connection.userid === this.streamEvent.userid) return;
+      if(!this.streamEvent.mediaElement) return;
+      if(!this.streamEvent.mediaElement.srcObject) return;
+      var hasVideoTracks = this.streamEvent.mediaElement.srcObject.getVideoTracks().length > 0;
+      var hasAudioTracks = this.streamEvent.mediaElement.srcObject.getAudioTracks().length > 0;
+      if((!this.streamEvent.extra.videoMuted && !hasVideoTracks)
+          || (!this.streamEvent.extra.audioMuted && !hasAudioTracks))
+          this.connection.socket.emit('renegotiate-needed', {
+            remoteUserId: this.streamEvent.userid,
+            sender: this.connection.userid
+          });
+    },
     enablePeerStats: function (event) {
       if (event.type && event.type == "local") return;
       if (this.connection.userid === event.userid) return;
@@ -175,7 +173,11 @@ export default {
         self.stats = stats;
       }, 3000);
     },
+    streamEventChangeCallback: function(){
+      this.$forceUpdate();
+    },
     prepare: function (event) {
+      event.changeCallback = this.streamEventChangeCallback;
       var card = document.getElementById("card-" + event.userid);
       if(card == null){
         var self = this;
@@ -204,7 +206,7 @@ export default {
         self.tryGetProfile();
         self.enablePeerStats(newVal);
       }, 400);
-    },
+    }
   },
   mounted: function () {
     var self = this;
@@ -212,6 +214,10 @@ export default {
       self.prepare(this.streamEvent);
       self.tryGetProfile();
       self.enablePeerStats(this.streamEvent);
+      self.streamValidateTimer = setInterval(
+        self.streamValidate,
+        2000
+      );
     }, 400);
   },
   destroyed: function () {
@@ -221,6 +227,10 @@ export default {
     if(this.halfscreenTimer != null){
       clearInterval(this.halfscreenTimer);
       this.halfscreenTimer = null;
+    }
+    if(this.streamValidateTimer != null){
+      clearInterval(this.streamValidateTimer);
+      this.streamValidateTimer = null;
     }
   },
 };
@@ -243,11 +253,6 @@ export default {
   height: 100%;
 }
 @-moz-document url-prefix() {
-  .user-block video {
-    background-color: transparent;
-    z-index: 1;
-    height: inherit;
-  }
   .half-screen video{
     height: unset;
   }
@@ -296,13 +301,6 @@ export default {
   top: 1.8em;
   z-index: 40;
   border-style: hidden;
-}
-.connection-toast {
-  z-index: 41;
-  top: 3.4em;
-  left: 1em;
-  position: absolute;
-  text-align: left;
 }
 .audio-muted-icon {
   position: absolute;

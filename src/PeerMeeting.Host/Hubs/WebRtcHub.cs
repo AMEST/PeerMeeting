@@ -18,7 +18,7 @@ namespace PeerMeeting.Host.Hubs
 
         public Task Send(string name, string message)
         {
-            _logger.LogInformation("Command: {CommandName} \t\t Message: {Message}", name, message);
+            _logger.LogDebug("Command: {CommandName} \t\t Message: {Message}", name, message);
             return Clients.Group(name).SendAsync(name, message);
         }
 

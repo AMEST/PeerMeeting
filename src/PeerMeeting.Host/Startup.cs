@@ -6,10 +6,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.SpaServices;
 using PeerMeeting.Host.Hubs;
@@ -31,7 +27,11 @@ namespace PeerMeeting.Host
         {
             services.AddControllers();
             services.AddMvc();
-            services.AddSignalR();
+            services.AddSignalR(o =>
+            {
+                o.EnableDetailedErrors = true;
+                o.MaximumReceiveMessageSize = 256 * 1024; //256 KB
+            });
             services.AddSpaStaticFiles(c => c.RootPath = "ClientApp/dist");
             services.AddSingleton<WebRtcHub>();
             services.AddResponseCompression(options =>
@@ -65,7 +65,11 @@ namespace PeerMeeting.Host
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHub<WebRtcHub>("/ws/webrtc");
+                endpoints.MapHub<WebRtcHub>("/ws/webrtc", o =>
+                {
+                    // zero for unlimited
+                    o.TransportMaxBufferSize = 0;
+                });
                 endpoints.MapControllers();
                 if (env.IsDevelopment())
                 {
