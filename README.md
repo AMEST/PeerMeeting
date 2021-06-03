@@ -30,6 +30,7 @@ The service is adjusted based on the mesh model. This network is implemented to 
 3. Screen sharing (with microphone)
 4. Pseudo fullscreen and half screen mode for prticipants blocks
 5. Gravatar user avatars
+6. Service Scaleout with Redis
 
 ### Security 
 High level of security: all connections are protected and encrypted according to the DTLS and SRTP protocols. At the same time, WebRTC works only over the HTTPS protocol, and the site using the technology must be signed with a certificate.
@@ -51,6 +52,8 @@ Web sockets for signaling also go only via https.
 ## Self-hosted Requirements
 * AspNet Core 3.1 runtime or Docker for service start
 * Reverse proxy for https connection (may be use Cloudflare)
+
+**For scalae service, needed redis server (version >=6 ) with acl user who can create/pub/sub channels with prefix `peermeeting`**
 
 ## Getting started
 [**Instructions for launching the application are here**](docs/README.md)
