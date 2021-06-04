@@ -2,6 +2,9 @@
 
 - [PeerMeeting documentation](#peermeeting-documentation)
   - [Getting started](#getting-started)
+    - [Configuration](#configuration)
+      - [Configure container](#configure-container)
+      - [Configure not in container](#configure-not-in-container)
     - [Docker compose](#docker-compose)
     - [Docker Swarm](#docker-swarm)
 
@@ -9,6 +12,7 @@
 For the application to work, several conditions must be met:
 1. If the application will be launched locally, then aspnetcore 3.1 runtime must be installed
 2. There must be a reverse proxy to establish an https connection
+3. If you hav to scale service, you need Redis (*version >=6 with acl user who can create/pub/sub channels with prefix `peermeeting`*)
 
 Next, you need to choose a launch method. It is possible to launch the application:
 1. Run the executable file locally
@@ -16,6 +20,19 @@ Next, you need to choose a launch method. It is possible to launch the applicati
    1. Using docker compose
    2. Using docker swarm
    
+
+### Configuration
+
+#### Configure container
+For configuring you need add environment variable.   
+Available configurations:
+1. `Serilog:MinimumLevel:Default` - configuring logger minimum level
+2. `Redis:Enabled` - enable/disable (default false) redis connection. Need for scale service
+3. `Redis:ConnectionString` - connection string to redis. (example: `localhost,user=serviceuser,password=VeryHardPass,channelPrefix=peermeeting`)
+
+#### Configure not in container
+To configure configurations, you need to make changes to `appsettings.Production.json`. The list of settings is identical to that described in the "Configure container" block.
+
 ### Docker compose
 
 For an example of launching via docker compose, a [compose file](compose.yml) has been prepared with a description of starting the service and nginx with a self-signed certificate for quick launch **(For test use only)**.
