@@ -25,7 +25,7 @@
     <b-button
       class="fullscreen-button"
       size="sm"
-      variant="outline-secondary"
+      variant="outline-light"
       @click="switchFullscreen"
       :disabled="this.state.halfScreenMode"
     >
@@ -33,16 +33,12 @@
       <b-icon v-else icon="fullscreen-exit" />
     </b-button>
 
-    <b-button
+    <connection-info
       v-if="this.streamEvent.type != 'local'"
-      class="connection-info"
-      variant="outline-light"
-      size="sm"
-      @click="$bvToast.show('toast-' + streamEvent.userid)"
-    >
-      <b-icon icon="bar-chart-fill" />
-    </b-button>
-    <connection-info :userId="this.streamEvent.userid" :stats="this.stats" />
+     :userId="this.streamEvent.userid"
+     :stats="this.stats" 
+    />
+
     <b-icon
       class="audio-muted-icon"
       :icon="this.streamEvent.extra.audioMuted ? 'mic-mute' : 'mic'"
@@ -303,24 +299,17 @@ export default {
   border-radius: 0px;
   max-width: unset !important;
 }
-.connection-info {
-  position: absolute;
-  left: 1em;
-  top: 1.8em;
-  z-index: 40;
-  border-style: hidden;
-}
 .audio-muted-icon {
   position: absolute;
   left: 1em;
-  bottom: 1em;
+  bottom: 1.3em;
   z-index: 30;
 }
 .video-muted-icon {
   z-index: 30;
   position: absolute;
   left: 2.5em;
-  bottom: 1em;
+  bottom: 1.3em;
 }
 .fullscreen-button {
   position: absolute;

@@ -1,7 +1,7 @@
 <template>
   <b-dropdown
     dropleft
-    variant="outline-secondary"
+    variant="outline-light"
     class="control-menu"
     size="sm"
   >
