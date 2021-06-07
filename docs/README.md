@@ -12,7 +12,7 @@
 For the application to work, several conditions must be met:
 1. If the application will be launched locally, then aspnetcore 3.1 runtime must be installed
 2. There must be a reverse proxy to establish an https connection
-3. If you hav to scale service, you need Redis (*version >=6 with acl user who can create/pub/sub channels with prefix `peermeeting`*)
+3. If you have to scale service, you need Redis (*version >=6 with acl user who can create/pub/sub channels with prefix `peermeeting`*)
 
 Next, you need to choose a launch method. It is possible to launch the application:
 1. Run the executable file locally
@@ -27,11 +27,11 @@ Next, you need to choose a launch method. It is possible to launch the applicati
 For configuring you need add environment variable.   
 Available configurations:
 1. `Serilog:MinimumLevel:Default` - configuring logger minimum level
-2. `Redis:Enabled` - enable/disable (default false) redis connection. Need for scale service
+2. `Redis:Enabled` - (default false) enable/disable redis connection. Need for scale service
 3. `Redis:ConnectionString` - connection string to redis. (example: `localhost,user=serviceuser,password=VeryHardPass,channelPrefix=peermeeting`)
 
 #### Configure not in container
-To configure configurations, you need to make changes to `appsettings.Production.json`. The list of settings is identical to that described in the "Configure container" block.
+For configuring you need to make changes to `appsettings.Production.json`. The list of settings is identical to that described in the "Configure container" block.
 
 ### Docker compose
 
