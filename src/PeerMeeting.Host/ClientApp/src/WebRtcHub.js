@@ -56,8 +56,9 @@ function WebRtcSignalR (connection, connectCallback) {
         connection.renegotiate(data.data.sender)
         break
       case 'mute-participant':
-        console.warn("User " + data.data.remoteUserId +" muted by "+data.data.sender)
-        if(connection.userid !== data.data.remoteUserId) return
+        console.warn("User " + !data.data.all ? data.data.remoteUserId : connection.userid +" muted by "+data.data.sender)
+        if(connection.userid !== data.data.remoteUserId && !data.data.all) return
+        if(connection.userid === data.data.sender && data.data.all) return
         if(connection.extra.audioMuted) return
         connection.attachStreams.forEach( s =>{
           s.mute("audio")

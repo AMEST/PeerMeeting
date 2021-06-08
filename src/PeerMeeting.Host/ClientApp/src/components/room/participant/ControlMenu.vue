@@ -11,6 +11,7 @@
       </em>
     </template>
     <b-dropdown-item @click="this.muteParticipant">Mute</b-dropdown-item>
+    <b-dropdown-item @click="this.muteAllParticipants">Mute All</b-dropdown-item>
     <b-dropdown-item @click="this.kickPatricipant">Kick</b-dropdown-item>
   </b-dropdown>
 </template>
@@ -27,6 +28,13 @@ export default {
             this.connection.socket.emit('mute-participant', {
                 remoteUserId: this.userId,
                 sender: this.connection.userid
+            });
+        },
+        muteAllParticipants: function(){
+            this.connection.socket.emit('mute-participant', {
+                remoteUserId: this.userId,
+                sender: this.connection.userid,
+                all: true
             });
         },
         kickPatricipant: function(){
