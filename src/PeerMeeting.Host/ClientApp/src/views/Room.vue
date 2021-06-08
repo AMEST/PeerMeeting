@@ -123,12 +123,14 @@ export default {
       });
     },
     initialize: function () {
+      var self = this
       try {
         this.connection = new RTCMultiConnection();
       } catch (e) {
         console.error("Error Initialize RTCMultuConnection", e);
         window.location.reload();
       }
+      
       this.connection.userid =
         uuidv4() + "|" + this.$store.state.application.profile.name;
 
@@ -148,6 +150,9 @@ export default {
       );
       this.connection.onstream = this.addParticipantBlock;
       this.connection.onUserStatusChanged = this.userStatusChanged;
+      this.connection.onMuteForcibly = function(){
+        self.state.audioEnabled = false;
+      }
       // Configure media error
       this.configureMediaError();
     },

@@ -1,8 +1,6 @@
 // Copyright 2021 klabukov.
 // SPDX-License-Identifier: GPL-3.0-only
 
-using System;
-using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -12,20 +10,31 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.SpaServices;
 using PeerMeeting.Host.Configuration;
 using PeerMeeting.Host.Hubs;
-using StackExchange.Redis;
 using VueCliMiddleware;
 
 namespace PeerMeeting.Host
 {
+    /// <summary>
+    /// Startup class
+    /// </summary>
     public class Startup
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
+        /// <summary>
+        /// App configuration
+        /// </summary>
         public IConfiguration Configuration { get; }
 
+        /// <summary>
+        /// Register dependencies
+        /// </summary>
         public void ConfigureServices(IServiceCollection services)
         {
             var redisConfiguration = Configuration.GetRedisConfiguration();
@@ -49,9 +58,9 @@ namespace PeerMeeting.Host
             });
         }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        /// <summary>
+        /// Configure app pipeline
+        /// </summary>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseResponseCompression();

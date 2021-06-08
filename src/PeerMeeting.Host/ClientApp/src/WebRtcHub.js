@@ -55,6 +55,24 @@ function WebRtcSignalR (connection, connectCallback) {
         if(!connection.peers[data.data.sender]) return
         connection.renegotiate(data.data.sender)
         break
+      case 'mute-participant':
+        console.warn("User " + !data.data.all ? data.data.remoteUserId : connection.userid +" muted by "+data.data.sender)
+        if(connection.userid !== data.data.remoteUserId && !data.data.all) return
+        if(connection.userid === data.data.sender && data.data.all) return
+        if(connection.extra.audioMuted) return
+        connection.attachStreams.forEach( s =>{
+          s.mute("audio")
+          connection.extra.audioMuted = true
+          connection.updateExtraData()
+        })
+        if(connection.onMuteForcibly) connection.onMuteForcibly()
+        break
+      case 'kick-participant':
+        console.warn("User " + data.data.remoteUserId +" kicked by "+data.data.sender)
+        if(connection.userid !== data.data.remoteUserId) return
+        connection.leave()
+        window.location.href = window.location.href + '/ended'
+        break
     }
   })
   signalRConnection.onreconnected(connectionId => {

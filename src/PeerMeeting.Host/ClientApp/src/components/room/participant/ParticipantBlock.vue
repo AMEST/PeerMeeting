@@ -25,7 +25,7 @@
     <b-button
       class="fullscreen-button"
       size="sm"
-      variant="outline-secondary"
+      variant="outline-light"
       @click="switchFullscreen"
       :disabled="this.state.halfScreenMode"
     >
@@ -33,16 +33,12 @@
       <b-icon v-else icon="fullscreen-exit" />
     </b-button>
 
-    <b-button
+    <connection-info
       v-if="this.streamEvent.type != 'local'"
-      class="connection-info"
-      variant="outline-light"
-      size="sm"
-      @click="$bvToast.show('toast-' + streamEvent.userid)"
-    >
-      <b-icon icon="bar-chart-fill" />
-    </b-button>
-    <connection-info :userId="this.streamEvent.userid" :stats="this.stats"/>
+     :userId="this.streamEvent.userid"
+     :stats="this.stats" 
+    />
+
     <b-icon
       class="audio-muted-icon"
       :icon="this.streamEvent.extra.audioMuted ? 'mic-mute' : 'mic'"
@@ -55,6 +51,11 @@
       "
       :style="this.streamEvent.extra.videoMuted ? 'color: red' : ''"
     ></b-icon>
+    <control-menu
+      v-if="this.streamEvent.type != 'local'"
+      :userId="this.streamEvent.userid"
+      :connection="this.connection"
+    />
 
     <div class="switch-half-screen" @click="switchHalfScreen"></div>
   </div>
@@ -64,10 +65,12 @@
 import CommonUtils from "@/CommonUtils";
 import PeerStats from "@/services/PeerStats";
 import ConnectionInfo from "@/components/room/participant/ConnectionInfo";
+import ControlMenu from "@/components/room/participant/ControlMenu.vue";
 export default {
   name: "ParticipantBlock",
-  components:{
-    ConnectionInfo
+  components: {
+    ConnectionInfo,
+    ControlMenu,
   },
   data: () => {
     return {
@@ -110,21 +113,21 @@ export default {
       if (this.DetectRTC.isMobileDevice) return;
       if (this.state.halfScreenMode && !this.halfscreen) return;
       if (this.state.fullScreenMode) return;
-      
+
       this.state.halfScreenMode = !this.state.halfScreenMode;
       this.halfscreen = !this.halfscreen;
 
-      if(!this.halfscreen && this.halfscreenTimer != null ){
+      if (!this.halfscreen && this.halfscreenTimer != null) {
         clearInterval(this.halfscreenTimer);
         this.halfscreenTimer = null;
         return;
       }
-      if(this.halfscreen && this.halfscreenTimer == null){
+      if (this.halfscreen && this.halfscreenTimer == null) {
         var self = this;
-        this.halfscreenTimer = setInterval(() =>{
+        this.halfscreenTimer = setInterval(() => {
           if (self.halfscreen && self.participants.size <= 1)
             self.switchHalfScreen();
-        }, 2000)
+        }, 2000);
       }
     },
     getInitials: function () {
@@ -149,18 +152,22 @@ export default {
         this.streamEvent
       );
     },
-    streamValidate: function(){
+    streamValidate: function () {
       if (this.connection.userid === this.streamEvent.userid) return;
-      if(!this.streamEvent.mediaElement) return;
-      if(!this.streamEvent.mediaElement.srcObject) return;
-      var hasVideoTracks = this.streamEvent.mediaElement.srcObject.getVideoTracks().length > 0;
-      var hasAudioTracks = this.streamEvent.mediaElement.srcObject.getAudioTracks().length > 0;
-      if((!this.streamEvent.extra.videoMuted && !hasVideoTracks)
-          || (!this.streamEvent.extra.audioMuted && !hasAudioTracks))
-          this.connection.socket.emit('renegotiate-needed', {
-            remoteUserId: this.streamEvent.userid,
-            sender: this.connection.userid
-          });
+      if (!this.streamEvent.mediaElement) return;
+      if (!this.streamEvent.mediaElement.srcObject) return;
+      var hasVideoTracks =
+        this.streamEvent.mediaElement.srcObject.getVideoTracks().length > 0;
+      var hasAudioTracks =
+        this.streamEvent.mediaElement.srcObject.getAudioTracks().length > 0;
+      if (
+        (!this.streamEvent.extra.videoMuted && !hasVideoTracks) ||
+        (!this.streamEvent.extra.audioMuted && !hasAudioTracks)
+      )
+        this.connection.socket.emit("renegotiate-needed", {
+          remoteUserId: this.streamEvent.userid,
+          sender: this.connection.userid,
+        });
     },
     enablePeerStats: function (event) {
       if (event.type && event.type == "local") return;
@@ -173,17 +180,17 @@ export default {
         self.stats = stats;
       }, 3000);
     },
-    streamEventChangeCallback: function(){
+    streamEventChangeCallback: function () {
       this.$forceUpdate();
     },
     prepare: function (event) {
       event.changeCallback = this.streamEventChangeCallback;
       var card = document.getElementById("card-" + event.userid);
-      if(card == null){
+      if (card == null) {
         var self = this;
-        setTimeout(() =>{
+        setTimeout(() => {
           self.prepare(event);
-        }, 1000)
+        }, 1000);
       }
       if (event.mediaElement != null) {
         event.mediaElement.controls = false;
@@ -206,7 +213,7 @@ export default {
         self.tryGetProfile();
         self.enablePeerStats(newVal);
       }, 400);
-    }
+    },
   },
   mounted: function () {
     var self = this;
@@ -214,21 +221,18 @@ export default {
       self.prepare(this.streamEvent);
       self.tryGetProfile();
       self.enablePeerStats(this.streamEvent);
-      self.streamValidateTimer = setInterval(
-        self.streamValidate,
-        2000
-      );
+      self.streamValidateTimer = setInterval(self.streamValidate, 2000);
     }, 400);
   },
   destroyed: function () {
     if (this.peerStats) this.peerStats.stop();
     if (!this.halfscreen) return;
     this.state.halfScreenMode = false;
-    if(this.halfscreenTimer != null){
+    if (this.halfscreenTimer != null) {
       clearInterval(this.halfscreenTimer);
       this.halfscreenTimer = null;
     }
-    if(this.streamValidateTimer != null){
+    if (this.streamValidateTimer != null) {
       clearInterval(this.streamValidateTimer);
       this.streamValidateTimer = null;
     }
@@ -253,7 +257,7 @@ export default {
   height: 100%;
 }
 @-moz-document url-prefix() {
-  .half-screen video{
+  .half-screen video {
     height: unset;
   }
 }
@@ -295,24 +299,17 @@ export default {
   border-radius: 0px;
   max-width: unset !important;
 }
-.connection-info {
-  position: absolute;
-  left: 1em;
-  top: 1.8em;
-  z-index: 40;
-  border-style: hidden;
-}
 .audio-muted-icon {
   position: absolute;
   left: 1em;
-  bottom: 1em;
+  bottom: 1.3em;
   z-index: 30;
 }
 .video-muted-icon {
   z-index: 30;
   position: absolute;
   left: 2.5em;
-  bottom: 1em;
+  bottom: 1.3em;
 }
 .fullscreen-button {
   position: absolute;
