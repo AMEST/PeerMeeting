@@ -55,6 +55,9 @@ export default {
   position: absolute;
   text-align: left;
 }
+.control-menu ul{
+    transform: translate3d(-162px, 0px, 0px)!important;
+}
 .control-menu .dropdown-toggle{
     border: none;
 }
