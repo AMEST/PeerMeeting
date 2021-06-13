@@ -45,17 +45,37 @@ var RTCUtils = {
           && connection.peers[e]
           && connection.peers[e].peer
           && connection.peers[e].peer.connectionState
-          && connection.peers[e].peer.connectionState === "connected")
-          connection.onstream({
-            streamid: null,
-            userid: e,
-            extra: connection.peers[e].extra,
-            cardfix: true,
-            mediaElement: document.createElement("div"),
-          })
+          && connection.peers[e].peer.connectionState === "connected"){
+
+            if(!connection.peers[e].peer.participantCardError)
+              connection.peers[e].peer.participantCardError = 0
+            connection.peers[e].peer.participantCardError += 1
+
+            if(connection.peers[e].peer.participantCardError > 6){
+              connection.onstream({
+                streamid: null,
+                userid: e,
+                extra: connection.peers[e].extra,
+                cardfix: true,
+                mediaElement: document.createElement("div"),
+              })
+              connection.peers[e].peer.participantCardError = 0
+            }
+        }else{
+          connection.peers[e].peer.participantCardError = 0
+        }
       })
       if(!participants.has(connection.userid)){
-        self.CreateFakeStream(connection, connection.multiPeersHandler, connection.onstream)
+        if(!connection.selfCardError)
+          connection.selfCardError = 0
+
+        connection.selfCardError += 1
+        if(connection.selfCardError > 6){
+          self.CreateFakeStream(connection, connection.multiPeersHandler, connection.onstream)
+          connection.selfCardError = 0
+        }
+      }else{
+        connection.selfCardError = 0
       }
     }, 2000)
 
