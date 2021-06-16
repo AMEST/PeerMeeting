@@ -50,6 +50,7 @@ namespace PeerMeeting.Host
             services.AddMvc();
             services.AddSpaStaticFiles(c => c.RootPath = "ClientApp/dist");
             services.AddSingleton<WebRtcHub>();
+            services.AddSingleton<ChatHub>();
             services.AddResponseCompression(options =>
             {
                 options.Providers.Add<BrotliCompressionProvider>();
@@ -84,6 +85,11 @@ namespace PeerMeeting.Host
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHub<WebRtcHub>("/ws/webrtc", o =>
+                {
+                    // zero for unlimited
+                    o.TransportMaxBufferSize = 0;
+                });
+                endpoints.MapHub<ChatHub>("/ws/chat", o =>
                 {
                     // zero for unlimited
                     o.TransportMaxBufferSize = 0;
