@@ -1,5 +1,8 @@
 <template>
     <div class="room-controls">
+    <b-button @click="toggleChat"
+        ><b-icon :icon="state.chatOpened ? 'chat-left-dots-fill' : 'chat-left-dots'"></b-icon
+    ></b-button>
     <b-button :disabled="!this.state.hasMicrophone" variant="info" @click="toggleAudio"
         ><b-icon :icon="state.audioEnabled ? 'mic' : 'mic-mute'"></b-icon
     ></b-button>
@@ -48,6 +51,9 @@ export default {
       this.state.audioEnabled = !this.state.audioEnabled;
       RTCUtils.SwitchAudioMute(this.connection, this.state.audioEnabled);
       if(this.state.audioEnabled) this.connection.renegotiate();
+    },
+    toggleChat: function () {
+      this.state.chatOpened = !this.state.chatOpened;
     },
     shareScreen: function () {
       this.connection.attachStreams.forEach((s) => s.stop());

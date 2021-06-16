@@ -26,6 +26,10 @@
           "
         ></participant-block>
       </b-card-group>
+      <chat
+        :style="this.state.chatOpened ? '' : 'visibility:hidden'"
+        :roomId="this.connection.channel"
+      />
       <control-bar
         :connection="this.connection"
         :state="this.state"
@@ -44,6 +48,7 @@ import RTCMultiConnection from "rtcmulticonnection";
 import CommonUtils from "@/CommonUtils";
 import { v4 as uuidv4 } from "uuid";
 import ParticipantBlock from "@/components/room/participant/ParticipantBlock.vue";
+import Chat from "@/components/room/Chat.vue";
 import ControlBar from "@/components/room/ControlBar.vue";
 require("adapterjs");
 export default {
@@ -52,6 +57,7 @@ export default {
     roomId: "",
     connection: null,
     state: {
+      chatOpened: false,
       audioEnabled: true,
       videoEnabled: true,
       screenEnabled: false,
@@ -67,11 +73,11 @@ export default {
     RTCMultiConnection,
     ParticipantBlock,
     ControlBar,
+    Chat,
   },
   methods: {
     addParticipantBlock: function (event) {
-      if (this.participants.has(event.userid) && event.cardfix)
-        return;
+      if (this.participants.has(event.userid) && event.cardfix) return;
       if (this.participants.has(event.userid))
         this.participants.delete(event.userid);
       event.extra = CommonUtils.extractExtraData(this.connection, event.userid);
@@ -86,7 +92,9 @@ export default {
       var peer = this.connection.peers[event.userid];
       if (
         this.connection.userid === event.userid ||
-        (peer && peer.peer && peer.peer.connectionState &&
+        (peer &&
+          peer.peer &&
+          peer.peer.connectionState &&
           peer.peer.connectionState === "connected")
       )
         return;
@@ -99,12 +107,14 @@ export default {
       });
     },
     userStatusChanged: function (event) {
-      if (this.participants.has(event.userid) &&
+      if (
+        this.participants.has(event.userid) &&
         event.status === "online" &&
-        event.extra) {
+        event.extra
+      ) {
         var participant = this.participants.get(event.userid);
         participant.extra = event.extra;
-        if(participant.changeCallback) participant.changeCallback();
+        if (participant.changeCallback) participant.changeCallback();
         return;
       }
       if (this.participants.has(event.userid) || event.status === "offline")
@@ -123,14 +133,14 @@ export default {
       });
     },
     initialize: function () {
-      var self = this
+      var self = this;
       try {
         this.connection = new RTCMultiConnection();
       } catch (e) {
         console.error("Error Initialize RTCMultuConnection", e);
         window.location.reload();
       }
-      
+
       this.connection.userid =
         uuidv4() + "|" + this.$store.state.application.profile.name;
 
@@ -150,9 +160,9 @@ export default {
       );
       this.connection.onstream = this.addParticipantBlock;
       this.connection.onUserStatusChanged = this.userStatusChanged;
-      this.connection.onMuteForcibly = function(){
+      this.connection.onMuteForcibly = function () {
         self.state.audioEnabled = false;
-      }
+      };
       // Configure media error
       this.configureMediaError();
     },
@@ -193,7 +203,7 @@ export default {
       this.state.hasWebcam = true;
       this.state.hasMicrophone = true;
 
-      if(this.state.screenEnabled) return;
+      if (this.state.screenEnabled) return;
 
       this.state.audioEnabled = true;
       this.state.videoEnabled = true;
