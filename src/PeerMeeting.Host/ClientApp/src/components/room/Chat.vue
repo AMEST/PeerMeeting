@@ -14,7 +14,7 @@
         <div class="message-body">
           <span class="chat-message-username">{{ item.user.name }} </span>
           <br />
-          <span class="chat-message-text">{{ item.text }}</span>
+          <span class="chat-message-text"><vue-simple-markdown :source="item.text"></vue-simple-markdown></span>
         </div>
       </b-list-group-item>
     </b-list-group>
