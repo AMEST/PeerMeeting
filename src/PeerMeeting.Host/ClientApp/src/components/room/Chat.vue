@@ -2,7 +2,7 @@
   <div class="chat">
     <b-list-group class="chat-messages-list" id="chat-messages-list">
       <b-list-group-item
-        button
+        href="#"
         v-for="item in this.listMessages"
         v-bind:key="item.id"
       >
@@ -41,7 +41,6 @@ export default {
     connection: undefined,
     listMessages: [],
     messageText: "",
-    user: undefined,
   }),
   methods: {
     sendMessage(e) {
@@ -51,7 +50,7 @@ export default {
         "SendChatMessage",
         this.messageText,
         this.roomId,
-        this.user
+        this.$store.state.application.profile
       );
       this.messageText = "";
     },
@@ -80,7 +79,6 @@ export default {
   },
   created: function () {
     var self = this;
-    this.user = this.$store.state.application.profile;
     this.connection = new HubConnectionBuilder()
       .withUrl("/ws/chat")
       .withAutomaticReconnect()
@@ -88,7 +86,7 @@ export default {
       .build();
     this.connection
       .start()
-      .then(() => self.connection.invoke("JoinChat", self.roomId, self.user));
+      .then(() => self.connection.invoke("JoinChat", self.roomId, self.$store.state.application.profile));
 
     this.connection.on("HandleChatMessage", this.messageReceived);
   },
