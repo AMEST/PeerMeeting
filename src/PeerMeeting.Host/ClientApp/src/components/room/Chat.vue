@@ -12,9 +12,13 @@
           :src="item.user.avatar"
         ></b-avatar>
         <div class="message-body">
-          <span class="chat-message-username">{{ item.user.name }} </span>
+          <span class="chat-message-username" :title="item.date"
+            >{{ item.user.name }}
+          </span>
           <br />
-          <span class="chat-message-text"><vue-simple-markdown :source="item.text"></vue-simple-markdown></span>
+          <span class="chat-message-text"
+            ><vue-simple-markdown :source="item.text"></vue-simple-markdown
+          ></span>
         </div>
       </b-list-group-item>
     </b-list-group>
@@ -86,7 +90,13 @@ export default {
       .build();
     this.connection
       .start()
-      .then(() => self.connection.invoke("JoinChat", self.roomId, self.$store.state.application.profile));
+      .then(() =>
+        self.connection.invoke(
+          "JoinChat",
+          self.roomId,
+          self.$store.state.application.profile
+        )
+      );
 
     this.connection.on("HandleChatMessage", this.messageReceived);
   },
