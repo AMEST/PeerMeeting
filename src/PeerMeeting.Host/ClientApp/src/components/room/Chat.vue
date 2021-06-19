@@ -144,7 +144,7 @@ export default {
 }
 .chat-textarea textarea {
   width: 100%;
-  height: 100%;
+  height: 64px;
   border-radius: 0px;
   resize: none;
 }
@@ -162,5 +162,13 @@ export default {
 .chat-message-text {
   white-space: pre-wrap;
   word-break: break-word;
+}
+@-moz-document url-prefix() {
+  .markdown-body::before {
+    content: unset!important;
+  }
+  .markdown-body::after {
+    content: unset!important;
+  }
 }
 </style>
