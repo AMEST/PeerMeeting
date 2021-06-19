@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <b-navbar toggleable="sm" class="shadow p-0">
+  <div class="top-menu-plcae-reservation">
+    <b-navbar toggleable="sm" class="shadow top-menu p-0">
       <b-container fluid>
         <b-navbar-brand href="/" id="brand">
           <img class="topicon" src="../assets/logo.png" alt="rss" />PeerMeeting
@@ -48,13 +48,25 @@ export default {
       this.$store.commit("clearHistory");
     },
     getInitials: function () {
-      return CommonUtils.getInitials(this.$store.state.application.profile.name);
+      return CommonUtils.getInitials(
+        this.$store.state.application.profile.name
+      );
     },
   },
 };
 </script>
 
 <style>
+.top-menu-plcae-reservation {
+  width: 100%;
+  min-height: 58px;
+}
+.top-menu {
+  position: fixed !important;
+  width: 100%;
+  z-index: 1000;
+  background-color: white;
+}
 .topicon {
   max-width: 48px;
   margin-bottom: 5px;
@@ -67,6 +79,6 @@ export default {
   font-weight: bold;
 }
 .navbar-nav .dropdown-menu {
-  position: absolute!important;
+  position: absolute !important;
 }
 </style>

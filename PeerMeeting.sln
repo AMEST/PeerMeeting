@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PeerMeeting.Host", "src\Pee
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B564EF2C-4CA8-4A6B-832A-BB1E048FD016}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeerMeeting.Domain", "src\PeerMeeting.Domain\PeerMeeting.Domain.csproj", "{275CDD70-A647-48F3-B915-AF3A8616E973}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,12 +19,17 @@ Global
 		{AC3CAC08-7873-4304-936A-C89A6D74D13D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC3CAC08-7873-4304-936A-C89A6D74D13D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC3CAC08-7873-4304-936A-C89A6D74D13D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{275CDD70-A647-48F3-B915-AF3A8616E973}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{275CDD70-A647-48F3-B915-AF3A8616E973}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{275CDD70-A647-48F3-B915-AF3A8616E973}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{275CDD70-A647-48F3-B915-AF3A8616E973}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{AC3CAC08-7873-4304-936A-C89A6D74D13D} = {B564EF2C-4CA8-4A6B-832A-BB1E048FD016}
+		{275CDD70-A647-48F3-B915-AF3A8616E973} = {B564EF2C-4CA8-4A6B-832A-BB1E048FD016}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4583051D-A9CF-4960-ADDB-E3D97CDE43CC}

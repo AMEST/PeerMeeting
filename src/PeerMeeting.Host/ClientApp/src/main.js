@@ -13,6 +13,9 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import store from './services/store'
+import VueSimpleMarkdown from 'vue-simple-markdown'
+// You need a specific loader for CSS files like https://github.com/webpack/css-loader
+import 'vue-simple-markdown/dist/vue-simple-markdown.css'
 
 Vue.config.productionTip = false
 // Initialize FontAwesome
@@ -22,6 +25,8 @@ Vue.component('font-awesome-icon', FontAwesomeIcon)
 Vue.use(BootstrapVue)
 // Optionally install the BootstrapVue icon components plugin
 Vue.use(IconsPlugin)
+// Markdown plugin
+Vue.use(VueSimpleMarkdown)
 // Get profile from store
 var profile = window.localStorage['profile']
 if (profile !== undefined) {

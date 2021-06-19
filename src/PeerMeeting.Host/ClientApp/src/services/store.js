@@ -14,6 +14,9 @@ export default new Vuex.Store({
         audioInput: null,
         videoInput: null
       },
+      chat:{
+        hasNewMessages: false
+      },
       roomHistory: [],
       mediaDevices: [],
       inputDeviceChangedCallbacks: [],
@@ -29,6 +32,9 @@ export default new Vuex.Store({
     changeDeviceSettings (state, payload) {
       window.localStorage['deviceSettings'] = JSON.stringify(payload)
       state.application.deviceSettings = payload
+    },
+    changeHasNewMessages (state, payload) {
+      state.application.chat.hasNewMessages = payload
     },
     // eslint-disable-next-line
     clearProfile (state) {

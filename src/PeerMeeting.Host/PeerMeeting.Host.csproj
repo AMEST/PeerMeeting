@@ -31,6 +31,9 @@
   <ItemGroup>
     <Folder Include="Controllers\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PeerMeeting.Domain\PeerMeeting.Domain.csproj" />
+  </ItemGroup>
   <!-- Vue Integration -->
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build">
     <!-- Build Target:  Ensure Node.js is installed -->
