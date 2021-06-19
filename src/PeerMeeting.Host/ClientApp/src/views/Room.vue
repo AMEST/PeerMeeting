@@ -29,6 +29,7 @@
       <chat
         :style="this.state.chatOpened ? '' : 'visibility:hidden'"
         :roomId="this.connection.channel"
+        :state="this.state"
       />
       <control-bar
         :connection="this.connection"

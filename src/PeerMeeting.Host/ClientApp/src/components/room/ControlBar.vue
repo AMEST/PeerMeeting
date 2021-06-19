@@ -1,8 +1,14 @@
 <template>
     <div class="room-controls">
-    <b-button @click="toggleChat"
-        ><b-icon :icon="state.chatOpened ? 'chat-left-dots-fill' : 'chat-left-dots'"></b-icon
-    ></b-button>
+    <b-button @click="toggleChat">
+      <b-icon :icon="state.chatOpened ? 'chat-left-dots-fill' : 'chat-left-dots'"></b-icon>
+      <b-badge
+       pill
+       variant="info"
+       :style="this.$store.state.application.chat.hasNewMessages ? '' : 'visibility:hidden'"
+       class="new-messages-badge"
+       ></b-badge>
+    </b-button>
     <b-button :disabled="!this.state.hasMicrophone" variant="info" @click="toggleAudio"
         ><b-icon :icon="state.audioEnabled ? 'mic' : 'mic-mute'"></b-icon
     ></b-button>
@@ -97,5 +103,11 @@ export default {
 }
 .room-controls button {
   margin-right: 0.3em;
+}
+.new-messages-badge{
+  min-height: 15px;
+  position: absolute!important;
+  top: 0!important;
+  display: unset!important;
 }
 </style>

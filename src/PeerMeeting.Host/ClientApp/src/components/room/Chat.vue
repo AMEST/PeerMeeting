@@ -12,13 +12,13 @@
           :src="item.user.avatar"
         ></b-avatar>
         <div class="message-body">
-          <span class="chat-message-username" :title="item.date"
-            >{{ item.user.name }}
+          <span class="chat-message-username" :title="item.date">
+            {{ item.user.name }}
           </span>
           <br />
-          <span class="chat-message-text"
-            ><vue-simple-markdown :source="item.text"></vue-simple-markdown
-          ></span>
+          <span class="chat-message-text">
+            <vue-simple-markdown :source="item.text"></vue-simple-markdown>
+          </span>
         </div>
       </b-list-group-item>
     </b-list-group>
@@ -40,6 +40,7 @@ export default {
   name: "Chat",
   props: {
     roomId: String,
+    state: Object
   },
   data: () => ({
     connection: undefined,
@@ -66,7 +67,10 @@ export default {
         date: data.date,
       };
       this.listMessages.push(message);
-      this.scrollToBottom();
+      if(!this.state.chatOpened){
+        this.scrollToBottom();
+        this.$store.commit("changeHasNewMessages", true);
+      }
     },
     getInitials: function (username) {
       return CommonUtils.getInitials(username);
@@ -80,6 +84,14 @@ export default {
         });
       }, 100);
     },
+  },
+  watch:{
+    // eslint-disable-next-line
+    "state.chatOpened": function(n,o){
+      if(n){
+        this.$store.commit("changeHasNewMessages", false);
+      }
+    }
   },
   created: function () {
     var self = this;
