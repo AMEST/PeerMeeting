@@ -251,7 +251,7 @@ export default {
   background-color: black;
   min-height: 250px;
   margin-bottom: 1em !important;
-  transition-duration: 0.4s;
+  transition: box-shadow 0.4s;
 }
 .user-block video {
   background-color: transparent;
