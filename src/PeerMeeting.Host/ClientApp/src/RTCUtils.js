@@ -101,13 +101,11 @@ var RTCUtils = {
     }
 
     connection.onspeaking = function(e){
-      console.info('Speacking', e)
       connection.extra.speacking = true
       connection.updateExtraData()
     }
     
     connection.onsilence = function(e) {
-      console.info('Silence', e)
       connection.extra.speacking = false
       connection.updateExtraData()
     }
