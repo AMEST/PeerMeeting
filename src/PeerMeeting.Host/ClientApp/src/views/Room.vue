@@ -84,6 +84,9 @@ export default {
       event.extra = CommonUtils.extractExtraData(this.connection, event.userid);
       this.participants.set(event.userid, event);
       this.$forceUpdate();
+      if(this.connection.userid == event.userid
+        && event.type == "local")
+        RTCUtils.SetHarkHandler(this.connection, event.stream)
     },
     streamEnded: function (event) {
       if (!this.participants.has(event.userid)) return;
@@ -149,6 +152,7 @@ export default {
         profile: this.$store.state.application.profile,
         audioMuted: false,
         videoMuted: false,
+        speacking: false
       };
       // using signalR for signaling
       this.connection.setCustomSocketHandler(WebRtcSignalR);

@@ -4,6 +4,7 @@
     :class="[
       this.fullscreen ? 'pseudo-fullscreen' : '',
       this.halfscreen ? 'half-screen' : '',
+      this.streamEvent.extra.speacking ? 'speaking' : '',
     ]"
     :style="
       this.halfscreen
@@ -250,6 +251,7 @@ export default {
   background-color: black;
   min-height: 250px;
   margin-bottom: 1em !important;
+  transition: box-shadow 0.4s;
 }
 .user-block video {
   background-color: transparent;
@@ -341,5 +343,8 @@ export default {
 }
 .has-avatar {
   background-color: transparent !important;
+}
+.speaking{
+  box-shadow: 0 0 10px 10px lightblue;
 }
 </style>
