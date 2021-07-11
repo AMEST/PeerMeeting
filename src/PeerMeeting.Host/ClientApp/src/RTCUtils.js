@@ -100,6 +100,18 @@ var RTCUtils = {
         e.mediaElement.hidden = false
     }
 
+    connection.onspeaking = function(e){
+      console.info('Speacking', e)
+      connection.extra.speacking = true
+      connection.updateExtraData()
+    }
+    
+    connection.onsilence = function(e) {
+      console.info('Silence', e)
+      connection.extra.speacking = false
+      connection.updateExtraData()
+    }
+
   },
   ConfigureMediaConstraints: function(connection, deviceSettings){
     connection.mediaConstraints = {
@@ -255,6 +267,7 @@ var RTCUtils = {
     connection.attachStreams = []
     connection.addStream(stream)
     mPeer.onGettingLocalMedia(stream)
+    this.SetHarkHandler(connection, stream)
     var event = this.CreateVideoElementEvent(connection.userid, stream)
     callback(event)
   },
@@ -278,6 +291,29 @@ var RTCUtils = {
       streamid: stream.id,
       mediaElement: video
     }
+  },
+  SetHarkHandler: function(connection, stream){
+    if (!stream || stream.getAudioTracks().length < 1) return;
+    if (!connection.onspeaking || !connection.onsilence) {
+      return;
+    }
+    if (typeof hark === 'undefined') {
+      throw 'hark.js not found.';
+    }
+
+    var speachEvent = {
+      userid: connection.userid,
+      stream: stream
+    }
+    var speach = hark(stream, {})
+
+    speach.on('speaking', function() {
+      connection.onspeaking(speachEvent)
+    });
+ 
+    speach.on('stopped_speaking', function() {
+      connection.onsilence(speachEvent);
+    });
   }
 }
 
