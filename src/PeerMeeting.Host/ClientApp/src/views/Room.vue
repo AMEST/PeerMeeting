@@ -140,34 +140,17 @@ export default {
       var self = this;
       try {
         this.connection = new RTCMultiConnection();
+        var pmConnection = new PeerMeetingRtcMulticonnection(this.$store, this.participants);
       } catch (e) {
         console.error("Error Initialize RTCMultuConnection", e);
         window.location.reload();
       }
 
-      this.connection.userid =
-        uuidv4() + "|" + this.$store.state.application.profile.name;
-
-      this.connection.extra = {
-        profile: this.$store.state.application.profile,
-        audioMuted: false,
-        videoMuted: false,
-        speacking: false
-      };
-      // using signalR for signaling
-      this.connection.setCustomSocketHandler(WebRtcSignalR);
-      // Configure base callbacks
-      RTCUtils.ConfigureBase(
-        this.connection,
-        this.participants,
-        this.$store.state.application.deviceSettings,
-        this.streamEnded
-      );
-      this.connection.onstream = this.addParticipantBlock;
-      this.connection.onUserStatusChanged = this.userStatusChanged;
-      this.connection.onMuteForcibly = function () {
+      pmConnection.setOnStream(this.addParticipantBlock);
+      pmConnection.setOnUserStatusChanged(this.userStatusChanged);
+      pmConnection.setOnMuteForcibly(function () {
         self.state.audioEnabled = false;
-      };
+      });
       // Configure media error
       this.configureMediaError();
     },
