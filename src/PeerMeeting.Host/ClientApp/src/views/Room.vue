@@ -68,14 +68,7 @@ export default {
     state: function(){
       if(this.stateService == null)
         return {
-          chatOpened: false,
-          audioEnabled: true,
-          videoEnabled: true,
-          screenEnabled: false,
-          halfScreenMode: false,
-          fullScreenMode: false,
-          hasWebcam: true,
-          hasMicrophone: true,
+          halfScreenMode: false
         };
       return this.stateService.state;
     }
@@ -160,10 +153,10 @@ export default {
       this.rtcConnection.configureMediaError(this.mediaErrorCallback);
     },
     mediaErrorCallback: function (videoState, audioState) {
-      this.state.videoEnabled = videoState;
-      this.state.audioEnabled = audioState;
-      this.state.hasWebcam = videoState;
-      this.state.hasMicrophone = audioState;
+      this.stateService.state.videoEnabled = videoState;
+      this.stateService.state.audioEnabled = audioState;
+      this.stateService.state.hasWebcam = videoState;
+      this.stateService.state.hasMicrophone = audioState;
       this.rtcConnection.connection.extra.audioMuted = !audioState;
       this.rtcConnection.connection.extra.videoMuted = !videoState;
       this.addParticipantBlock({
@@ -182,13 +175,13 @@ export default {
       this.configureMediaError();
       this.configureMediaConstraints();
       this.rtcConnection.connection.dontCaptureUserMedia = false;
-      this.state.hasWebcam = true;
-      this.state.hasMicrophone = true;
+      this.stateService.state.hasWebcam = true;
+      this.stateService.state.hasMicrophone = true;
 
-      if (this.state.screenEnabled) return;
+      if (this.stateService.state.screenEnabled) return;
 
-      this.state.audioEnabled = true;
-      this.state.videoEnabled = true;
+      this.stateService.state.audioEnabled = true;
+      this.stateService.state.videoEnabled = true;
       RTCUtils.AddBaseStream(
         this.rtcConnection.connection,
         this.state,
