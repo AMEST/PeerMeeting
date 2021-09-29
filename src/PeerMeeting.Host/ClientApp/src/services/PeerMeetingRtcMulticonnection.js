@@ -5,44 +5,44 @@ import RTCMultiConnection from "rtcmulticonnection";
 import CommonUtils from "@/CommonUtils";
 import { v4 as uuidv4 } from "uuid";
 
-class PeerMeetingRtcMulticonnection {
+export default class PeerMeetingRtcMulticonnection {
+    detectRTC = require("detectrtc");
     connection = null;
+    userid = null;
     patrticipantsFixTimer = null;
     patrticipantsCardFixTimer = null;
 
-    constructor(store, participants) {
+    constructor(store, router, participants) {
         this.store = store;
+        this.router = router;
         this.participants = participants;
         this.connection = new RTCMultiConnection();
-        this.generateUserId();
-        this.configureExtraData();
+        this._generateUserId();
+        this._configureExtraData();
         // using signalR for signaling
         this.connection.setCustomSocketHandler(WebRtcSignalR);
+        this.configureMediaConstraints();
         this.connection.codecs.video = 'VP8';
         this.connection.session = {
             audio: true,
             video: true
         };
-        connection.sdpConstraints.mandatory = {
+        this.connection.sdpConstraints.mandatory = {
             OfferToReceiveAudio: true,
             OfferToReceiveVideo: true
         };
-        this.configureMute();
-        this.configureVoiceDetection();
-        this.startParticipantFixTimer();
+        this._configureKicked();
+        this._configureMute();
+        this._configureVoiceDetection();
+        this._startParticipantFixTimer();
     }
 
-    generateUserId() {
-        this.connection.userid = uuidv4() + "|" + store.state.application.profile.name;
+    join(roomId){
+        this.connection.join(roomId);
     }
 
-    configureExtraData() {
-        this.connection.extra = {
-            profile: this.store.state.application.profile,
-            audioMuted: false,
-            videoMuted: false,
-            speacking: false
-        };
+    leave(){
+        this.connection.leave();
     }
 
     setOnStream(callback) {
@@ -68,9 +68,50 @@ class PeerMeetingRtcMulticonnection {
         }
     }
 
-    configureMute(){
+    configureMediaError(callback){
+        RTCUtils.ConfigureMediaError(
+            this.connection,
+            this.detectRTC, 
+            this.store.state.application.deviceSettings,
+            callback);
+    }
+
+    configureMediaConstraints(){
+        this.connection.mediaConstraints = {
+          audio: this.store.state.application.deviceSettings.audioInput 
+            ? { deviceId: this.store.state.application.deviceSettings.audioInput }
+            : true,
+          video: this.store.state.application.deviceSettings.videoInput 
+            ? { deviceId: this.store.state.application.deviceSettings.videoInput }
+            : true
+        };
+      }
+
+    _generateUserId() {
+        this.connection.userid = uuidv4() + "|" + this.store.state.application.profile.name;
+        this.userid = this.connection.userid;
+    }
+
+    _configureExtraData() {
+        this.connection.extra = {
+            profile: this.store.state.application.profile,
+            audioMuted: false,
+            videoMuted: false,
+            speacking: false
+        };
+    }
+
+    _configureKicked(){
+        var self = this;
+        this.connection.onKicked = function(){
+            self.router.push(window.location.pathname + '/ended');
+        }
+    }
+
+    _configureMute(){
+        var self = this;
         // overriding the event to replace the poster XD
-        connection.onmute = function(e) {
+        this.connection.onmute = function(e) {
             if (!e || !e.mediaElement) return
             if (e.muteType === 'both' || e.muteType === 'video') {
                 e.mediaElement.hidden = true
@@ -80,30 +121,31 @@ class PeerMeetingRtcMulticonnection {
         };
     
         // Overriding the event for fix mute local media element after unmute on all
-        var originalOnUnmute = connection.onunmute
-        connection.onunmute = function(e){
+        var originalOnUnmute = this.connection.onunmute
+        this.connection.onunmute = function(e){
             originalOnUnmute(e)
             if(!e || !e.mediaElement) return
-            if(e.userid == connection.userid)
+            if(e.userid == self.connection.userid)
             e.mediaElement.muted = true
             if(e.mediaElement.tagName == "VIDEO" && e.unmuteType == 'video')
             e.mediaElement.hidden = false
         }
     }
 
-    configureVoiceDetection(){
-        connection.onspeaking = function(e){
-            connection.extra.speacking = true
-            connection.updateExtraData()
+    _configureVoiceDetection(){
+        var self = this;
+        this.connection.onspeaking = function(e){
+            self.connection.extra.speacking = true
+            self.connection.updateExtraData()
         }
         
-        connection.onsilence = function(e) {
-            connection.extra.speacking = false
-            connection.updateExtraData()
+        this.connection.onsilence = function(e) {
+            self.connection.extra.speacking = false
+            self.connection.updateExtraData()
         }
     }
 
-    startParticipantFixTimer() {
+    _startParticipantFixTimer() {
         var self = this;
         if (this.patrticipantsFixTimer != null)
             clearInterval(this.patrticipantsFixTimer);
@@ -111,11 +153,10 @@ class PeerMeetingRtcMulticonnection {
         this.patrticipantsFixTimer = setInterval(() => {
             var connectedParticipants = self.connection.getAllParticipants()
             for (const key of self.participants.keys()) {
-                if (connectedParticipants.indexOf(key) == -1
-                    && self.connection.userid != key
-                    || (self.connection.peers[key]
-                        && self.connection.peers[key].peer.connectionState === "failed"))
+                if ( (connectedParticipants.indexOf(key) == -1 && self.connection.userid != key)
+                    || (self.connection.peers[key] && self.connection.peers[key].peer.connectionState === "failed")){
                         self.connection.onstreamended({ userid: key })
+                    }
             }
         }, 5000)
 
@@ -149,7 +190,7 @@ class PeerMeetingRtcMulticonnection {
                     self.connection.peers[e].peer.participantCardError = 0
                 }
             })
-            if (!self.participants.has(connection.userid)) {
+            if (!self.participants.has(self.connection.userid)) {
                 if (!self.connection.selfCardError)
                     self.connection.selfCardError = 0
 

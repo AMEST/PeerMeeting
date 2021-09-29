@@ -25,22 +25,22 @@ export default {
     },
     methods:{
         muteParticipant: function(){
-            this.connection.socket.emit('mute-participant', {
+            this.connection.connection.socket.emit('mute-participant', {
                 remoteUserId: this.userId,
-                sender: this.connection.userid
+                sender: this.connection.connection.userid
             });
         },
         muteAllParticipants: function(){
-            this.connection.socket.emit('mute-participant', {
+            this.connection.connection.socket.emit('mute-participant', {
                 remoteUserId: this.userId,
-                sender: this.connection.userid,
+                sender: this.connection.connection.userid,
                 all: true
             });
         },
         kickPatricipant: function(){
-            this.connection.socket.emit('kick-participant', {
+            this.connection.connection.socket.emit('kick-participant', {
                 remoteUserId: this.userId,
-                sender: this.connection.userid
+                sender: this.connection.connection.userid
             });
         },
     }

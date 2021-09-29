@@ -154,7 +154,7 @@ export default {
       );
     },
     streamValidate: function () {
-      if (this.connection.userid === this.streamEvent.userid) return;
+      if (this.connection.connection.userid === this.streamEvent.userid) return;
       if (!this.streamEvent.mediaElement) return;
       if (!this.streamEvent.mediaElement.srcObject) return;
       var hasVideoTracks =
@@ -165,18 +165,18 @@ export default {
         (!this.streamEvent.extra.videoMuted && !hasVideoTracks) ||
         (!this.streamEvent.extra.audioMuted && !hasAudioTracks)
       )
-        this.connection.socket.emit("renegotiate-needed", {
+        this.connection.connection.socket.emit("renegotiate-needed", {
           remoteUserId: this.streamEvent.userid,
-          sender: this.connection.userid,
+          sender: this.connection.connection.userid,
         });
     },
     enablePeerStats: function (event) {
       if (event.type && event.type == "local") return;
-      if (this.connection.userid === event.userid) return;
-      if (!this.connection.peers[event.userid]) return;
+      if (this.connection.connection.userid === event.userid) return;
+      if (!this.connection.connection.peers[event.userid]) return;
       if (this.peerStats) this.peerStats.stop();
       var self = this;
-      this.peerStats = new PeerStats(this.connection.peers[event.userid].peer);
+      this.peerStats = new PeerStats(this.connection.connection.peers[event.userid].peer);
       this.peerStats.start((stats) => {
         self.stats = stats;
       }, 3000);
