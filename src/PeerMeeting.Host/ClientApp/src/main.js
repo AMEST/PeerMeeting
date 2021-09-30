@@ -7,7 +7,7 @@ import router from './router'
 import './registerServiceWorker'
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faUserSecret } from '@fortawesome/free-solid-svg-icons'
+import { faUserSecret, faVolumeUp } from '@fortawesome/free-solid-svg-icons'
 import { faGithub } from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import 'bootstrap/dist/css/bootstrap.css'
@@ -19,7 +19,7 @@ import 'vue-simple-markdown/dist/vue-simple-markdown.css'
 
 Vue.config.productionTip = false
 // Initialize FontAwesome
-library.add(faUserSecret, faGithub)
+library.add(faUserSecret, faGithub, faVolumeUp)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 // Install BootstrapVue
 Vue.use(BootstrapVue)

@@ -11,7 +11,8 @@
       </em>
     </template>
     <b-dropdown-form>
-        <b-form-input type="range" min="0" max="100" v-model="volume">a</b-form-input>
+         <font-awesome-icon class="volume-icon" :icon="{ prefix: 'fas', iconName: 'volume-up' }"/>
+        <b-form-input class="volume-range" type="range" min="0" max="100" v-model="volume">a</b-form-input>
     </b-dropdown-form>
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-item @click="this.muteParticipant">Mute</b-dropdown-item>
@@ -52,7 +53,9 @@ export default {
             });
         },
         getPlayer: function(){
-            this.player = document.getElementById(this.connection.connection.peers[this.userId].streams[0].streamid);
+            this.player = this.connection.connection.peers[this.userId] != null &&  this.connection.connection.peers[this.userId].streams != null
+            ? document.getElementById(this.connection.connection.peers[this.userId].streams[0].streamid) 
+            : null;
             if(this.player == null){
                 setTimeout(this.getPlayer, 100);
                 return;
@@ -68,8 +71,6 @@ export default {
         }
     },
     mounted: function(){
-        if(!this.connection.connection.peers[this.userId].streams[0])
-            return;
         this.getPlayer();
     }
 };
@@ -91,5 +92,16 @@ export default {
 }
 .control-menu .dropdown-toggle::before{
     content: none;
+}
+.volume-icon {
+    color: #000;
+    font-size: 28px;
+    padding-right: 0.5em;
+    position: absolute;
+    top: 9px;
+    left: 6px;
+}
+.volume-range{
+    padding-left: 5px;
 }
 </style>
