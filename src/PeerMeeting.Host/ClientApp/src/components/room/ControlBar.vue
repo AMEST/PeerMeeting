@@ -85,11 +85,6 @@ export default {
   line-height: 48px;
   z-index: 100;
 }
-.room-name {
-  padding-top: 5px;
-  color: rgb(0, 0, 0, 0.4);
-  font-weight: bold;
-}
 .room-controls button {
   margin-right: 0.3em;
 }

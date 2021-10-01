@@ -8,7 +8,6 @@
         class="justify-content-center"
         :class="[
           this.state.halfScreenMode ? 'half-screen-container' : '',
-          !this.state.fullScreenMode ? 'card-deck-center' : '',
         ]"
       >
         <participant-block
@@ -213,8 +212,23 @@ export default {
 #app {
   height: calc(100vh - 48px) !important;
 }
+.room-name {
+  color: rgb(0, 0, 0, 0.4);
+  font-weight: bold;
+  position: relative;
+  top: -45px;
+  z-index: 1000;
+  max-width: 43%;
+  overflow-x: hidden;
+  margin-left: auto;
+  margin-right: auto;
+}
 .card-deck {
-  max-height: calc(100vh - 110px);
+  max-height: calc(100vh - 147px);
+  min-height: calc(100vh - 147px);
+  align-items: center;
+  position: relative;
+  top: -40px;
 }
 .full-height {
   min-height: calc(100vh - 63px);
@@ -239,6 +253,7 @@ export default {
   -webkit-transform: inherit !important;
   transform: inherit !important;
 }
+
 .half-screen-container .user-block {
   min-width: 215px !important;
   min-height: 160px !important;
@@ -260,15 +275,6 @@ export default {
 @media (min-width: 578px) {
   .many-participants {
     max-width: 35vw;
-  }
-}
-@media (min-width: 770px) {
-  .card-deck-center {
-    position: absolute;
-    width: 100%;
-    top: 25%;
-    -ms-transform: translateY(-15%);
-    transform: translateY(-15%);
   }
 }
 </style>
