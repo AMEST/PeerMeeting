@@ -208,7 +208,7 @@ export default {
   },
 };
 </script>
-<style>
+<style scoped>
 #app {
   height: calc(100vh - 48px) !important;
 }
@@ -224,15 +224,11 @@ export default {
   margin-right: auto;
 }
 .card-deck {
-  max-height: calc(100vh - 147px);
-  min-height: calc(100vh - 147px);
+  max-height: calc(100vh - 108px);
+  min-height: calc(100vh - 108px);
   align-items: center;
   position: relative;
   top: -40px;
-}
-.full-height {
-  min-height: calc(100vh - 63px);
-  max-height: calc(100vh - 63px);
 }
 .fork-me {
   display: none;
