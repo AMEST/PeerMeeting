@@ -1,7 +1,7 @@
 <template>
   <div class="room">
     <b-container fluid>
-      <h3 class="room-name">{{ this.roomId }}</h3>
+      <div class="room-container"><h3 class="room-name">{{ this.roomId }}</h3></div>
       <b-card-group
         deck
         id="videos-container"
@@ -218,20 +218,23 @@ export default {
 .room-name {
   color: rgb(0, 0, 0, 0.4);
   font-weight: bold;
-  position: relative;
-  top: -45px;
-  z-index: 1000;
   max-width: 43%;
   overflow-x: hidden;
   margin-left: auto;
   margin-right: auto;
+}
+.room-container{
+  position: fixed;
+  top: 10px;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
 }
 .card-deck {
   max-height: calc(100vh - 108px);
   min-height: calc(100vh - 108px);
   align-items: center;
   position: relative;
-  top: -40px;
 }
 .fork-me {
   display: none;
