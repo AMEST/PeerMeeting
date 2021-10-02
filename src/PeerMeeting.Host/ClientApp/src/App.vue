@@ -2,11 +2,11 @@
   <div id="app">
     <top-menu />
     <router-view v-if="this.$store.state.application.profile != null" />
-    <b-container v-else>
+    <b-container class="login-container" v-else>
       <log-in/>
     </b-container>
-    <a class="fork-me" href="https://github.com/AMEST/PeerMeeting"
-      >Fork me on
+    <a class="fork-me" href="https://github.com/AMEST/PeerMeeting">
+      Fork me on
       <font-awesome-icon :icon="{ prefix: 'fab', iconName: 'github' }"/>
     </a>
     <settings-dialog/>
@@ -68,6 +68,12 @@ export default {
   background-color: rgba(0, 0, 0, 0.15);
   width: 140px;
   border-radius: 0px 10px 0px 0px;
+}
+
+.login-container{
+  height: calc(100vh - 58px);
+  align-items: baseline;
+  display: flex;
 }
 
 /* Scroll */
