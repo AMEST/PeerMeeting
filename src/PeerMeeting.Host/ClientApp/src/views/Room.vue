@@ -196,6 +196,9 @@ export default {
     this.rtcConnection.join(this.roomId);
     this.$store.commit("addDeviceChangedCallback", this.inputDeviceChanged);
   },
+  unmount: function(){
+    this.rtcConnection.leave();
+  },
   watch: {
     // eslint-disable-next-line
     $route(to, from) {
