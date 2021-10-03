@@ -133,6 +133,8 @@ export default {
   overflow-y: scroll;
   text-align: left;
   padding-top: 10px;
+  border-right: 1px solid #ced4da;
+  border-radius: 0px;
 }
 .chat-textarea {
   max-height: 64px;

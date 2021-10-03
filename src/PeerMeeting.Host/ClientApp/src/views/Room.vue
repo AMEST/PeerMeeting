@@ -1,14 +1,13 @@
 <template>
   <div class="room">
     <b-container fluid>
-      <h3 class="room-name">{{ this.roomId }}</h3>
+      <div class="room-container"><h3 class="room-name">{{ this.roomId }}</h3></div>
       <b-card-group
         deck
         id="videos-container"
         class="justify-content-center"
         :class="[
           this.state.halfScreenMode ? 'half-screen-container' : '',
-          !this.state.fullScreenMode ? 'card-deck-center' : '',
         ]"
       >
         <participant-block
@@ -18,7 +17,7 @@
           :state="state"
           :DetectRTC="DetectRTC"
           :participants="participants"
-          :connection="connection"
+          :connection="rtcConnection"
           :class="
             participants.size <= 2
               ? 'only-local-participant'
@@ -28,12 +27,11 @@
       </b-card-group>
       <chat
         :style="this.state.chatOpened ? '' : 'visibility:hidden'"
-        :roomId="this.connection.channel"
+        :roomId="this.rtcConnection.connection.channel"
         :state="this.state"
       />
       <control-bar
-        :connection="this.connection"
-        :state="this.state"
+        :stateService="this.stateService"
         :DetectRTC="this.DetectRTC"
       />
     </b-container>
@@ -43,11 +41,10 @@
 <script>
 /* eslint-disable */
 // @ is an alias to /src
-import WebRtcSignalR from "@/WebRtcHub";
 import RTCUtils from "@/RTCUtils";
-import RTCMultiConnection from "rtcmulticonnection";
+import RTCStateService from "@/services/RTCStateService";
+import PeerMeetingRtcMulticonnection from "@/services/PeerMeetingRtcMulticonnection";
 import CommonUtils from "@/CommonUtils";
-import { v4 as uuidv4 } from "uuid";
 import ParticipantBlock from "@/components/room/participant/ParticipantBlock.vue";
 import Chat from "@/components/room/Chat.vue";
 import ControlBar from "@/components/room/ControlBar.vue";
@@ -56,46 +53,45 @@ export default {
   name: "room",
   data: () => ({
     roomId: "",
-    connection: null,
-    state: {
-      chatOpened: false,
-      audioEnabled: true,
-      videoEnabled: true,
-      screenEnabled: false,
-      halfScreenMode: false,
-      fullScreenMode: false,
-      hasWebcam: true,
-      hasMicrophone: true,
-    },
+    rtcConnection: null,
+    stateService: null,
     participants: new Map(),
     DetectRTC: require("detectrtc"),
   }),
   components: {
-    RTCMultiConnection,
     ParticipantBlock,
     ControlBar,
     Chat,
+  },
+  computed:{
+    state: function(){
+      if(this.stateService == null)
+        return {
+          halfScreenMode: false
+        };
+      return this.stateService.state;
+    }
   },
   methods: {
     addParticipantBlock: function (event) {
       if (this.participants.has(event.userid) && event.cardfix) return;
       if (this.participants.has(event.userid))
         this.participants.delete(event.userid);
-      event.extra = CommonUtils.extractExtraData(this.connection, event.userid);
+      event.extra = CommonUtils.extractExtraData(this.rtcConnection.connection, event.userid);
       this.participants.set(event.userid, event);
       this.$forceUpdate();
-      if(this.connection.userid == event.userid
+      if(this.rtcConnection.connection.userid == event.userid
         && event.type == "local")
-        RTCUtils.SetHarkHandler(this.connection, event.stream)
+        RTCUtils.SetHarkHandler(this.rtcConnection.connection, event.stream)
     },
     streamEnded: function (event) {
       if (!this.participants.has(event.userid)) return;
       this.participants.delete(event.userid);
       this.$forceUpdate();
 
-      var peer = this.connection.peers[event.userid];
+      var peer = this.rtcConnection.connection.peers[event.userid];
       if (
-        this.connection.userid === event.userid ||
+        this.rtcConnection.connection.userid === event.userid ||
         (peer &&
           peer.peer &&
           peer.peer.connectionState &&
@@ -139,56 +135,32 @@ export default {
     initialize: function () {
       var self = this;
       try {
-        this.connection = new RTCMultiConnection();
+        this.rtcConnection = new PeerMeetingRtcMulticonnection(this.$store, this.$router, this.participants);
+        this.stateService = new RTCStateService(this.rtcConnection, this.$store);
       } catch (e) {
         console.error("Error Initialize RTCMultuConnection", e);
         window.location.reload();
       }
 
-      this.connection.userid =
-        uuidv4() + "|" + this.$store.state.application.profile.name;
-
-      this.connection.extra = {
-        profile: this.$store.state.application.profile,
-        audioMuted: false,
-        videoMuted: false,
-        speacking: false
-      };
-      // using signalR for signaling
-      this.connection.setCustomSocketHandler(WebRtcSignalR);
-      // Configure base callbacks
-      RTCUtils.ConfigureBase(
-        this.connection,
-        this.participants,
-        this.$store.state.application.deviceSettings,
-        this.streamEnded
-      );
-      this.connection.onstream = this.addParticipantBlock;
-      this.connection.onUserStatusChanged = this.userStatusChanged;
-      this.connection.onMuteForcibly = function () {
+      this.rtcConnection.setOnStream(this.addParticipantBlock);
+      this.rtcConnection.setOnStreamEnded(this.streamEnded);
+      this.rtcConnection.setOnUserStatusChanged(this.userStatusChanged);
+      this.rtcConnection.setOnMuteForcibly(function () {
         self.state.audioEnabled = false;
-      };
+      });
       // Configure media error
-      this.configureMediaError();
-    },
-    configureMediaError: function () {
-      RTCUtils.ConfigureMediaError(
-        this.connection,
-        DetectRTC,
-        this.$store.state.application.deviceSettings,
-        this.mediaErrorCallback
-      );
+      this.rtcConnection.configureMediaError(this.mediaErrorCallback);
     },
     mediaErrorCallback: function (videoState, audioState) {
-      this.state.videoEnabled = videoState;
-      this.state.audioEnabled = audioState;
-      this.state.hasWebcam = videoState;
-      this.state.hasMicrophone = audioState;
-      this.connection.extra.audioMuted = !audioState;
-      this.connection.extra.videoMuted = !videoState;
+      this.stateService.state.videoEnabled = videoState;
+      this.stateService.state.audioEnabled = audioState;
+      this.stateService.state.hasWebcam = videoState;
+      this.stateService.state.hasMicrophone = audioState;
+      this.rtcConnection.connection.extra.audioMuted = !audioState;
+      this.rtcConnection.connection.extra.videoMuted = !videoState;
       this.addParticipantBlock({
         streamid: null,
-        userid: this.connection.userid,
+        userid: this.rtcConnection.connection.userid,
         mediaElement: document.createElement("div"),
       });
     },
@@ -200,20 +172,17 @@ export default {
     },
     inputDeviceChanged: function () {
       this.configureMediaError();
-      RTCUtils.ConfigureMediaConstraints(
-        this.connection,
-        this.$store.state.application.deviceSettings
-      );
-      this.connection.dontCaptureUserMedia = false;
-      this.state.hasWebcam = true;
-      this.state.hasMicrophone = true;
+      this.configureMediaConstraints();
+      this.rtcConnection.connection.dontCaptureUserMedia = false;
+      this.stateService.state.hasWebcam = true;
+      this.stateService.state.hasMicrophone = true;
 
-      if (this.state.screenEnabled) return;
+      if (this.stateService.state.screenEnabled) return;
 
-      this.state.audioEnabled = true;
-      this.state.videoEnabled = true;
+      this.stateService.state.audioEnabled = true;
+      this.stateService.state.videoEnabled = true;
       RTCUtils.AddBaseStream(
-        this.connection,
+        this.rtcConnection.connection,
         this.state,
         this.$store.state.application.deviceSettings,
         this.addParticipantBlock
@@ -224,34 +193,46 @@ export default {
     this.roomId = this.$route.params.id;
     this.addToHistory();
     this.initialize();
-    this.connection.join(this.roomId);
+    this.rtcConnection.join(this.roomId);
     this.$store.commit("addDeviceChangedCallback", this.inputDeviceChanged);
+  },
+  unmount: function(){
+    this.rtcConnection.leave();
   },
   watch: {
     // eslint-disable-next-line
     $route(to, from) {
       this.roomId = to;
-      this.connection.leave();
+      this.rtcConnection.leave();
       this.addToHistory();
       this.initialize();
-      this.connection.join(this.roomId);
+      this.rtcConnection.join(this.roomId);
     },
   },
 };
 </script>
-<style>
-#app {
-  height: calc(100vh - 48px) !important;
+<style scoped>
+.room-name {
+  color: rgb(0, 0, 0, 0.4);
+  font-weight: bold;
+  max-width: 43%;
+  overflow-x: hidden;
+  margin-left: auto;
+  margin-right: auto;
+}
+.room-container{
+  pointer-events: none; 
+  position: fixed;
+  top: 10px;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
 }
 .card-deck {
-  max-height: calc(100vh - 110px);
-}
-.full-height {
-  min-height: calc(100vh - 63px);
-  max-height: calc(100vh - 63px);
-}
-.fork-me {
-  display: none;
+  max-height: calc(100vh - 108px);
+  min-height: calc(100vh - 108px);
+  align-items: center;
+  position: relative;
 }
 @media (max-width: 380px) {
   .container-fluid {
@@ -269,6 +250,7 @@ export default {
   -webkit-transform: inherit !important;
   transform: inherit !important;
 }
+
 .half-screen-container .user-block {
   min-width: 215px !important;
   min-height: 160px !important;
@@ -290,15 +272,6 @@ export default {
 @media (min-width: 578px) {
   .many-participants {
     max-width: 35vw;
-  }
-}
-@media (min-width: 770px) {
-  .card-deck-center {
-    position: absolute;
-    width: 100%;
-    top: 25%;
-    -ms-transform: translateY(-15%);
-    transform: translateY(-15%);
   }
 }
 </style>

@@ -33,8 +33,12 @@ export default class PeerStats {
         var self = this;
         this.timer = setInterval(() => {
             self.PeerConnection.getStats().then(r => {
-                self.parseReport(r);
-                callback(self.stats);
+                try{
+                    self.parseReport(r);
+                    callback(self.stats);
+                }catch(e){
+                    console.error(e);
+                }
             });
         }, interval)
     }
@@ -66,7 +70,7 @@ export default class PeerStats {
 
                 //candidate pair
                 var candidatePair = self.isFirefox ? r : report.get(r.selectedCandidatePairId);
-                self.stats.rtt = self.isFirefox ? 0 : candidatePair.totalRoundTripTime
+                self.stats.rtt = self.isFirefox ? 0 : (candidatePair.totalRoundTripTime / candidatePair.responsesReceived).toFixed(5)
 
                 var localCandidate = report.get(candidatePair.localCandidateId);
                 self.stats.ips.local = (self.isFirefox ? localCandidate.address : localCandidate.ip) + ":" + localCandidate.port;

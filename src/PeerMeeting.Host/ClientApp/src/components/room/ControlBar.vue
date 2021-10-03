@@ -17,8 +17,8 @@
     ></b-button>
     <b-button
         :disabled="
-        !this.connection ||
-        this.connection.dontCaptureUserMedia ||
+        !this.stateService.rtcConnection ||
+        this.stateService.rtcConnection.dontCaptureUserMedia ||
         this.state.screenEnabled ||
         !this.state.hasWebcam
         "
@@ -38,47 +38,36 @@
 </template>
 
 <script>
-import RTCUtils from "@/RTCUtils";
 export default {
   name: "ControlBar",
   props: {
-    connection: Object,
-    state: Object,
+    stateService: Object,
     DetectRTC: Object
+  },
+  computed:{
+    state: function(){
+      return this.stateService.state;
+    }
   },
   methods: {
     toggleVideo: function () {
-      this.state.videoEnabled = !this.state.videoEnabled;
-      RTCUtils.SwitchVideoMute(this.connection, this.state.videoEnabled);
-      RTCUtils.SwitchAudioMute(this.connection, this.state.audioEnabled); // Temporaty patch for enable (if enabled) mic after video disabled
-      if(this.state.videoEnabled) this.connection.renegotiate();
+      this.stateService.switchVideoMute();
+      this.stateService.switchAudioMute(this.state.audioEnabled);// Temporaty patch for enable (if enabled) mic after video disabled
+      if(this.state.videoEnabled) this.stateService.renegotiateStreams();
     },
     toggleAudio: function () {
-      this.state.audioEnabled = !this.state.audioEnabled;
-      RTCUtils.SwitchAudioMute(this.connection, this.state.audioEnabled);
-      if(this.state.audioEnabled) this.connection.renegotiate();
+      this.stateService.switchAudioMute();
+      if(this.state.audioEnabled) this.stateService.renegotiateStreams();
     },
     toggleChat: function () {
-      this.state.chatOpened = !this.state.chatOpened;
+      this.stateService.state.chatOpened = !this.stateService.state.chatOpened;
     },
     shareScreen: function () {
-      this.connection.attachStreams.forEach((s) => s.stop());
-      this.state.screenEnabled = !this.state.screenEnabled;
-      this.state.audioEnabled = this.state.hasMicrophone;
-      this.state.videoEnabled = this.connection.dontCaptureUserMedia && !this.state.hasWebcam
-        ? false
-        : !this.state.screenEnabled;
-      RTCUtils.ScreenSharing(
-          this.connection,
-          this.state.screenEnabled,
-          this.state,
-          this.$store.state.application.deviceSettings,
-          this.addParticipantBlock
-      );
+      this.stateService.screenSharing();
     },
     leave: function () {
-      this.connection.leave();
-      window.location.href = "/";
+      this.stateService.leave();
+      this.$router.push("/");
     },
   },
 };
@@ -95,11 +84,6 @@ export default {
   vertical-align: middle;
   line-height: 48px;
   z-index: 100;
-}
-.room-name {
-  padding-top: 5px;
-  color: rgb(0, 0, 0, 0.4);
-  font-weight: bold;
 }
 .room-controls button {
   margin-right: 0.3em;

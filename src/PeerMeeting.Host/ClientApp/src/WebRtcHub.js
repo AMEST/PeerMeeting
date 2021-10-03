@@ -71,7 +71,10 @@ function WebRtcSignalR (connection, connectCallback) {
         console.warn("User " + data.data.remoteUserId +" kicked by "+data.data.sender)
         if(connection.userid !== data.data.remoteUserId) return
         connection.leave()
-        window.location.href = window.location.href + '/ended'
+        if(connection.onKicked)
+          connection.onKicked();
+        else
+          window.location.href = window.location.href + '/ended'
         break
     }
   })

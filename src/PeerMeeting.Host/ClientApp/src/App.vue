@@ -2,18 +2,20 @@
   <div id="app">
     <top-menu />
     <router-view v-if="this.$store.state.application.profile != null" />
-    <b-container v-else>
+    <b-container class="login-container" v-else>
       <log-in/>
     </b-container>
-    <a class="fork-me" href="https://github.com/AMEST/PeerMeeting"
-      >Fork me on
+    <a class="fork-me" href="https://github.com/AMEST/PeerMeeting">
+      Fork me
       <font-awesome-icon :icon="{ prefix: 'fab', iconName: 'github' }"/>
     </a>
+    <span class="text-muted text-version">{{this.$store.state.application.version}}</span>
     <settings-dialog/>
   </div>
 </template>
 
 <script>
+import axios from 'axios'
 import TopMenu from "@/components/TopMenu.vue";
 import SettingsDialog from "@/components/settings/SettingsDialog.vue";
 import LogIn from "@/components/LogIn.vue";
@@ -34,6 +36,15 @@ export default {
       self.$store.commit("updateMediaDevices", devices);
     });
   },
+  created: function(){
+    var self = this;
+    axios.get("/api/version").then(response =>{
+      if(response.data == null)
+        return
+      console.log('axios', response.data);
+      self.$store.commit("changeVersion", response.data.version)
+    })
+  }
 };
 </script>
 
@@ -66,8 +77,23 @@ export default {
   bottom: 0;
   color: black;
   background-color: rgba(0, 0, 0, 0.15);
-  width: 140px;
+  max-width: 270px;
+  padding-left: 5px;
+  padding-right: 5px;
   border-radius: 0px 10px 0px 0px;
+}
+
+.text-version{
+  position: fixed;
+  right: 5px;
+  bottom: 0;
+  z-index: -1;
+}
+
+.login-container{
+  height: calc(100vh - 58px);
+  align-items: baseline;
+  display: flex;
 }
 
 /* Scroll */

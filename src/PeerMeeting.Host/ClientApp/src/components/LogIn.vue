@@ -1,9 +1,8 @@
 <template>
   <b-card
-    bg-variant="secondary"
-    text-variant="white"
-    title="Who are you?"
-    style="margin-top: 3em"
+    bg-variant="light"
+    title="Write your name for participation in conference."
+    class="login-card"
   >
     <b-card-text>
       <b-form-input
@@ -12,7 +11,8 @@
         @keyup.enter="applyUserName"
       ></b-form-input>
     </b-card-text>
-    <b-button @click="applyUserName" variant="primary">Ok</b-button>
+    <br>
+    <b-button @click="applyUserName" variant="primary" size="lg">Continue</b-button>
   </b-card>
 </template>
 
@@ -22,14 +22,15 @@ export default {
   data: () => {
     return {
       username: null,
+      md5: require("md5"),
     };
   },
   methods: {
     applyUserName: function () {
       if (!this.username || this.username.length < 2) return;
-
+      var defaultEmail = this.md5(this.username + "@example.com");
       var profile = {
-        avatar: null,
+        avatar: "https://www.gravatar.com/avatar/" + defaultEmail + "?s=256&d=identicon",
         name: this.username,
       };
       this.$store.commit("changeProfile", profile);
@@ -39,4 +40,14 @@ export default {
 </script>
 
 <style>
+.login-card{
+  margin-top: 3em;
+  margin-left: auto;
+  margin-right: auto;
+  width: 460px;
+  height: 340px;
+}
+.login-card .card-body{
+  margin: 5.25rem 2.25rem 2.25rem 2.25rem;
+}
 </style>

@@ -2,7 +2,7 @@
   <b-container fluid class="container-center">
     <b-card bg-variant="light" title="The call was over." class="card-center">
       <b-card-text> You have been removed from the room </b-card-text>
-      <b-button href="/" variant="primary">Go to Home</b-button>
+      <b-button :to="'/'" variant="primary">Go to Home</b-button>
     </b-card>
   </b-container>
 </template>
@@ -13,7 +13,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .container-center {
   position: absolute;
   width: 100%;
