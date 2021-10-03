@@ -40,9 +40,8 @@ export default {
     var self = this;
     axios.get("/api/version").then(response =>{
       if(response.data == null)
-        return
-      console.log('axios', response.data);
-      self.$store.commit("changeVersion", response.data.version)
+        return;
+      self.$store.commit("changeVersion", response.data.version);
     })
   }
 };
