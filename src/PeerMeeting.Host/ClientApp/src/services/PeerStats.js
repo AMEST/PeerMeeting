@@ -33,7 +33,11 @@ export default class PeerStats {
         var self = this;
         this.timer = setInterval(() => {
             self.PeerConnection.getStats().then(r => {
-                self.parseReport(r);
+                try{
+                    self.parseReport(r);
+                }catch(e){
+                    console.error(e);
+                }
                 callback(self.stats);
             });
         }, interval)

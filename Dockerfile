@@ -1,7 +1,8 @@
 FROM alpine/git as version
 WORKDIR /src
 COPY . /src
-RUN echo $(git describe --tags --always 2>/dev/null) > /version
+RUN echo $(git describe --tags --always 2>/dev/null) > /version ;\
+    echo "Version: "$(cat /version)
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
 COPY . /build
@@ -13,7 +14,7 @@ RUN apt-get update -yq ;\
 	apt-get install -y nodejs
 
 # Apply calculated version	
-# RUN sed -i -e "s/<Version>0-develop<\/Version>/<Version>$(cat version | cut -c2- )<\/Version>/g" src/PeerMeeting.Host/PeerMeeting.Host.csproj;\
+RUN sed -i -e "s/<Version>0-develop<\/Version>/<Version>$(cat version | cut -c2- )<\/Version>/g" src/PeerMeeting.Host/PeerMeeting.Host.csproj;\
 RUN dotnet restore -s https://api.nuget.org/v3/index.json; \
     dotnet build --no-restore -c Release; \    
     dotnet publish ./src/PeerMeeting.Host/PeerMeeting.Host.csproj -c Release -o /app --no-build; \

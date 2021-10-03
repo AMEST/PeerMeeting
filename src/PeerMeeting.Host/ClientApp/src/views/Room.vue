@@ -212,9 +212,6 @@ export default {
 };
 </script>
 <style scoped>
-#app {
-  height: calc(100vh - 48px) !important;
-}
 .room-name {
   color: rgb(0, 0, 0, 0.4);
   font-weight: bold;
@@ -235,9 +232,6 @@ export default {
   min-height: calc(100vh - 108px);
   align-items: center;
   position: relative;
-}
-.fork-me {
-  display: none;
 }
 @media (max-width: 380px) {
   .container-fluid {
