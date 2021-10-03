@@ -216,7 +216,7 @@ export default {
   color: rgb(0, 0, 0, 0.4);
   font-weight: bold;
   max-width: 43%;
-  overflow-x: hidden;
+  overflow: hidden;
   margin-left: auto;
   margin-right: auto;
 }
