@@ -216,6 +216,8 @@ export default {
   color: rgb(0, 0, 0, 0.4);
   font-weight: bold;
   max-width: 43%;
+  max-height: 40px;
+  word-break: break-all;
   overflow: hidden;
   margin-left: auto;
   margin-right: auto;
