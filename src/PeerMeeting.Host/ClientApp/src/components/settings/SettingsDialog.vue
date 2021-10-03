@@ -12,17 +12,6 @@ import ProfileTab from '@/components/settings/ProfileTab.vue';
 import DevicesTab from '@/components/settings/DevicesTab.vue';
 export default {
   name: "SettingsDialog",
-  data: () => {
-    return {
-      username: "",
-      email: "",
-      audioInput: null,
-      videoInput: null,
-      audioDevices: [],
-      videoDevices: [],
-      md5: require("md5"),
-    };
-  },
   components:{
     ProfileTab,
     DevicesTab

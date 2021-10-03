@@ -2,7 +2,6 @@
 import WebRtcSignalR from "@/WebRtcHub";
 import RTCUtils from "@/RTCUtils";
 import RTCMultiConnection from "rtcmulticonnection";
-import CommonUtils from "@/CommonUtils";
 import { v4 as uuidv4 } from "uuid";
 
 export default class PeerMeetingRtcMulticonnection {

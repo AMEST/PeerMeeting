@@ -221,6 +221,7 @@ export default {
   margin-right: auto;
 }
 .room-container{
+  pointer-events: none; 
   position: fixed;
   top: 10px;
   left: 0;

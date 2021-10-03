@@ -33,7 +33,7 @@
 
 <script>
 export default {
-    name: "ProfileTab",
+  name: "ProfileTab",
   data: () => {
     return {
       username: "",

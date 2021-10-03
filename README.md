@@ -46,10 +46,10 @@ Web sockets for signaling also go only via https.
 ### Screenshots
 |||
 | ------------- |:-------------:|
-| [![Welcome](https://i.postimg.cc/26MXQ18S/2021-05-29-19-35-57-peer-meeting-nb-47-dev-tk-a023ae34e98b.png)](https://postimg.cc/0MGfx2wT) | [![Main](https://i.postimg.cc/nrmS0nCY/2021-05-29-19-36-48-peer-meeting-nb-47-dev-tk-6ef14df64714.png)](https://postimg.cc/JH1QhV3G) |
-| [![Settings](https://i.postimg.cc/wTKG3RGW/2021-05-29-19-37-22-peer-meeting-nb-47-dev-tk-327dcb51e134.png)](https://postimg.cc/7bVVWhD7) | [![Room](https://i.postimg.cc/44H0JQB7/2021-05-29-19-37-58-peer-meeting-nb-47-dev-tk-37aba08e9834.png)](https://postimg.cc/fkZCCm4D) | 
-| [![Two Participants](https://i.postimg.cc/4xs2QkZV/2021-05-29-19-40-39-peer-meeting-nb-47-dev-tk-2610b1f08276.png)](https://postimg.cc/mtpSTnPg) | [![Three participants](https://i.postimg.cc/CLj68Lyw/2021-05-29-19-41-31-peer-meeting-nb-47-dev-tk-d00226a75cb3.png)](https://postimg.cc/hftrWnPY) |
-| [![HalfScreen Mode](https://i.postimg.cc/dV6HWHtX/2021-05-29-19-41-51-peer-meeting-nb-47-dev-tk-ba27ecdde12c.png)](https://postimg.cc/ts1NJz6t)|[![Chat](https://i.postimg.cc/9XG8v9MW/2021-06-19-15-52-19-localhost-1132dfab7674.png)](https://postimg.cc/V5kWtdnT)|
+| [![Welcome](https://i.postimg.cc/fL2cN337/2021-10-03-14-45-49-localhost-ad5e9a8cad54.png)](https://postimg.cc/62Z2VpfT) | [![Main](https://i.postimg.cc/nrmS0nCY/2021-05-29-19-36-48-peer-meeting-nb-47-dev-tk-6ef14df64714.png)](https://postimg.cc/JH1QhV3G) |
+| [![Settings](https://i.postimg.cc/wTKG3RGW/2021-05-29-19-37-22-peer-meeting-nb-47-dev-tk-327dcb51e134.png)](https://postimg.cc/7bVVWhD7) | [![Room](https://i.postimg.cc/tJR2pQCP/2021-10-03-15-10-38-localhost-bf9185ef1da1.png)](https://postimg.cc/R68cLYtV) | 
+| [![Two Participants](https://i.postimg.cc/FRVDMsmN/2021-10-03-15-04-54-localhost-3954f0a5e8b1.png)](https://postimg.cc/qhgsnrz5) | [![Three participants](https://i.postimg.cc/kG2xXn80/2021-10-03-14-44-01-localhost-c258612039cf.png)](https://postimg.cc/tnH1BGBk) |
+| [![HalfScreen Mode](https://i.postimg.cc/KzvPw7Yv/2021-10-03-14-38-04-localhost-e5f6d0ec1120.png)](https://postimg.cc/ts1NJz6t)|[![Chat](https://i.postimg.cc/cCDTJ9rz/2021-10-03-15-07-16-localhost-3561a7fb305b.png)](https://postimg.cc/T5Dn7cjj)|
 
 ## Self-hosted Requirements
 * AspNet Core 3.1 runtime or Docker for service start
