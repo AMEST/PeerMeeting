@@ -15,7 +15,7 @@ RUN apt-get update -yq ;\
 
 # Apply calculated version	
 RUN sed -i -e "s/<Version>0-develop<\/Version>/<Version>$(cat version | cut -c2- )<\/Version>/g" src/PeerMeeting.Host/PeerMeeting.Host.csproj;\
-RUN dotnet restore -s https://api.nuget.org/v3/index.json; \
+    dotnet restore -s https://api.nuget.org/v3/index.json; \
     dotnet build --no-restore -c Release; \    
     dotnet publish ./src/PeerMeeting.Host/PeerMeeting.Host.csproj -c Release -o /app --no-build; \
     dotnet nuget locals http-cache --clear;\
