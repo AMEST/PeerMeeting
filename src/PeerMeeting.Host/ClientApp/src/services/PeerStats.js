@@ -35,10 +35,10 @@ export default class PeerStats {
             self.PeerConnection.getStats().then(r => {
                 try{
                     self.parseReport(r);
+                    callback(self.stats);
                 }catch(e){
                     console.error(e);
                 }
-                callback(self.stats);
             });
         }, interval)
     }
