@@ -8,8 +8,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.SpaServices;
+using PeerMeeting.Domain;
 using PeerMeeting.Host.Configuration;
 using PeerMeeting.Host.Hubs;
+using PeerMeeting.Host.Services;
 using VueCliMiddleware;
 using PeerMeeting.Host.Infrastructure;
 using Prometheus.HttpMetrics;
@@ -64,6 +66,8 @@ namespace PeerMeeting.Host
             services.AddSingleton<ChatHub>();
             services.AddSingleton(Configuration.GetMetricsConfiguration());
             services.AddHostedService<MetricsService>();
+            services.AddSingleton<ICredentialsService, HmacCredentialsService>();
+            services.AddSingleton(Configuration.GetCoturnConfiguration());
             services.AddResponseCompression(options =>
             {
                 options.Providers.Add<BrotliCompressionProvider>();

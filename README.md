@@ -34,6 +34,7 @@ The service is adjusted based on the mesh model. This network is implemented to 
 7. Local room history on home page
 8. Participants control (volume control, mute one/all participants, kick)
 9. Application metrics (prometheus endpoint with runtime and endpoints metrics)
+10. Integration with TURN server (coturn).
 
 ### Security 
 High level of security: all connections are protected and encrypted according to the DTLS and SRTP protocols. At the same time, WebRTC works only over the HTTPS protocol, and the site using the technology must be signed with a certificate.

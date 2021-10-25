@@ -3,6 +3,10 @@ version: '3.8'
 services:
   host:
     image: eluki/peer-meeting
+    environment:
+      - "Coturn:Enabled=true"
+      - "Coturn:TurnAddress=[coturnIP]:3478"
+      - "Coturn:SharedSecret=VerySecretSharedKey"
     ports:
      - target: 80
        published: 30005
@@ -16,6 +20,32 @@ services:
         order: stop-first
       placement:
         max_replicas_per_node: 1
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "3m"
+        max-file: "3"
+
+  coturn:
+    image: coturn/coturn
+    command: 
+      - "-n"
+      - "--log-file=stdout"
+      - "--listening-port=3478"
+      - "--min-port=49160"
+      - "--max-port=49200"
+      - "--external-ip='$(detect-external-ip)'"
+      - "--realm='$(hostname)'"
+      - "--use-auth-secret"
+      - "--static-auth-secret=VerySecretSharedKey"
+      - "--no-tls"
+      - "--no-tcp"
+    ports:
+     - 3478:3478/tcp
+     - 3478:3478/udp
+     - 49160-49200:49160-49200/udp
+    deploy:
+      replicas: 1
     logging:
       driver: "json-file"
       options:

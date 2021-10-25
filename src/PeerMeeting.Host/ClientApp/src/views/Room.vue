@@ -141,7 +141,6 @@ export default {
         console.error("Error Initialize RTCMultuConnection", e);
         window.location.reload();
       }
-
       this.rtcConnection.setOnStream(this.addParticipantBlock);
       this.rtcConnection.setOnStreamEnded(this.streamEnded);
       this.rtcConnection.setOnUserStatusChanged(this.userStatusChanged);

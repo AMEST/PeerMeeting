@@ -67,7 +67,7 @@ export default {
     },
     leave: function () {
       this.stateService.leave();
-      this.$router.push("/");
+      window.location.href = "/";
     },
   },
 };

@@ -43,6 +43,10 @@ if (roomHistory !== undefined) {
     store.commit('addRoomToHistory', element)
   })
 }
+var turnOnly = window.localStorage['turnOnly']
+if (turnOnly !== undefined) {
+  store.commit('changeTurnOnly', JSON.parse(turnOnly))
+}
 navigator.getUserMedia = navigator.getUserMedia ||
   navigator.webkitGetUserMedia ||
   navigator.mozGetUserMedia

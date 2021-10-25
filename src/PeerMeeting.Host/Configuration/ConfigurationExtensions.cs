@@ -30,5 +30,12 @@ namespace PeerMeeting.Host.Configuration
                     throw new ArgumentNullException("Username or password can't be null or empty when metrics enablend and authroization enabled too.");
             return metricsConfiguration;
         }
+
+        public static CoturnConfiguration GetCoturnConfiguration(this IConfiguration configuration)
+        {
+            var coturnConfiguration = new CoturnConfiguration();
+            configuration.GetSection("Coturn").Bind(coturnConfiguration);
+            return coturnConfiguration;
+        }
     }
 }

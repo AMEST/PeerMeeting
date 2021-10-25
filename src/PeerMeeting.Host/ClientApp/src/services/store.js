@@ -14,7 +14,9 @@ export default new Vuex.Store({
         audioInput: null,
         videoInput: null
       },
-      chat:{
+      turnSettings: null,
+      turnOnly: false,
+      chat: {
         hasNewMessages: false
       },
       roomHistory: [],
@@ -35,6 +37,10 @@ export default new Vuex.Store({
     },
     changeHasNewMessages (state, payload) {
       state.application.chat.hasNewMessages = payload
+    },
+    changeTurnOnly (state, payload) {
+      window.localStorage['turnOnly'] = JSON.stringify(payload)
+      state.application.turnOnly = payload
     },
     // eslint-disable-next-line
     clearProfile (state) {
@@ -65,6 +71,9 @@ export default new Vuex.Store({
     },
     updateMediaDevices (state, payload) {
       state.application.mediaDevices = payload
+    },
+    updateTurnSettings (state, payload) {
+      state.application.turnSettings = payload
     },
     addDeviceChangedCallback (state, payload) {
       state.application.inputDeviceChangedCallbacks.push(payload)
