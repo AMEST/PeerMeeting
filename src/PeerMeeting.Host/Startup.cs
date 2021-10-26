@@ -11,6 +11,11 @@ using Microsoft.AspNetCore.SpaServices;
 using PeerMeeting.Host.Configuration;
 using PeerMeeting.Host.Hubs;
 using VueCliMiddleware;
+using PeerMeeting.Host.Infrastructure;
+using Prometheus.HttpMetrics;
+using System.Collections.Generic;
+using Prometheus;
+using System;
 
 namespace PeerMeeting.Host
 {
@@ -22,9 +27,15 @@ namespace PeerMeeting.Host
         /// <summary>
         /// Constructor
         /// </summary>
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, Microsoft.Extensions.Hosting.IHostingEnvironment environment)
         {
             Configuration = configuration;
+            Metrics.DefaultRegistry.SetStaticLabels(new Dictionary<string, string>
+            {
+                { "environment", environment.EnvironmentName },
+                { "hostname", Environment.MachineName },
+                { "application", "PeerMeeting" }
+            });
         }
 
         /// <summary>
@@ -51,6 +62,8 @@ namespace PeerMeeting.Host
             services.AddSpaStaticFiles(c => c.RootPath = "ClientApp/dist");
             services.AddSingleton<WebRtcHub>();
             services.AddSingleton<ChatHub>();
+            services.AddSingleton(Configuration.GetMetricsConfiguration());
+            services.AddHostedService<MetricsService>();
             services.AddResponseCompression(options =>
             {
                 options.Providers.Add<BrotliCompressionProvider>();
@@ -62,7 +75,7 @@ namespace PeerMeeting.Host
         /// <summary>
         /// Configure app pipeline
         /// </summary>
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, MetricsConfiguration metricsConfiguration)
         {
             app.UseResponseCompression();
             if (env.IsDevelopment())
@@ -73,12 +86,13 @@ namespace PeerMeeting.Host
             {
                 app.UseExceptionHandler("/Error");
             }
+            app.UseRouting();
+
+            app.UseMetrics(metricsConfiguration);
 
             app.UseSpaStaticFiles();
 
             app.UseAuthentication();
-
-            app.UseRouting();
 
             app.UseAuthorization();
 
