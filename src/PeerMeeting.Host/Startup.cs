@@ -33,7 +33,8 @@ namespace PeerMeeting.Host
             Metrics.DefaultRegistry.SetStaticLabels(new Dictionary<string, string>
             {
                 { "environment", environment.EnvironmentName },
-                { "hostname", Environment.MachineName }
+                { "hostname", Environment.MachineName },
+                { "application", "PeerMeeting" }
             });
         }
 
