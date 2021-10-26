@@ -12,13 +12,12 @@ namespace PeerMeeting.Host.Infrastructure
 {
     public static class ApplicationBuilderExtensions
     {
-        private static string MetricsPath = "/api/metrics";
         public static IApplicationBuilder UseMetrics(this IApplicationBuilder builder, MetricsConfiguration configuration)
         {
             if(!configuration.Enabled)
                 return builder;
 
-            return builder.Map(MetricsPath, metricsApp =>
+            return builder.Map(configuration.Endpoint, metricsApp =>
             {
                 if (configuration.BasicAuth)
                     metricsApp.UseMiddleware<BasicAuthMiddleware>(configuration);
@@ -30,7 +29,7 @@ namespace PeerMeeting.Host.Infrastructure
                 {
                     var routeData = context.GetRouteData();
                     if (string.IsNullOrEmpty(routeData.Values["controller"] as string))
-                        context.GetRouteData().Values.Add("controller", context.GetCustomControllerName());
+                        context.GetRouteData().Values.Add("controller", context.GetCustomControllerName(configuration));
                     if (string.IsNullOrEmpty(routeData.Values["action"] as string))
                         context.GetRouteData().Values.Add("action", context.Request.Path.Value);
                 }
@@ -39,13 +38,13 @@ namespace PeerMeeting.Host.Infrastructure
             .UseHttpMetrics(); ;
         }
 
-        private static string GetCustomControllerName(this HttpContext context)
+        private static string GetCustomControllerName(this HttpContext context, MetricsConfiguration configuration)
         {
             var path = context.Request.Path.Value;
             if (path.StartsWith("/ws/"))
                 return "signalR";
 
-            if (path.StartsWith(MetricsPath))
+            if (path.StartsWith(configuration.Endpoint))
                 return "prometheus";
 
             return "spa";
