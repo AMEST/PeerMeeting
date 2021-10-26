@@ -19,6 +19,7 @@ namespace PeerMeeting.Host.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public TurnCredentials Generate([FromForm] string username)
         {
             return _coturnConfiguration.Enabled 

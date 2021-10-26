@@ -16,6 +16,7 @@ import store from './services/store'
 import VueSimpleMarkdown from 'vue-simple-markdown'
 // You need a specific loader for CSS files like https://github.com/webpack/css-loader
 import 'vue-simple-markdown/dist/vue-simple-markdown.css'
+import axios from 'axios'
 
 Vue.config.productionTip = false
 // Initialize FontAwesome
@@ -50,6 +51,13 @@ if (turnOnly !== undefined) {
 navigator.getUserMedia = navigator.getUserMedia ||
   navigator.webkitGetUserMedia ||
   navigator.mozGetUserMedia
+
+if (document.cookie.indexOf('CSRF-TOKEN') > -1) {
+  const v = document.cookie.match('(^|;) ?' + 'CSRF-TOKEN' + '=([^;]*)(;|$)')
+  const r = v ? v[2] : ''
+  var csrfToken = r
+  axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken
+}
 
 new Vue({
   store,
