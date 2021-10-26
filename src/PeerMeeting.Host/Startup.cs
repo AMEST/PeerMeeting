@@ -13,6 +13,9 @@ using PeerMeeting.Host.Hubs;
 using VueCliMiddleware;
 using PeerMeeting.Host.Infrastructure;
 using Prometheus.HttpMetrics;
+using System.Collections.Generic;
+using Prometheus;
+using System;
 
 namespace PeerMeeting.Host
 {
@@ -24,9 +27,14 @@ namespace PeerMeeting.Host
         /// <summary>
         /// Constructor
         /// </summary>
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, Microsoft.Extensions.Hosting.IHostingEnvironment environment)
         {
             Configuration = configuration;
+            Metrics.DefaultRegistry.SetStaticLabels(new Dictionary<string, string>
+            {
+                { "environment", environment.EnvironmentName },
+                { "hostname", Environment.MachineName }
+            });
         }
 
         /// <summary>
