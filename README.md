@@ -33,6 +33,7 @@ The service is adjusted based on the mesh model. This network is implemented to 
 6. Pseudo fullscreen and half screen mode for prticipants blocks
 7. Local room history on home page
 8. Participants control (volume control, mute one/all participants, kick)
+9. Application metrics (prometheus endpoint with system and endpoints metrics)
 
 ### Security 
 High level of security: all connections are protected and encrypted according to the DTLS and SRTP protocols. At the same time, WebRTC works only over the HTTPS protocol, and the site using the technology must be signed with a certificate.

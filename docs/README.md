@@ -29,6 +29,11 @@ Available configurations:
 1. `Serilog:MinimumLevel:Default` - configuring logger minimum level
 2. `Redis:Enabled` - (default false) enable/disable redis connection. Need for scale service
 3. `Redis:ConnectionString` - connection string to redis. (example: `localhost,user=serviceuser,password=VeryHardPass,channelPrefix=peermeeting`)
+4. `Metrics:Enabled` - (default false) enable/disable collecting metrics and prometheus endpoint (`/api/metrics`)
+5. `Metrics:BasicAuth` - (default false) enable/disable basic authorization on prometheus endpoint
+6. `Metrics:Username` - username for basic authorize
+7. `Metrics:Password` - password for basic authorize
+
 
 #### Configure not in container
 For configuring you need to make changes to `appsettings.Production.json`. The list of settings is identical to that described in the "Configure container" block.
