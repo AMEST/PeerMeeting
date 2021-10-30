@@ -34,8 +34,6 @@ namespace PeerMeeting.Host.Configuration
         /// <summary>
         /// Get Coturn configuration
         /// </summary>
-        /// <param name="configuration"></param>
-        /// <returns></returns>
         public static CoturnConfiguration GetCoturnConfiguration(this IConfiguration configuration)
         {
             var coturnConfiguration = new CoturnConfiguration();
