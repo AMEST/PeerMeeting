@@ -9,7 +9,7 @@ namespace PeerMeeting.Host.Configuration
     public static class ConfigurationExtensions
     {
         /// <summary>
-        /// Get Redis Configuration 
+        /// Get Redis configuration 
         /// </summary>
         public static RedisConfiguration GetRedisConfiguration(this IConfiguration configuration)
         {
@@ -19,7 +19,7 @@ namespace PeerMeeting.Host.Configuration
         }
 
         /// <summary>
-        /// Get Metrics Configuration 
+        /// Get metrics configuration 
         /// </summary>
         public static MetricsConfiguration GetMetricsConfiguration(this IConfiguration configuration)
         {
@@ -31,6 +31,11 @@ namespace PeerMeeting.Host.Configuration
             return metricsConfiguration;
         }
 
+        /// <summary>
+        /// Get Coturn configuration
+        /// </summary>
+        /// <param name="configuration"></param>
+        /// <returns></returns>
         public static CoturnConfiguration GetCoturnConfiguration(this IConfiguration configuration)
         {
             var coturnConfiguration = new CoturnConfiguration();
