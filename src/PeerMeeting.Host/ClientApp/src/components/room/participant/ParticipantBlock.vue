@@ -252,6 +252,7 @@ export default {
   min-height: 250px;
   margin-bottom: 1em !important;
   transition: box-shadow 0.4s;
+  justify-content: center;
 }
 .user-block video {
   background-color: transparent;
@@ -287,6 +288,7 @@ export default {
   color: black;
   font-weight: bold;
   z-index: 2;
+  top: 0;
 }
 .pseudo-fullscreen {
   position: fixed;
