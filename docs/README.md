@@ -119,10 +119,9 @@ services:
       - "--static-auth-secret=VerySecretSharedKey"
       - "--no-tls"
       - "--no-tcp"
-    ports:
-     - 3478:3478/tcp
-     - 3478:3478/udp
-     - 49160-49200:49160-49200/udp
+      #- "--no-stun" #optional disable stun functionality
+    networks:
+      - outside
     deploy:
       replicas: 1
     logging:
@@ -130,6 +129,11 @@ services:
       options:
         max-size: "3m"
         max-file: "3"
+
+networks:
+  outside:
+    external: true
+    name: "host"
 
 ```
 
