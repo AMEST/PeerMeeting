@@ -1,9 +1,9 @@
 <template>
   <div id="app">
     <top-menu />
-    <router-view v-if="this.$store.state.application.profile != null" />
+    <router-view v-if="this.$store.state.application.profile != null && this.loaded" />
     <b-container class="login-container" v-else>
-      <log-in/>
+      <log-in v-if="this.loaded" />
     </b-container>
     <a class="fork-me" href="https://github.com/AMEST/PeerMeeting">
       Fork me
@@ -19,12 +19,16 @@ import axios from 'axios'
 import TopMenu from "@/components/TopMenu.vue";
 import SettingsDialog from "@/components/settings/SettingsDialog.vue";
 import LogIn from "@/components/LogIn.vue";
+import { v4 as uuidv4 } from "uuid";
 export default {
   components: {
     TopMenu,
     SettingsDialog,
     LogIn
   },
+  data: () => ({
+    loaded: false,
+  }),
   mounted: function () {
     var self = this;
     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
@@ -36,13 +40,18 @@ export default {
       self.$store.commit("updateMediaDevices", devices);
     });
   },
-  created: function(){
-    var self = this;
-    axios.get("/api/version").then(response =>{
-      if(response.data == null)
-        return;
-      self.$store.commit("changeVersion", response.data.version);
-    })
+  created: async function(){
+    var versionRequest = await axios.get("/api/version");
+    if(versionRequest.data != null){
+      this.$store.commit("changeVersion", versionRequest.data.version);
+    }
+    var username = this.$store.state.application.profile != null ? this.$store.state.application.profile.name : uuidv4();
+    var turnRequest = await axios.post("/api/credentials","username="+username);
+    if (turnRequest.data != null && turnRequest.status != 204){
+      this.$store.commit("updateTurnSettings", turnRequest.data);
+    }
+    
+    this.loaded = true;
   }
 };
 </script>

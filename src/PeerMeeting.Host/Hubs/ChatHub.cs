@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
-using PeerMeeting.Domain.Entities;
+using PeerMeeting.Domain.Contracts;
 
 namespace PeerMeeting.Host.Hubs
 {

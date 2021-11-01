@@ -30,6 +30,7 @@ export default class PeerMeetingRtcMulticonnection {
             OfferToReceiveAudio: true,
             OfferToReceiveVideo: true
         };
+        this._configureIceServers();
         this._configureKicked();
         this._configureMute();
         this._configureVoiceDetection();
@@ -98,6 +99,21 @@ export default class PeerMeetingRtcMulticonnection {
             videoMuted: false,
             speacking: false
         };
+    }
+
+    _configureIceServers() {
+        if(this.store.state.application.turnSettings != null){
+            if(this.store.state.application.turnOnly){
+              this.connection.iceServers = [];
+              this.connection.candidates.host = false;
+              this.connection.iceTransportPolicy = 'relay';
+            }
+            this.connection.iceServers.push({
+                urls: this.store.state.application.turnSettings.uris[0],
+                credential: this.store.state.application.turnSettings.password,
+                username: this.store.state.application.turnSettings.username
+            });
+        }
     }
 
     _configureKicked(){

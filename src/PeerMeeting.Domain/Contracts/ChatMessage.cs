@@ -1,6 +1,6 @@
 using System;
 
-namespace PeerMeeting.Domain.Entities
+namespace PeerMeeting.Domain.Contracts
 {
     public class ChatMessage
     {

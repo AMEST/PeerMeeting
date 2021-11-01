@@ -18,8 +18,8 @@
     >
       Bandwidth: {{ this.bytesToSize(this.stats.bandwidth) }}<br />
       State: {{ this.stats.connectionState }}<br />
-      Local: {{ this.stats.ips.local }} {{ this.stats.transport.local }}<br />
-      Remote: {{ this.stats.ips.remote }} {{ this.stats.transport.remote
+      Local ({{this.stats.stunOrTurn.local}}): {{ this.stats.ips.local }} {{ this.stats.transport.local }}<br />
+      Remote ({{this.stats.stunOrTurn.remote}}): {{ this.stats.ips.remote }} {{ this.stats.transport.remote
       }}<br />
       Data transfered: {{ this.bytesToSize(this.stats.data.receive) }}
       <b-icon icon="arrow-down-up" />

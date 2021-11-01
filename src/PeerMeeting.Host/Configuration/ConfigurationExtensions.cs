@@ -9,7 +9,7 @@ namespace PeerMeeting.Host.Configuration
     public static class ConfigurationExtensions
     {
         /// <summary>
-        /// Get Redis Configuration 
+        /// Get Redis configuration 
         /// </summary>
         public static RedisConfiguration GetRedisConfiguration(this IConfiguration configuration)
         {
@@ -19,7 +19,7 @@ namespace PeerMeeting.Host.Configuration
         }
 
         /// <summary>
-        /// Get Metrics Configuration 
+        /// Get metrics configuration 
         /// </summary>
         public static MetricsConfiguration GetMetricsConfiguration(this IConfiguration configuration)
         {
@@ -29,6 +29,16 @@ namespace PeerMeeting.Host.Configuration
                 if (string.IsNullOrEmpty(metricsConfiguration.Username) || string.IsNullOrEmpty(metricsConfiguration.Password))
                     throw new ArgumentNullException("Username or password can't be null or empty when metrics enablend and authroization enabled too.");
             return metricsConfiguration;
+        }
+
+        /// <summary>
+        /// Get Coturn configuration
+        /// </summary>
+        public static CoturnConfiguration GetCoturnConfiguration(this IConfiguration configuration)
+        {
+            var coturnConfiguration = new CoturnConfiguration();
+            configuration.GetSection("Coturn").Bind(coturnConfiguration);
+            return coturnConfiguration;
         }
     }
 }

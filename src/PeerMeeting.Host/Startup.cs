@@ -1,15 +1,21 @@
 // Copyright 2021 klabukov.
 // SPDX-License-Identifier: GPL-3.0-only
 
+using System;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.SpaServices;
+using PeerMeeting.Domain;
 using PeerMeeting.Host.Configuration;
 using PeerMeeting.Host.Hubs;
+using PeerMeeting.Host.Middlewares;
+using PeerMeeting.Host.Services;
 using VueCliMiddleware;
 using PeerMeeting.Host.Infrastructure;
 using Prometheus.HttpMetrics;
@@ -64,18 +70,26 @@ namespace PeerMeeting.Host
             services.AddSingleton<ChatHub>();
             services.AddSingleton(Configuration.GetMetricsConfiguration());
             services.AddHostedService<MetricsService>();
+            services.AddSingleton<ICredentialsService, HmacCredentialsService>();
+            services.AddSingleton(Configuration.GetCoturnConfiguration());
+            services.AddScoped<CsrfMiddleware>();
             services.AddResponseCompression(options =>
             {
                 options.Providers.Add<BrotliCompressionProvider>();
                 options.Providers.Add<GzipCompressionProvider>();
                 options.EnableForHttps = true;
             });
+            services.AddAntiforgery(options =>
+            {
+                options.HeaderName = "X-CSRF-TOKEN";
+                options.SuppressXFrameOptionsHeader = false;
+            });
         }
 
         /// <summary>
         /// Configure app pipeline
         /// </summary>
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, MetricsConfiguration metricsConfiguration)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, MetricsConfiguration metricsConfiguration, IAntiforgery antiforgery)
         {
             app.UseResponseCompression();
             if (env.IsDevelopment())
@@ -89,6 +103,8 @@ namespace PeerMeeting.Host
             app.UseRouting();
 
             app.UseMetrics(metricsConfiguration);
+
+            app.UseCsrf();
 
             app.UseSpaStaticFiles();
 

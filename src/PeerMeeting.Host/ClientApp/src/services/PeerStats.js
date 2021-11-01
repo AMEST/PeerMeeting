@@ -76,17 +76,17 @@ export default class PeerStats {
                 self.stats.ips.local = (self.isFirefox ? localCandidate.address : localCandidate.ip) + ":" + localCandidate.port;
                 self.stats.transport.local = localCandidate.protocol;
                 self.stats.stunOrTurn.local =
-                    localCandidate.candidateType.indexOf("relayed") !== -1
-                        ? "TURN"
-                        : "STUN";
+                    localCandidate.candidateType.indexOf("relay")  == -1
+                        ? "STUN"
+                        : "TURN";
 
                 var remoteCandidate = report.get(candidatePair.remoteCandidateId);
                 self.stats.ips.remote = (self.isFirefox ? remoteCandidate.address : remoteCandidate.ip) + ":" + remoteCandidate.port;
                 self.stats.transport.remote = remoteCandidate.protocol;
                 self.stats.stunOrTurn.remote =
-                    remoteCandidate.candidateType.indexOf("relayed") !== -1
-                        ? "TURN"
-                        : "STUN";
+                    remoteCandidate.candidateType.indexOf("relay") == -1
+                        ? "STUN"
+                        : "TURN";
                 return
             }
         });
