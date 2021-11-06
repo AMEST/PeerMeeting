@@ -21,7 +21,8 @@ namespace PeerMeeting.Host
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>()
-                        .UseSerilog(ConfigureSerilog);
+                        .UseSerilog(ConfigureSerilog)
+                        .UseSentry();
                 });
 
         public static void ConfigureSerilog(WebHostBuilderContext ctx, LoggerConfiguration config)
