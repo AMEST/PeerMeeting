@@ -5,7 +5,6 @@ using System;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,10 +17,10 @@ using PeerMeeting.Host.Middlewares;
 using PeerMeeting.Host.Services;
 using VueCliMiddleware;
 using PeerMeeting.Host.Infrastructure;
-using Prometheus.HttpMetrics;
 using System.Collections.Generic;
 using Prometheus;
-using System;
+using Microsoft.AspNetCore.DataProtection;
+using StackExchange.Redis;
 
 namespace PeerMeeting.Host
 {
@@ -61,8 +60,14 @@ namespace PeerMeeting.Host
                 o.MaximumReceiveMessageSize = 256 * 1024; //256 KB
             });
             if (redisConfiguration.Enabled && !string.IsNullOrEmpty(redisConfiguration.ConnectionString))
+            {
                 signalRBuilder.AddStackExchangeRedis(redisConfiguration.ConnectionString);
-                
+                services.AddDataProtection()
+                    .PersistKeysToStackExchangeRedis(
+                        ConnectionMultiplexer.Connect(redisConfiguration.ConnectionString), 
+                        "DataProtection-Keys");
+            }
+
             services.AddControllers();
             services.AddMvc();
             services.AddSpaStaticFiles(c => c.RootPath = "ClientApp/dist");
