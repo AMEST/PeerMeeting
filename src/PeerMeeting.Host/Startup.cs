@@ -62,10 +62,11 @@ namespace PeerMeeting.Host
             if (redisConfiguration.Enabled && !string.IsNullOrEmpty(redisConfiguration.ConnectionString))
             {
                 signalRBuilder.AddStackExchangeRedis(redisConfiguration.ConnectionString);
+                var redis = ConnectionMultiplexer.Connect(redisConfiguration.ConnectionString);
                 services.AddDataProtection()
                     .PersistKeysToStackExchangeRedis(
-                        ConnectionMultiplexer.Connect(redisConfiguration.ConnectionString), 
-                        "DataProtection-Keys");
+                        redis, 
+                        "peermeeting.DataProtection-Keys");
             }
 
             services.AddControllers();
