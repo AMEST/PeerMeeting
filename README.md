@@ -43,7 +43,8 @@ Web sockets for signaling also go only via https.
 
 ### Supported browsers
 1. Chomium based browsers on windows, linux and android
-2. Half support firefox (work all function with some bugs)
+2. Firefox (work all function with some bugs)
+3. Safari >= 15 (work all function with some bugs)
 
 ### Screenshots
 |||
