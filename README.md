@@ -2,9 +2,16 @@
 ![hub.docker.com](https://img.shields.io/docker/pulls/eluki/peer-meeting.svg)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/amest/PeerMeeting)
 ![GitHub](https://img.shields.io/github/license/amest/PeerMeeting)
-# ![Icon](https://github.com/AMEST/PeerMeeting/raw/master/src/PeerMeeting.Host/ClientApp/public/img/icons/apple-touch-icon-60x60.png) PeerMeeting - simple peer to peer video conference server
 
-- [!Icon PeerMeeting - simple peer to peer video conference server](#-peermeeting---simple-peer-to-peer-video-conference-server)
+<p align="center">
+  <a href="https://peer-meeting.nb-47-dev.tk">
+    <img alt="PeerMeetingIcon" src="https://github.com/AMEST/PeerMeeting/raw/master/src/PeerMeeting.Host/ClientApp/public/img/icons/android-chrome-512x512.png" width="120" />
+  </a>
+</p>
+
+# PeerMeeting - simple peer to peer video conference server
+
+- [PeerMeeting - simple peer to peer video conference server](#-peermeeting---simple-peer-to-peer-video-conference-server)
   - [Links](#links)
   - [Description](#description)
     - [Features](#features)
