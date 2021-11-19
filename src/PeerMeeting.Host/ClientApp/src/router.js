@@ -24,7 +24,7 @@ export default new Router({
     {
       path: '/:id/ended',
       name: 'callEnded',
-      component: () => import(/* webpackChunkName: "room" */ './views/CallEnded.vue')
+      component: () => import(/* webpackChunkName: "callended" */ './views/CallEnded.vue')
     }
   ]
 })

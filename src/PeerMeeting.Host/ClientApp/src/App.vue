@@ -5,7 +5,11 @@
     <b-container class="login-container" v-else>
       <log-in v-if="this.loaded" />
     </b-container>
-    <a class="fork-me" href="https://github.com/AMEST/PeerMeeting">
+    <a 
+    :class="[this.$route.name == 'room'? 'hide-forkme' : '']"
+    class="fork-me" 
+    href="https://github.com/AMEST/PeerMeeting"
+    >
       Fork me
       <font-awesome-icon :icon="{ prefix: 'fab', iconName: 'github' }"/>
     </a>
@@ -102,6 +106,10 @@ export default {
   height: calc(100vh - 58px);
   align-items: baseline;
   display: flex;
+}
+
+.hide-forkme{
+  display: none!important;;
 }
 
 /* Scroll */

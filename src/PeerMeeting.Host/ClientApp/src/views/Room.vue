@@ -215,11 +215,18 @@ export default {
   color: rgb(0, 0, 0, 0.4);
   font-weight: bold;
   max-width: 43%;
-  max-height: 40px;
+  max-height: 30px;
   word-break: break-all;
   overflow: hidden;
   margin-left: auto;
   margin-right: auto;
+}
+@media (max-width: 801px) {
+  .room-name {
+    margin-left: 10px!important;
+    max-width: 70%;
+    text-align: left;
+  }
 }
 .room-container{
   pointer-events: none; 

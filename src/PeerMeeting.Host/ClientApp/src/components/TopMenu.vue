@@ -2,7 +2,7 @@
   <div class="top-menu-plcae-reservation">
     <b-navbar toggleable="sm" class="shadow top-menu p-0">
       <b-container fluid>
-        <b-navbar-brand href="/" id="brand">
+        <b-navbar-brand href="/" id="brand" :class="[this.$route.name == 'room'? 'hide-brand-in-room-on-small-screen' : '']">
           <img class="topicon" src="../assets/logo.png" alt="rss" />PeerMeeting
         </b-navbar-brand>
         <!-- Right aligned nav items -->
@@ -80,5 +80,10 @@ export default {
 }
 .navbar-nav .dropdown-menu {
   position: absolute !important;
+}
+@media (max-width: 801px) {
+  .hide-brand-in-room-on-small-screen {
+    display: none !important;
+  }
 }
 </style>
