@@ -1,7 +1,7 @@
 FROM alpine/git as version
 WORKDIR /src
 COPY . /src
-RUN echo $(git describe --tags --always 2>/dev/null) > /version ;\
+RUN echo $(git describe --tags --always 2>/dev/null |  sed 's/-g[a-z0-9]\{7\}//') > /version ;\
     echo "Version: "$(cat /version)
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
