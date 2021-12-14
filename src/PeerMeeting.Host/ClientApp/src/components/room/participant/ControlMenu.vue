@@ -53,7 +53,9 @@ export default {
             });
         },
         getPlayer: function(){
-            this.player = this.connection.connection.peers[this.userId] != null &&  this.connection.connection.peers[this.userId].streams != null
+            this.player = this.connection.connection.peers[this.userId] != null 
+                && this.connection.connection.peers[this.userId].streams != null
+                && this.connection.connection.peers[this.userId].streams[0] != null
             ? document.getElementById(this.connection.connection.peers[this.userId].streams[0].streamid) 
             : null;
             if(this.player == null){

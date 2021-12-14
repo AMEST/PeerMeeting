@@ -193,10 +193,10 @@ export default {
           self.prepare(event);
         }, 1000);
       }
-      if (event.mediaElement != null) {
-        event.mediaElement.controls = false;
-        if (event.type == "local") event.mediaElement.muted = true;
-      }
+      if (event.mediaElement == null)
+        return;
+      event.mediaElement.controls = false;
+      if (event.type == "local") event.mediaElement.muted = true;
       card.appendChild(event.mediaElement);
       setTimeout(() => {
         if (event.mediaElement.play) event.mediaElement.play();
