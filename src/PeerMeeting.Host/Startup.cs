@@ -78,6 +78,7 @@ namespace PeerMeeting.Host
             services.AddHostedService<MetricsService>();
             services.AddSingleton<ICredentialsService, HmacCredentialsService>();
             services.AddSingleton(Configuration.GetCoturnConfiguration());
+            services.AddSingleton(Configuration.GetPwaConfiguration());
             services.AddScoped<CsrfMiddleware>();
             services.AddResponseCompression(options =>
             {

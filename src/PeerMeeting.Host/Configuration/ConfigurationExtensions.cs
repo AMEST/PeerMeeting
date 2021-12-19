@@ -40,5 +40,17 @@ namespace PeerMeeting.Host.Configuration
             configuration.GetSection("Coturn").Bind(coturnConfiguration);
             return coturnConfiguration;
         }
+
+        /// <summary>
+        /// Get Pwa configuration
+        /// </summary>
+        public static PwaConfiguration GetPwaConfiguration(this IConfiguration configuration)
+        {
+            var pwaConfiguration = new PwaConfiguration
+            {
+                SentryDsn = configuration.GetSection("Sentry").GetValue<string>("Dsn")
+            };
+            return pwaConfiguration;
+        }
     }
 }
