@@ -192,6 +192,7 @@ export default {
         setTimeout(() => {
           self.prepare(event);
         }, 1000);
+        return;
       }
       if (event.mediaElement == null)
         return;

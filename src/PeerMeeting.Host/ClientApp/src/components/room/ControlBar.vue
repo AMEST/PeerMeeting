@@ -42,7 +42,8 @@ export default {
   name: "ControlBar",
   props: {
     stateService: Object,
-    DetectRTC: Object
+    DetectRTC: Object,
+    streamAddCallback: Function
   },
   computed:{
     state: function(){
@@ -63,7 +64,7 @@ export default {
       this.stateService.state.chatOpened = !this.stateService.state.chatOpened;
     },
     shareScreen: function () {
-      this.stateService.screenSharing();
+      this.stateService.screenSharing(this.streamAddCallback);
     },
     leave: function () {
       this.stateService.leave();

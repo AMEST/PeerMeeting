@@ -188,7 +188,7 @@ export default class PeerMeetingRtcMulticonnection {
                     && self.connection.peers[e].peer.connectionState === "connected") {
 
                     if (!self.connection.peers[e].peer.participantCardError)
-                        self.self.connection.peers[e].peer.participantCardError = 0
+                        self.connection.peers[e].peer.participantCardError = 0
                     self.connection.peers[e].peer.participantCardError += 1
 
                     if (self.connection.peers[e].peer.participantCardError > 6) {

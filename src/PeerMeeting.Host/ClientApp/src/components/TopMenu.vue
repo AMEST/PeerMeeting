@@ -65,12 +65,14 @@ export default {
   position: fixed !important;
   width: 100%;
   z-index: 1000;
-  background-color: white;
 }
 .topicon {
   max-width: 48px;
   margin-bottom: 5px;
   padding-right: 5px;
+}
+#brand {
+  color: #ffc107!important;
 }
 .white-avatar .b-avatar-img img {
   background-color: white;
