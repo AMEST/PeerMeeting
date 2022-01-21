@@ -60,7 +60,7 @@ export default class RTCStateService {
     }
 
     // Start screen sharing or stop and back to video + audio or audio only or empty
-    screenSharing(callback) {
+    screenSharing(callback = e => {}) {
         this.rtcConnection.connection.attachStreams.forEach(s => s.stop())
         console.log(this.rtcConnection.connection.attachStreams)
         this.state.screenEnabled = !this.state.screenEnabled;

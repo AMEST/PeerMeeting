@@ -33,6 +33,7 @@
       <control-bar
         :stateService="this.stateService"
         :DetectRTC="this.DetectRTC"
+        :streamAddCallback="this.addParticipantBlock"
       />
     </b-container>
   </div>
@@ -170,8 +171,8 @@ export default {
       });
     },
     inputDeviceChanged: function () {
-      this.configureMediaError();
-      this.configureMediaConstraints();
+      this.rtcConnection.configureMediaError();
+      this.rtcConnection.configureMediaConstraints();
       this.rtcConnection.connection.dontCaptureUserMedia = false;
       this.stateService.state.hasWebcam = true;
       this.stateService.state.hasMicrophone = true;
