@@ -60,7 +60,7 @@ var themeHelper = new ThemeHelper()
 Vue.prototype.$themeHelper = themeHelper
 themeHelper.init().then(r => {
   var theme = window.localStorage['theme']
-  if (turnOnly !== undefined) {
+  if (theme !== undefined) {
     store.commit('changeTheme', theme)
   }else{
     var detectedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "default"

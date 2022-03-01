@@ -43,7 +43,8 @@ const ThemeHelper = function() {
     },
     add(name, href) { return preloadTheme(href).then(s => themes[name] = s) },
     set theme(name) { selectTheme(themes, name) },
-    get theme() { return Object.keys(themes).find(n => !themes[n].disabled) }
+    get theme() { return Object.keys(themes).find(n => !themes[n].disabled) },
+    get themes() { return Object.keys(themes) }
   };
 };
 
