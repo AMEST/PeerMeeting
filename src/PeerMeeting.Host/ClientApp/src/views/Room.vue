@@ -213,7 +213,7 @@ export default {
 </script>
 <style scoped>
 .room-name {
-  color: rgb(0, 0, 0, 0.4);
+  color: var(--bs-body-color);
   font-weight: bold;
   max-width: 43%;
   max-height: 30px;

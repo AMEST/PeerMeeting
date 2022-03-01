@@ -15,7 +15,7 @@
             <template v-slot:button-content>
               <em>
                 <b-avatar
-                  class="white-avatar"
+                  class="avatar-bg"
                   :text="getInitials()"
                   :src="$store.state.application.profile.avatar"
                 ></b-avatar>
@@ -65,6 +65,7 @@ export default {
   position: fixed !important;
   width: 100%;
   z-index: 1000;
+  background-color: var(--bs-body-bg);
 }
 .topicon {
   max-width: 48px;
@@ -74,8 +75,8 @@ export default {
 #brand {
   color: #ffc107!important;
 }
-.white-avatar .b-avatar-img img {
-  background-color: white;
+.avatar-bg .b-avatar-img img {
+  background-color: var(--bs-body-bg);
 }
 .username {
   font-weight: bold;

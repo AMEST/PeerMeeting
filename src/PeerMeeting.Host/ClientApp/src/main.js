@@ -1,6 +1,6 @@
 // Copyright 2021 Klabukov Erik.
 // SPDX-License-Identifier: GPL-3.0-only
-
+/*eslint-disable*/
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
@@ -13,6 +13,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import store from './services/store'
+import ThemeHelper from './services/ThemeHelper'
 import VueSimpleMarkdown from 'vue-simple-markdown'
 // You need a specific loader for CSS files like https://github.com/webpack/css-loader
 import 'vue-simple-markdown/dist/vue-simple-markdown.css'
@@ -54,6 +55,22 @@ var turnOnly = window.localStorage['turnOnly']
 if (turnOnly !== undefined) {
   store.commit('changeTurnOnly', JSON.parse(turnOnly))
 }
+// Restore theme settings
+var themeHelper = new ThemeHelper()
+Vue.prototype.$themeHelper = themeHelper
+themeHelper.init().then(r => {
+  var theme = window.localStorage['theme']
+  if (turnOnly !== undefined) {
+    store.commit('changeTheme', theme)
+  }else{
+    var detectedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "default"
+    store.commit('changeTheme', detectedTheme)
+  }
+  themeHelper.theme = store.state.application.theme
+})
+
+
+// Detect getUserMedia
 navigator.getUserMedia = navigator.getUserMedia ||
   navigator.webkitGetUserMedia ||
   navigator.mozGetUserMedia

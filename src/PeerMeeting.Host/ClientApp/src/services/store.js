@@ -22,6 +22,7 @@ export default new Vuex.Store({
       roomHistory: [],
       mediaDevices: [],
       inputDeviceChangedCallbacks: [],
+      theme: '',
       version: ''
     }
   },
@@ -41,6 +42,10 @@ export default new Vuex.Store({
     changeTurnOnly (state, payload) {
       window.localStorage['turnOnly'] = JSON.stringify(payload)
       state.application.turnOnly = payload
+    },
+    changeTheme (state, payload) {
+      window.localStorage['theme'] = payload
+      state.application.theme = payload
     },
     // eslint-disable-next-line
     clearProfile (state) {
