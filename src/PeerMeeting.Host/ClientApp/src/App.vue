@@ -66,7 +66,6 @@ export default {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
   overflow-x: hidden;
   height: 100vh;
 }
@@ -87,7 +86,7 @@ export default {
   z-index: 29;
   left: 0;
   bottom: 0;
-  color: black;
+  color: #888;
   background-color: rgba(0, 0, 0, 0.15);
   max-width: 270px;
   padding-left: 5px;

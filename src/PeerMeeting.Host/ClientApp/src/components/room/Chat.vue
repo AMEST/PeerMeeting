@@ -122,7 +122,7 @@ export default {
   min-width: 300px;
   left: 0;
   top: 58px;
-  background-color: rgb(255, 255, 255, 0.8);
+  background-color: var(--chat-color, rgb(34, 34, 34, 0.6));
 }
 .chat-messages-list {
   height: calc(100% - 64px);
@@ -149,9 +149,16 @@ export default {
   height: 64px;
   border-radius: 0px;
   resize: none;
+  background-color: var(--chat-color, rgb(34, 34, 34, 0.6));
+  color: var(--bs-body-color);
+}
+.chat-textarea textarea:focus {
+  background-color: var(--chat-color, rgb(34, 34, 34, 0.6));
+  color: var(--bs-body-color);
 }
 .message-avatar {
   position: absolute;
+  background-color: transparent;
 }
 .message-body {
   padding-left: 48px;
@@ -164,6 +171,13 @@ export default {
 .chat-message-text {
   white-space: pre-wrap;
   word-break: break-word;
+}
+.markdown-body{
+  color: var(--bs-body-color);
+}
+
+.markdown-body pre{
+  background-color: var(--bs-body-bg);
 }
 @-moz-document url-prefix() {
   .markdown-body::before {

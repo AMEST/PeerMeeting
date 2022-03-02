@@ -77,6 +77,7 @@ export default {
 }
 .Welcome .jumbotron{
   padding: 2rem 1rem !important;
+  background-color: inherit;
 }
 .full-height {
   min-height: calc(100vh - 63px);

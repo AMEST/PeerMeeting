@@ -22,6 +22,12 @@
         @keyup.enter="SaveProfile"
       ></b-form-input>
     </b-form-group>
+     <b-form-group description="Select application theme" label="Theme">
+      <b-form-select
+        v-model="currentTheme"
+        :options="themes"
+      ></b-form-select>
+    </b-form-group>
     <b-button
       variant="outline-secondary"
       class="save-button"
@@ -38,11 +44,16 @@ export default {
     return {
       username: "",
       email: "",
+      themes: [],
+      currentTheme: "",
       md5: require("md5"),
     };
   },
   methods: {
     SaveProfile: function () {
+      this.$store.commit("changeTheme", this.currentTheme);
+      this.$themeHelper.theme = this.currentTheme;
+
       if (!this.username || this.username.length < 2) return;
       var profile = {
         avatar: null,
@@ -58,7 +69,8 @@ export default {
         profile.avatar = null;
       }
       this.$store.commit("changeProfile", profile);
-      this.$bvToast.toast("Profile saved", {
+
+      this.$bvToast.toast("Profile settings saved", {
         title: `Settings notification`,
         variant: "success",
         solid: true,
@@ -74,7 +86,11 @@ export default {
       this.email = this.$store.state.application.profile
         ? this.$store.state.application.profile.email
         : "";
-    }
+    },
+    // eslint-disable-next-line
+    "$store.state.application.theme": function (to, from) {
+      this.currentTheme = this.$store.state.application.theme;
+    },
   },
   mounted: function () {
     this.username = this.$store.state.application.profile
@@ -83,6 +99,8 @@ export default {
     this.email = this.$store.state.application.profile
       ? this.$store.state.application.profile.email
       : "";
+    this.currentTheme = this.$store.state.application.theme;
+    this.themes = this.$themeHelper.themes;
   }
 };
 </script>

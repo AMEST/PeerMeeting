@@ -96,7 +96,7 @@ export default {
     content: none;
 }
 .volume-icon {
-    color: #000;
+    color: var(--bs-body-color);
     font-size: 28px;
     padding-right: 0.5em;
     position: absolute;

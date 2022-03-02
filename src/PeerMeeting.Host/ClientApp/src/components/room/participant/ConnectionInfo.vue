@@ -58,4 +58,7 @@ export default {
   position: absolute;
   text-align: left;
 }
+.connection-toast .toast {
+  display: block !important;
+}
 </style>
