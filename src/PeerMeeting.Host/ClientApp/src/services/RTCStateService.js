@@ -16,10 +16,12 @@ export default class RTCStateService {
         hasWebcam: true,
         hasMicrophone: true,
     }
+    stateCheckTimer = null;
 
     constructor(connection, store) {
         this.rtcConnection = connection;
         this.store = store;
+        this.stateCheckTimer = setInterval(this.stateCheck, 300);
     }
 
     renegotiateStreams(){
@@ -95,5 +97,23 @@ export default class RTCStateService {
         }
         this.rtcConnection.connection.attachStreams = []
         RTCUtils.AddBaseStream(this.rtcConnection.connection, this.state, this.store.state.application.deviceSettings, callback)
+    }
+
+    stateCheck() {
+        var self = this;
+        this.rtcConnection.connection.attachStreams.forEach(s => {
+            if(self.state.hasMicrophone)
+                s.getAudioTracks().forEach(track =>{
+                    var enabled = track.enabled;
+                    if(enabled && !self.state.audioEnabled) s.mute("audio");
+                    else if (!enable && self.state.audioEnabled) s.unmute("audio");
+                })
+            if(!self.state.screenEnabled && self.state.hasWebcam)
+                s.getVideoTracks().forEach(track =>{
+                    var enabled = track.enabled;
+                    if(enabled && !self.state.videoEnabled) s.mute("video");
+                    else if (!enable && self.state.videoEnabled) s.unmute("video");
+                })
+        });
     }
 }
