@@ -1,0 +1,126 @@
+{
+    "en": {
+      "welcome": {
+        "message": "Start & join meetings for free. No account needed, open service, write you name and open or join room!",
+        "startMeeting": "Start meeting",
+        "roomName": "Room name"
+      },
+      "login":{
+        "title":"Write your name for participation in conference.",
+        "placeholder":"Enter your name",
+        "button": "Continue"
+      },
+      "topMenu":{
+        "signedAs":"Signed in as",
+        "settings": "Settings",
+        "signOut": "Sign Out"
+      },
+      "settings":{
+        "title":"Settings",
+        "profile":{
+          "title":"Profile",
+          "username":{
+            "description":"User name displayed to all participants in room",
+            "label":"Enter username:"
+          },
+          "gravatar":{
+            "description":"Gravatar email identificator, for display you avatar to participants",
+            "label":"Enter gravatar email:"
+          },
+          "theme":{
+            "description":"Select application theme",
+            "label":"Theme"
+          },
+          "language":{
+            "description":"Select language",
+            "label":"Language"
+          },
+          "save":"Save"
+        },
+        "devices":{
+          "title":"Devices",
+          "warning":"If changes not applyed, need reload page.",
+          "audio":{
+            "description":"Audio input device",
+            "label":"Audio input"
+          },
+          "video":{
+            "description":"Video input device",
+            "label":"Video input"
+          },
+          "save":"Save",
+          "reload":"Reload devices"
+        }
+      },
+      "room":{
+        "notifications":{
+          "title":"Room notifications",
+          "user":"User ",
+          "joined": " joined",
+          "left": " left"
+        }
+      }
+    },
+    "ru": {
+      "welcome": {
+        "message": "Начинайте встречи и присоединяйтесь к ним бесплатно. Аккаунт не нужен, откройте сервис, напишите свое имя и создайте или присоединитесь к комнате!",
+        "startMeeting": "Начать встречу",
+        "roomName": "Имя комнаты"
+      },
+      "login":{
+        "title":"Напишите свое имя для участия в конференции.",
+        "placeholder":"Введите своё имя",
+        "button": "Продолжить"
+      },
+      "topMenu":{
+        "signedAs":"Выполнен вход как",
+        "settings": "Настройки",
+        "signOut": "Выход"
+      },
+      "settings":{
+        "title":"Настройки",
+        "profile":{
+          "title":"Профиль",
+          "username":{
+            "description":"Имя пользователя отображаемое для всех участников в комнате",
+            "label":"Введите имя пользователя:"
+          },
+          "gravatar":{
+            "description":"Почтовый адрес в Gravatar",
+            "label":"Введите почту gravatar:"
+          },
+          "theme":{
+            "description":"Выберите тему приложения",
+            "label":"Тема"
+          },
+          "language":{
+            "description":"Выберите язык",
+            "label":"Язык"
+          },
+          "save":"Сохранить"
+        },
+        "devices":{
+          "title":"Устройства",
+          "warning":"Если изменения не применились, нужно перезагрузить страницу.",
+          "audio":{
+            "description":"Устройство микрофона",
+            "label":"Микрофон"
+          },
+          "video":{
+            "description":"Устройство веб-камеры",
+            "label":"Веб-камера"
+          },
+          "save":"Сохранить",
+          "reload":"Перезагрузить"
+        }
+      },
+      "room":{
+        "notifications":{
+          "title":"Оповещения комнаты",
+          "user":"Пользователь ",
+          "joined": " подключился",
+          "left": " отключился"
+        }
+      }
+    }
+}

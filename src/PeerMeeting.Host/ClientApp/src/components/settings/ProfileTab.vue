@@ -1,8 +1,8 @@
 <template>
-  <b-tab title="Profile" active>
+  <b-tab :title="$t('settings.profile.title')" active>
     <b-form-group
-      description="User name displayed to all participants in room"
-      label="Enter username:"
+      :description="$t('settings.profile.username.description')"
+      :label="$t('settings.profile.username.label')"
       label-for="input-1"
     >
       <b-form-input
@@ -12,8 +12,8 @@
       ></b-form-input>
     </b-form-group>
     <b-form-group
-      description="Gravatar email identificator, for display you avatar to participants"
-      label="Enter gravatar email:"
+      :description="$t('settings.profile.gravatar.description')"
+      :label="$t('settings.profile.gravatar.label')"
       label-for="input-1"
     >
       <b-form-input
@@ -22,17 +22,27 @@
         @keyup.enter="SaveProfile"
       ></b-form-input>
     </b-form-group>
-     <b-form-group description="Select application theme" label="Theme">
+     <b-form-group 
+      :description="$t('settings.profile.theme.description')" 
+      :label="$t('settings.profile.theme.label')">
       <b-form-select
         v-model="currentTheme"
         :options="themes"
+      ></b-form-select>
+    </b-form-group>
+    <b-form-group 
+      :description="$t('settings.profile.language.description')" 
+      :label="$t('settings.profile.language.label')">
+      <b-form-select
+        v-model="$i18n.locale"
+        :options="langs"
       ></b-form-select>
     </b-form-group>
     <b-button
       variant="outline-secondary"
       class="save-button"
       @click="SaveProfile"
-      >Save</b-button
+      >{{$t('settings.profile.save')}}</b-button
     >
   </b-tab>
 </template>
@@ -45,6 +55,7 @@ export default {
       username: "",
       email: "",
       themes: [],
+      langs: ["ru","en"],
       currentTheme: "",
       md5: require("md5"),
     };
@@ -91,6 +102,10 @@ export default {
     "$store.state.application.theme": function (to, from) {
       this.currentTheme = this.$store.state.application.theme;
     },
+    // eslint-disable-next-line
+    "$i18n.locale": function(to,from){
+      window.localStorage['lang'] = to;
+    }
   },
   mounted: function () {
     this.username = this.$store.state.application.profile

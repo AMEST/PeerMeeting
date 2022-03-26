@@ -101,8 +101,8 @@ export default {
         return;
 
       var username = CommonUtils.getUserNameFromEvent(event);
-      this.$bvToast.toast("User " + username + " left", {
-        title: `Room notification`,
+      this.$bvToast.toast($t("room.notifications.user") + username + $t("room.notifications.left"), {
+        title: $t("room.notifications.title"),
         variant: "info",
         solid: true,
       });
@@ -121,8 +121,8 @@ export default {
       if (this.participants.has(event.userid) || event.status === "offline")
         return;
       var username = CommonUtils.getUserNameFromEvent(event);
-      this.$bvToast.toast("User " + username + " joined", {
-        title: `Room notification`,
+      this.$bvToast.toast($t("room.notifications.user") + username + $t("room.notifications.joined"), {
+        title: $t("room.notifications.title"),
         variant: "info",
         solid: true,
       });

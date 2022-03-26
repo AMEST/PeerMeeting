@@ -5,6 +5,7 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import './registerServiceWorker'
+import language from './assets/lang.json'
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faUserSecret, faVolumeUp } from '@fortawesome/free-solid-svg-icons'
@@ -21,6 +22,8 @@ import 'vue-simple-markdown/dist/vue-simple-markdown.css'
 import * as Sentry from "@sentry/vue";
 import { Integrations } from "@sentry/tracing";
 import axios from 'axios'
+// i18n
+import VueI18n from 'vue-i18n'
 
 Vue.config.productionTip = false
 // Initialize FontAwesome
@@ -32,6 +35,9 @@ Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
 // Markdown plugin
 Vue.use(VueSimpleMarkdown)
+// i18n plugin
+Vue.use(VueI18n)
+
 // Get profile from store
 var profile = window.localStorage['profile']
 if (profile !== undefined) {
@@ -69,6 +75,22 @@ themeHelper.init().then(r => {
   themeHelper.theme = store.state.application.theme
 })
 
+// Restore turn only settings
+var currentLang = window.localStorage['lang']
+if (currentLang === undefined || currentLang !== "ru" && currentLang !== "en" ) {
+  var browserLang = navigator.language || navigator.userLanguage;
+  currentLang = browserLang === "ru-RU" ? "ru" : "en";
+  window.localStorage['lang'] = currentLang;
+}
+console.log(language);
+const messages =   {
+  en: language["en"],
+  ru: language["ru"],
+}
+const i18n = new VueI18n({
+  locale: currentLang, // set locale
+  messages, // set locale messages
+})
 
 // Detect getUserMedia
 navigator.getUserMedia = navigator.getUserMedia ||
@@ -101,6 +123,7 @@ axios.get("/api/settings").then(response => {
 })
 
 new Vue({
+  i18n,
   store,
   router,
   render: h => h(App)
