@@ -1,8 +1,8 @@
 <template>
   <b-container fluid class="container-center">
-    <b-card title="The call was over." class="card-center">
-      <b-card-text> You have been removed from the room </b-card-text>
-      <b-button :to="'/'" variant="primary">Go to Home</b-button>
+    <b-card :title="$t('callEnded.title')" class="card-center">
+      <b-card-text> {{ $t("callEnded.message") }} </b-card-text>
+      <b-button :to="'/'" variant="primary">{{ $t("callEnded.button") }}</b-button>
     </b-card>
   </b-container>
 </template>

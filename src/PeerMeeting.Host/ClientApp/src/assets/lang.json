@@ -58,7 +58,17 @@
           "user":"User ",
           "joined": " joined",
           "left": " left"
+        },
+        "controlMenu":{
+          "kick":"Kick",
+          "mute":"Mute",
+          "muteAll":"Mute All"
         }
+      },
+      "callEnded":{
+        "title":"The call was over.н",
+        "message":"You have been removed from the room",
+        "button": "Go to Home"
       }
     },
     "ru": {
@@ -120,7 +130,17 @@
           "user":"Пользователь ",
           "joined": " подключился",
           "left": " отключился"
+        },
+        "controlMenu":{
+          "kick":"Исключить",
+          "mute":"Выкл. микрофон",
+          "muteAll":"Выкл. микрофон у всех"
         }
+      },
+      "callEnded":{
+        "title":"Звонок закончен",
+        "message":"Вас исключили из комнаты",
+        "button": "Вернуться на главную"
       }
     }
 }

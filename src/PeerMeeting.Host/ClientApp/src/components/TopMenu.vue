@@ -53,6 +53,7 @@ export default {
     signOut: function () {
       this.$store.commit("clearProfile");
       this.$store.commit("clearHistory");
+      window.location.reload();
     },
     getInitials: function () {
       return CommonUtils.getInitials(

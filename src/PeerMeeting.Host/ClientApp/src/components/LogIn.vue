@@ -1,6 +1,5 @@
 <template>
   <b-card
-    bg-variant="light"
     :title="$t('login.title')"
     class="login-card"
   >
