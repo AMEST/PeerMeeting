@@ -75,7 +75,7 @@ themeHelper.init().then(r => {
   themeHelper.theme = store.state.application.theme
 })
 
-// Restore turn only settings
+// Restore language settings
 var currentLang = window.localStorage['lang']
 if (currentLang === undefined || currentLang !== "ru" && currentLang !== "en" ) {
   var browserLang = navigator.language || navigator.userLanguage;
