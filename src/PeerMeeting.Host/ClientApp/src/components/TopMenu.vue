@@ -7,8 +7,13 @@
         </b-navbar-brand>
         <!-- Right aligned nav items -->
         <b-navbar-nav class="ml-auto">
+          <b-form-select
+            v-if="this.$store.state.application.profile == null"
+            v-model="$i18n.locale"
+            :options="langs"
+          ></b-form-select>
           <b-nav-item-dropdown
-            v-if="this.$store.state.application.profile != null"
+            v-else
             right
           >
             <!-- Using 'button-content' slot -->
@@ -22,14 +27,14 @@
               </em>
             </template>
             <b-dropdown-text style="width: 240px">
-              Signed in as
+              {{$t('topMenu.signedAs')}}
               <span class="username">{{
                 $store.state.application.profile.name
               }}</span>
             </b-dropdown-text>
             <b-dropdown-divider></b-dropdown-divider>
-            <b-dropdown-item v-b-modal.settings-modal>Settings</b-dropdown-item>
-            <b-dropdown-item @click="signOut">Sign Out</b-dropdown-item>
+            <b-dropdown-item v-b-modal.settings-modal>{{$t('topMenu.settings')}}</b-dropdown-item>
+            <b-dropdown-item @click="signOut">{{$t('topMenu.signOut')}}</b-dropdown-item>
           </b-nav-item-dropdown>
         </b-navbar-nav>
       </b-container>
@@ -41,17 +46,26 @@
 import CommonUtils from "@/CommonUtils";
 export default {
   name: "TopMenu",
-  data: () => ({}),
+  data: () => ({
+    langs: ["ru", "en"]
+  }),
   methods: {
     signOut: function () {
       this.$store.commit("clearProfile");
       this.$store.commit("clearHistory");
+      window.location.reload();
     },
     getInitials: function () {
       return CommonUtils.getInitials(
         this.$store.state.application.profile.name
       );
     },
+  },
+  watch: {
+    // eslint-disable-next-line
+    "$i18n.locale": function(to,from){
+      window.localStorage['lang'] = to;
+    }
   },
 };
 </script>

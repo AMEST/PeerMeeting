@@ -15,9 +15,9 @@
         <b-form-input class="volume-range" type="range" min="0" max="100" v-model="volume">a</b-form-input>
     </b-dropdown-form>
     <b-dropdown-divider></b-dropdown-divider>
-    <b-dropdown-item @click="this.muteParticipant">Mute</b-dropdown-item>
-    <b-dropdown-item @click="this.muteAllParticipants">Mute All</b-dropdown-item>
-    <b-dropdown-item @click="this.kickPatricipant">Kick</b-dropdown-item>
+    <b-dropdown-item @click="this.muteParticipant">{{ $t("room.controlMenu.mute") }}</b-dropdown-item>
+    <b-dropdown-item @click="this.muteAllParticipants">{{ $t("room.controlMenu.muteAll") }}</b-dropdown-item>
+    <b-dropdown-item @click="this.kickPatricipant">{{ $t("room.controlMenu.kick") }}</b-dropdown-item>
   </b-dropdown>
 </template>
 

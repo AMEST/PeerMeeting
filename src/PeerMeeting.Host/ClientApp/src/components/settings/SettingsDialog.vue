@@ -1,5 +1,5 @@
 <template>
-  <b-modal id="settings-modal" size="lg" centered title="Settings">
+  <b-modal id="settings-modal" size="lg" centered :title="$t('settings.title')">
     <b-tabs content-class="mt-3">
       <profile-tab/>
       <devices-tab/>

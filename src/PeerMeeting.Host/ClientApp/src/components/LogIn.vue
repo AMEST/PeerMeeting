@@ -1,18 +1,17 @@
 <template>
   <b-card
-    bg-variant="light"
-    title="Write your name for participation in conference."
+    :title="$t('login.title')"
     class="login-card"
   >
     <b-card-text>
       <b-form-input
         v-model="username"
-        placeholder="Enter your name"
+        :placeholder="$t('login.placeholder')"
         @keyup.enter="applyUserName"
       ></b-form-input>
     </b-card-text>
     <br>
-    <b-button @click="applyUserName" variant="primary" size="lg">Continue</b-button>
+    <b-button @click="applyUserName" variant="primary" size="lg">{{$t('login.button')}}</b-button>
   </b-card>
 </template>
 

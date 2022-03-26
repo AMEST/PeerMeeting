@@ -6,12 +6,12 @@
         <template #header>Peer Meeting</template>
 
         <template #lead>
-          Start & join meetings for free. No account needed, open service, write you name and open or join room!
+          {{ $t("welcome.message") }}
         </template>
 
         <hr class="my-4" />
 
-        <b-input-group prepend="Room name">
+        <b-input-group :prepend="$t('welcome.roomName')">
           <b-form-input
             v-model="roomName"
             @keyup.enter="goToRoom(roomName)"
@@ -22,7 +22,7 @@
               text="Button"
               variant="success"
               @click="goToRoom(roomName)"
-              >Start meeting</b-button
+              >{{ $t("welcome.startMeeting") }}</b-button
             >
           </b-input-group-append>
         </b-input-group>

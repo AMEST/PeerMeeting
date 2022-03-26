@@ -1,31 +1,31 @@
 <template>
-  <b-tab title="Devices">
-    <b-alert show variant="warning"
-      >If changes not applyed, need reload page.</b-alert
+  <b-tab :title="$t('settings.devices.title')">
+    <b-alert show variant="warning">{{
+      $t("settings.devices.warning")
+    }}</b-alert>
+    <b-form-group
+      :description="$t('settings.devices.audio.description')"
+      :label="$t('settings.devices.audio.label')"
     >
-    <b-form-group description="Audio input device" label="Audio input">
       <b-form-select
         v-model="audioInput"
         :options="audioDevices"
       ></b-form-select>
     </b-form-group>
-    <b-form-group description="Video input device" label="Video input">
+    <b-form-group
+      :description="$t('settings.devices.video.description')"
+      :label="$t('settings.devices.video.label')"
+    >
       <b-form-select
         v-model="videoInput"
         :options="videoDevices"
       ></b-form-select>
     </b-form-group>
-    <div class="save-button" style="width: 210px;">
-      <b-button
-        class="mr-1"
-        variant="outline-warning"
-        @click="reload"
-        >Reload devices</b-button>
-      <b-button
-        variant="outline-secondary"
-        @click="saveDevices"
-        >Save</b-button
+    <div class="save-button" style="width: 250px">
+      <b-button class="mr-1" variant="outline-warning" @click="reload"
+        >{{$t('settings.devices.reload')}}</b-button
       >
+      <b-button variant="outline-secondary" @click="saveDevices">{{$t('settings.devices.save')}}</b-button>
     </div>
   </b-tab>
 </template>
@@ -43,7 +43,7 @@ export default {
     };
   },
   methods: {
-    reload: function(){
+    reload: function () {
       CommonUtils.pushEventToCallbacks(
         this.$store.state.application.inputDeviceChangedCallbacks,
         {}
