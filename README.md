@@ -1,3 +1,5 @@
+<p align="right"><a href="https://github.com/AMEST/PeerMeeting/blob/master/README_RU.md">Справка на русском</a></p>
+
 [![PeerMeet Build](https://github.com/AMEST/PeerMeeting/actions/workflows/main.yml/badge.svg)](https://github.com/AMEST/PeerMeeting/actions/workflows/main.yml)
 ![hub.docker.com](https://img.shields.io/docker/pulls/eluki/peer-meeting.svg)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/amest/PeerMeeting)
@@ -34,14 +36,16 @@ The service is adjusted based on the mesh model. This network is implemented to 
 ### Features
 1. Video conferencing over p2p with 2+ peoples
 2. Screen sharing (with microphone, but only chromium based browsers)
-3. Service Scaleout with Redis
-4. In room chat
-5. Gravatar user avatars
-6. Pseudo fullscreen and half screen mode for prticipants blocks
+3. In room chat
+4. Participants control (volume control, mute one/all participants, kick)
+5. Pseudo fullscreen and half screen mode for prticipants blocks
+6. Gravatar user avatars
 7. Local room history on home page
-8. Participants control (volume control, mute one/all participants, kick)
+8. Integration with TURN server (coturn).
 9. Application metrics (prometheus endpoint with runtime and endpoints metrics)
-10. Integration with TURN server (coturn).
+10. Service Scaleout with Redis
+11. Light and Dark themes (with detect system theme)
+12. Multilanguage user interface (Supported EN and RU)
 
 ### Security 
 High level of security: all connections are protected and encrypted according to the DTLS and SRTP protocols. At the same time, WebRTC works only over the HTTPS protocol, and the site using the technology must be signed with a certificate.
