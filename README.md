@@ -28,8 +28,9 @@
 * **[Docker image](https://hub.docker.com/r/eluki/peer-meeting)**
 
 ## Description
-Simple peer to peer video conference server over WebRTC. Support more then 2 peoples in p2p conference.  
+
 Start & join meetings for free. No account needed, open service, write you name and open or join room!  
+Simple peer to peer video conference server over WebRTC. Support more then 2 peoples in p2p conference.  
 
 The service is adjusted based on the mesh model. This network is implemented to open multiple (1: 1) interconnected peer-to-peer connections. Maximum peer connections limit per page is 256 (on chrome) i.e. 256 users can connect together!
 
@@ -53,7 +54,7 @@ All media traffic goes from user to user (p2p) and does not go through the servi
 Web sockets for signaling also go only via https.
 
 ### Supported browsers
-1. Chomium based browsers on windows, linux and android
+1. Chromium based browsers on windows, linux and android
 2. Firefox (work all function with some bugs)
 3. Safari >= 15 (work all function with some bugs)
 
