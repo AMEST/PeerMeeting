@@ -6,7 +6,7 @@
 ![GitHub](https://img.shields.io/github/license/amest/PeerMeeting)
 
 <p align="center">
-  <a href="https://peer-meeting.nb-47-dev.tk">
+  <a href="https://peer-meeting.nb-47.ml">
     <img alt="PeerMeetingIcon" src="https://github.com/AMEST/PeerMeeting/raw/master/src/PeerMeeting.Host/ClientApp/public/img/icons/android-chrome-512x512.png" width="120" />
   </a>
 </p>
@@ -24,7 +24,7 @@
   - [Getting started](#getting-started)
 
 ## Links
-* **[Try PeerMeeting](https://peer-meeting.nb-47-dev.tk)**  
+* **[Try PeerMeeting](https://peer-meeting.nb-47.ml)**  
 * **[Docker image](https://hub.docker.com/r/eluki/peer-meeting)**
 
 ## Description
