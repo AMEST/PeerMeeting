@@ -111,6 +111,14 @@ export default {
   display: none!important;;
 }
 
+.container-center {
+  position: absolute;
+  width: 100%;
+  top: 35%;
+  -ms-transform: translateY(-15%);
+  transform: translateY(-15%);
+}
+
 /* Scroll */
 /* width */
 ::-webkit-scrollbar {

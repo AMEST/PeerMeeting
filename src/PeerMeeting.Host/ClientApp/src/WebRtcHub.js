@@ -1,13 +1,16 @@
 // Copyright 2021 Klabukov Erik.
 // SPDX-License-Identifier: GPL-3.0-only
 
-import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr'
+import { HubConnectionBuilder, LogLevel, HttpTransportType } from '@microsoft/signalr'
 /* eslint-disable */
 // Custom SignalR connection handler
 function WebRtcSignalR (connection, connectCallback) {
   try{
   var signalRConnection = new HubConnectionBuilder()
-    .withUrl('/ws/webrtc')
+    .withUrl('/ws/webrtc', { 
+      transport: HttpTransportType.WebSockets,
+      skipNegotiation: true
+    })
     .withAutomaticReconnect()
     .configureLogging(LogLevel.Information)
     .build()

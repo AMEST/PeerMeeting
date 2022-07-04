@@ -198,12 +198,14 @@ export default {
   },
   unmount: function(){
     this.rtcConnection.leave();
+    this.rtcConnection.stop();
   },
   watch: {
     // eslint-disable-next-line
     $route(to, from) {
       this.roomId = to;
       this.rtcConnection.leave();
+      this.rtcConnection.stop();
       this.addToHistory();
       this.initialize();
       this.rtcConnection.join(this.roomId);
@@ -242,6 +244,9 @@ export default {
   min-height: calc(100vh - 108px);
   align-items: center;
   position: relative;
+}
+.card-deck .card{
+  margin-right: unset !important;
 }
 @media (max-width: 380px) {
   .container-fluid {

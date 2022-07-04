@@ -45,6 +45,12 @@ export default class PeerMeetingRtcMulticonnection {
         this.connection.leave();
     }
 
+    stop(){
+        clearInterval(this.patrticipantsFixTimer);
+        clearInterval(this.patrticipantsCardFixTimer);
+        this.connection.close();
+    }
+
     setOnStream(callback) {
         this.connection.onstream = callback;
     }

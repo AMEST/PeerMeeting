@@ -179,7 +179,7 @@ export default {
       this.peerStats = new PeerStats(this.connection.connection.peers[event.userid].peer);
       this.peerStats.start((stats) => {
         self.stats = stats;
-      }, 3000);
+      }, 5000);
     },
     streamEventChangeCallback: function () {
       this.$forceUpdate();

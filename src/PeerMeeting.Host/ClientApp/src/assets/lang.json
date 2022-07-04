@@ -3,7 +3,8 @@
       "welcome": {
         "message": "Start & join meetings for free. No account needed, open service, write you name and open or join room!",
         "startMeeting": "Start meeting",
-        "roomName": "Room name"
+        "new": "New",
+        "recent": "Recent"
       },
       "login":{
         "title":"Write your name for participation in conference.",
@@ -66,7 +67,7 @@
         }
       },
       "callEnded":{
-        "title":"The call was over.н",
+        "title":"The call was over.",
         "message":"You have been removed from the room",
         "button": "Go to Home"
       }
@@ -75,7 +76,8 @@
       "welcome": {
         "message": "Начинайте встречи и присоединяйтесь к ним бесплатно. Аккаунт не нужен, откройте сервис, напишите свое имя и создайте или присоединитесь к комнате!",
         "startMeeting": "Начать встречу",
-        "roomName": "Имя комнаты"
+        "new": "Новая",
+        "recent": "Недавние"
       },
       "login":{
         "title":"Напишите свое имя для участия в конференции.",

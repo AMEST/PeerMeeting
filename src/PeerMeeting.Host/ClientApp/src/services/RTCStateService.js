@@ -16,10 +16,12 @@ export default class RTCStateService {
         hasWebcam: true,
         hasMicrophone: true,
     }
+    stateCheckTimer = null;
 
     constructor(connection, store) {
         this.rtcConnection = connection;
         this.store = store;
+        this.stateCheckTimer = setInterval(this.stateCheck, 1000, this);
     }
 
     renegotiateStreams(){
@@ -61,8 +63,6 @@ export default class RTCStateService {
 
     // Start screen sharing or stop and back to video + audio or audio only or empty
     screenSharing(callback = e => {}) {
-        this.rtcConnection.connection.attachStreams.forEach(s => s.stop())
-        console.log(this.rtcConnection.connection.attachStreams)
         this.state.screenEnabled = !this.state.screenEnabled;
         this.state.audioEnabled = this.state.hasMicrophone;
         this.state.videoEnabled = this.rtcConnection.dontCaptureUserMedia && !this.state.hasWebcam
@@ -93,7 +93,25 @@ export default class RTCStateService {
                 }, function (e) { console.error('screen sharing', e) });
             return
         }
+        this.rtcConnection.connection.attachStreams.forEach(s => s.stop())
         this.rtcConnection.connection.attachStreams = []
         RTCUtils.AddBaseStream(this.rtcConnection.connection, this.state, this.store.state.application.deviceSettings, callback)
+    }
+
+    stateCheck(self) {
+        self.rtcConnection.connection.attachStreams.forEach(s => {
+            if(self.state.hasMicrophone)
+                s.getAudioTracks().forEach(track =>{
+                    var enabled = track.enabled;
+                    if(enabled && !self.state.audioEnabled) s.mute("audio");
+                    else if (!enabled && self.state.audioEnabled) s.unmute("audio");
+                })
+            if(!self.state.screenEnabled && self.state.hasWebcam)
+                s.getVideoTracks().forEach(track =>{
+                    var enabled = track.enabled;
+                    if(enabled && !self.state.videoEnabled) s.mute("video");
+                    else if (!enabled && self.state.videoEnabled) s.unmute("video");
+                })
+        });
     }
 }

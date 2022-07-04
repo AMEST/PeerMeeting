@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using Prometheus;
 using Microsoft.AspNetCore.DataProtection;
 using StackExchange.Redis;
+using Microsoft.AspNetCore.Http.Connections;
 
 namespace PeerMeeting.Host
 {
@@ -125,11 +126,13 @@ namespace PeerMeeting.Host
                 {
                     // zero for unlimited
                     o.TransportMaxBufferSize = 0;
+                    o.Transports = HttpTransportType.WebSockets;
                 });
                 endpoints.MapHub<ChatHub>("/ws/chat", o =>
                 {
                     // zero for unlimited
                     o.TransportMaxBufferSize = 0;
+                    o.Transports = HttpTransportType.WebSockets;
                 });
                 endpoints.MapControllers();
                 if (env.IsDevelopment())

@@ -88,12 +88,16 @@ var RTCUtils = {
     )
   },
   AddStream: function(connection, stream, mPeer, callback){
-    connection.attachStreams = []
-    connection.addStream(stream)
-    mPeer.onGettingLocalMedia(stream)
-    this.SetHarkHandler(connection, stream)
-    var event = this.CreateVideoElementEvent(connection.userid, stream)
-    callback(event)
+    var self = this;
+    connection.attachStreams.forEach(s => s.stop())
+    connection.attachStreams = [];
+    setTimeout(() =>{
+      connection.addStream(stream)
+      mPeer.onGettingLocalMedia(stream)
+      self.SetHarkHandler(connection, stream)
+      var event = this.CreateVideoElementEvent(connection.userid, stream)
+      callback(event)
+    },300)
   },
   CreateFakeStream: function(connection, mPeer, callback){
     connection.attachStreams = []

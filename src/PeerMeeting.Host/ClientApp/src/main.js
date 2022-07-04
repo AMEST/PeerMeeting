@@ -64,7 +64,7 @@ if (turnOnly !== undefined) {
 // Restore theme settings
 var themeHelper = new ThemeHelper()
 Vue.prototype.$themeHelper = themeHelper
-themeHelper.init().then(r => {
+var themeHelperInitTask = themeHelper.init().then(r => {
   var theme = window.localStorage['theme']
   if (theme !== undefined) {
     store.commit('changeTheme', theme)
@@ -106,7 +106,7 @@ if (document.cookie.indexOf('CSRF-TOKEN') > -1) {
 }
 
 // Add Sentry exception handling
-axios.get("/api/settings").then(response => {
+var sentryIntegrationTask = axios.get("/api/settings").then(response => {
   if(response.data == null || response.status != 200)
     return;
   Sentry.init({
@@ -115,16 +115,21 @@ axios.get("/api/settings").then(response => {
     integrations: [
       new Integrations.BrowserTracing({
         routingInstrumentation: Sentry.vueRouterInstrumentation(router),
-        tracingOrigins: ["localhost", "peer-meetings.nb-47-dev.tk", document.location.host, /^\//],
+        tracingOrigins: ["localhost", "peer-meetings.nb-47.ml", document.location.host, /^\//],
       }),
     ],
     tracesSampleRate: 0.5,
   });
 })
 
-new Vue({
-  i18n,
-  store,
-  router,
-  render: h => h(App)
-}).$mount('#app')
+Promise.all([
+  themeHelperInitTask, 
+  sentryIntegrationTask
+]).then(result => {
+  new Vue({
+    i18n,
+    store,
+    router,
+    render: h => h(App)
+  }).$mount('#app')
+})

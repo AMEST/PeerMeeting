@@ -14,13 +14,6 @@ export default {
 </script>
 
 <style scoped>
-.container-center {
-  position: absolute;
-  width: 100%;
-  top: 40%;
-  -ms-transform: translateY(-15%);
-  transform: translateY(-15%);
-}
 .card-center {
   margin-left: auto;
   margin-right: auto;

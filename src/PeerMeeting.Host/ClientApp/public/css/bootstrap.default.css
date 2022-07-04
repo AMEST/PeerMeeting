@@ -2,11 +2,13 @@
  * Copyright 2022 Klabukov Erik.
  * SPDX-License-Identifier: GPL-3.0-only
  */
- :root{
+:root {
     --bs-body-bg: #fff;
-    --chat-color: rgb(255, 255, 255, 0.8)
- }
-#app{
+    --chat-color: rgb(255, 255, 255);
+    --welcome-hr: rgba(0, 0, 0, 0.1);
+}
+
+#app {
     color: #2c3e50;
 }
 

@@ -29,7 +29,7 @@ export default class PeerStats {
     start(callback, interval) {
         if (!callback)
             throw "Callback cannot be null";
-        interval = interval || 3000;
+        interval = interval || 5000;
         var self = this;
         this.timer = setInterval(() => {
             self.PeerConnection.getStats().then(r => {

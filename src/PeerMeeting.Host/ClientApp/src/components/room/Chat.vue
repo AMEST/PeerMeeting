@@ -33,14 +33,18 @@
 </template>
 
 <script>
-import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import {
+  HubConnectionBuilder,
+  LogLevel,
+  HttpTransportType,
+} from "@microsoft/signalr";
 import { v4 as uuidv4 } from "uuid";
 import CommonUtils from "@/CommonUtils";
 export default {
   name: "Chat",
   props: {
     roomId: String,
-    state: Object
+    state: Object,
   },
   data: () => ({
     connection: undefined,
@@ -67,7 +71,7 @@ export default {
         date: data.date,
       };
       this.listMessages.push(message);
-      if(!this.state.chatOpened){
+      if (!this.state.chatOpened) {
         this.scrollToBottom();
         this.$store.commit("changeHasNewMessages", true);
       }
@@ -85,18 +89,21 @@ export default {
       }, 100);
     },
   },
-  watch:{
+  watch: {
     // eslint-disable-next-line
-    "state.chatOpened": function(n,o){
-      if(n){
+    "state.chatOpened": function (n, o) {
+      if (n) {
         this.$store.commit("changeHasNewMessages", false);
       }
-    }
+    },
   },
   created: function () {
     var self = this;
     this.connection = new HubConnectionBuilder()
-      .withUrl("/ws/chat")
+      .withUrl("/ws/chat", {
+        transport: HttpTransportType.WebSockets,
+        skipNegotiation: true,
+      })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();
@@ -122,7 +129,8 @@ export default {
   min-width: 300px;
   left: 0;
   top: 58px;
-  background-color: var(--chat-color, rgb(34, 34, 34, 0.6));
+  background-color: var(--chat-color, rgb(34, 34, 34));
+  border-right: 1px solid #ced4da;
 }
 .chat-messages-list {
   height: calc(100% - 64px);
@@ -133,7 +141,6 @@ export default {
   overflow-y: scroll;
   text-align: left;
   padding-top: 10px;
-  border-right: 1px solid #ced4da;
   border-radius: 0px;
 }
 .chat-textarea {
@@ -149,16 +156,22 @@ export default {
   height: 64px;
   border-radius: 0px;
   resize: none;
-  background-color: var(--chat-color, rgb(34, 34, 34, 0.6));
+  background-color: var(--chat-color,#303030);
   color: var(--bs-body-color);
+  border-right: 1px solid var(--chat-color,#303030);
+  border-left: 1px solid var(--chat-color,#303030);
+  border-bottom: 1px solid var(--chat-color,#303030);
 }
 .chat-textarea textarea:focus {
-  background-color: var(--chat-color, rgb(34, 34, 34, 0.6));
+  background-color: var(--chat-color,#303030);
   color: var(--bs-body-color);
 }
 .message-avatar {
   position: absolute;
   background-color: transparent;
+}
+.message-avatar .b-avatar-text{
+      background-color: #6c757d;
 }
 .message-body {
   padding-left: 48px;
@@ -172,19 +185,19 @@ export default {
   white-space: pre-wrap;
   word-break: break-word;
 }
-.markdown-body{
+.markdown-body {
   color: var(--bs-body-color);
 }
 
-.markdown-body pre{
+.markdown-body pre {
   background-color: var(--bs-body-bg);
 }
 @-moz-document url-prefix() {
   .markdown-body::before {
-    content: unset!important;
+    content: unset !important;
   }
   .markdown-body::after {
-    content: unset!important;
+    content: unset !important;
   }
 }
 </style>
