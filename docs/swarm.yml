@@ -40,7 +40,6 @@ services:
       - "--static-auth-secret=VerySecretSharedKey"
       - "--no-tls"
       - "--no-tcp"
-      #- "--no-stun" #optional disable stun functionality
     networks:
       - outside
     deploy:

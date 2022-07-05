@@ -14,7 +14,7 @@ For the application start, several conditions must be met:
 2. There must be a reverse proxy to establish an https connection (optional you can use free cloudflare balancer with https)
 3. If you have to scale service, you need:
    1. Redis (*version >=6 with acl user who can create/pub/sub channels with prefix `peermeeting`*)
-   2. Load balancer with sticky sessions
+   2. Load balancer with sticky sessions **(From version 1.3.0, sticky sessions not needed)**
 4. If you want to enable participants to connect to the conference using a symmetric NAT, then you will need to deploy the `COTURN` TURN server. [*(Example of settings in swarm.yml)*](swarm.yml)
 
 Next, you need to choose a launch method. It is possible to launch the application:
@@ -121,7 +121,6 @@ services:
       - "--static-auth-secret=VerySecretSharedKey"
       - "--no-tls"
       - "--no-tcp"
-      #- "--no-stun" #optional disable stun functionality
     networks:
       - outside
     deploy:
