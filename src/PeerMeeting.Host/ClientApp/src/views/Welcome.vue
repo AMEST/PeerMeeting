@@ -99,12 +99,17 @@ export default {
 }
 .Welcome .nav-link {
   padding-right: 0.5em !important;
+  padding-left: unset;
 }
 .Welcome .nav-link.active {
   border: unset !important;
 }
 .Welcome .nav-link:hover {
   border-color: transparent !important;
+}
+.Welcome .nav-link:focus-visible {
+  transition: unset;
+  outline: unset;
 }
 .Welcome .nav-tabs{
   border-bottom:unset!important; 
