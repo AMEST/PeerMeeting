@@ -263,6 +263,7 @@ export default {
   top: unset !important;
   -webkit-transform: inherit !important;
   transform: inherit !important;
+  align-content: center;
 }
 
 .half-screen-container .user-block {
