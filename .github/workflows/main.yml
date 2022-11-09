@@ -11,8 +11,9 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - run: git fetch --prune --unshallow
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - name: Build And Push PeerMeet
       uses: docker/build-push-action@v1.1.0
       with:
