@@ -1,28 +1,60 @@
 <template>
   <div class="room">
     <b-container fluid>
-      <div class="room-container"><h3 class="room-name">{{ roomId }}</h3></div>
-      <b-card-group
-        deck
-        id="videos-container"
-        class="justify-content-center"
-        :class="[state.halfScreenMode ? 'half-screen-container' : '']"
+      <div class="room-container">
+        <h3 class="room-name">{{ roomId }}</h3>
+      </div>
+
+      <div
+        :class="[
+          'video-grid',
+          spotlightMode ? 'video-grid--spotlight' : `video-grid--${gridClass}`,
+        ]"
       >
-        <participant-block
-          v-for="[k, v] in participants"
-          :key="k"
-          :streamEvent="v"
-          :state="state"
-          :DetectRTC="DetectRTC"
-          :participants="participants"
-          :connection="rtcConnection"
-          :class="
-            participants.size <= 2
-              ? 'only-local-participant'
-              : 'many-participants'
-          "
-        ></participant-block>
-      </b-card-group>
+        <!-- Spotlight mode: selected participant -->
+        <template v-if="spotlightMode && selectedParticipant">
+          <div class="spotlight-main">
+            <participant-block
+              :key="selectedParticipant[0]"
+              :streamEvent="selectedParticipant[1]"
+              :state="state"
+              :DetectRTC="DetectRTC"
+              :participants="participants"
+              :connection="rtcConnection"
+              :isSpotlight="true"
+              @toggleSpotlight="clearSpotlight"
+            />
+          </div>
+          <div class="spotlight-sidebar">
+            <participant-block
+              v-for="[k, v] in otherParticipants"
+              :key="k"
+              :streamEvent="v"
+              :state="state"
+              :DetectRTC="DetectRTC"
+              :participants="participants"
+              :connection="rtcConnection"
+              :isThumbnail="true"
+            @toggleSpotlight="selectParticipant(k)"
+            />
+          </div>
+        </template>
+
+        <!-- Normal grid mode -->
+        <template v-else>
+          <participant-block
+            v-for="[k, v] in participantList"
+            :key="k"
+            :streamEvent="v"
+            :state="state"
+            :DetectRTC="DetectRTC"
+            :participants="participants"
+            :connection="rtcConnection"
+            @toggleSpotlight="selectParticipant(k)"
+          />
+        </template>
+      </div>
+
       <chat
         :style="state.chatOpened ? '' : 'visibility:hidden'"
         :roomId="rtcConnection.connection.channel"
@@ -54,6 +86,8 @@ export default {
     rtcConnection: null,
     stateService: null,
     participants: new Map(),
+    participantVersion: 0,
+    selectedParticipantId: null,
     DetectRTC: require('detectrtc'),
   }),
   components: {
@@ -64,31 +98,88 @@ export default {
   computed: {
     state() {
       if (this.stateService == null) {
-        return { halfScreenMode: false }
+        return {}
       }
       return this.stateService.state
     },
+    participantCount() {
+      void this.participantVersion
+      return this.participants.size
+    },
+    participantList() {
+      void this.participantVersion
+      return Array.from(this.participants.entries())
+    },
+    spotlightMode() {
+      return this.selectedParticipantId !== null && this.participantCount > 2
+    },
+    selectedParticipant() {
+      if (!this.selectedParticipantId) return null
+      return [
+        this.selectedParticipantId,
+        this.participants.get(this.selectedParticipantId),
+      ]
+    },
+    otherParticipants() {
+      void this.participantVersion
+      const result = []
+      for (const [k, v] of this.participants) {
+        if (k !== this.selectedParticipantId) {
+          result.push([k, v])
+        }
+      }
+      return result
+    },
+    gridClass() {
+      const count = this.participantCount
+      if (count <= 1) return 'single'
+      if (count === 2) return 'dual'
+      if (count <= 4) return 'quad'
+      if (count <= 6) return 'six'
+      return 'many'
+    },
   },
   methods: {
+    selectParticipant(id) {
+      if (this.participantCount <= 2) return
+      if (this.selectedParticipantId === id) {
+        this.selectedParticipantId = null
+      } else {
+        this.selectedParticipantId = id
+      }
+    },
+    clearSpotlight() {
+      this.selectedParticipantId = null
+    },
     addParticipantBlock(event) {
       if (this.participants.has(event.userid) && event.cardfix) return
       if (this.participants.has(event.userid)) {
         this.participants.delete(event.userid)
       }
-      event.extra = CommonUtils.extractExtraData(this.rtcConnection.connection, event.userid)
+      event.extra = CommonUtils.extractExtraData(
+        this.rtcConnection.connection,
+        event.userid
+      )
       this.participants.set(event.userid, event)
-      this.$forceUpdate()
+      this.participantVersion++
       if (
         this.rtcConnection.connection.userid === event.userid &&
         event.type === 'local'
       ) {
-        RTCUtils.setHarkHandler(this.rtcConnection.connection, event.stream)
+        RTCUtils.setHarkHandler(
+          this.rtcConnection.connection,
+          event.stream
+        )
       }
     },
     streamEnded(event) {
       if (!this.participants.has(event.userid)) return
       this.participants.delete(event.userid)
-      this.$forceUpdate()
+      this.participantVersion++
+
+      if (this.selectedParticipantId === event.userid) {
+        this.selectedParticipantId = null
+      }
 
       const peer = this.rtcConnection.connection.peers[event.userid]
       if (
@@ -103,7 +194,9 @@ export default {
 
       const username = CommonUtils.getUserNameFromEvent(event)
       this.$bvToast.toast(
-        this.$t('room.notifications.user') + username + this.$t('room.notifications.left'),
+        this.$t('room.notifications.user') +
+          username +
+          this.$t('room.notifications.left'),
         {
           title: this.$t('room.notifications.title'),
           variant: 'info',
@@ -122,10 +215,13 @@ export default {
         if (participant.changeCallback) participant.changeCallback()
         return
       }
-      if (this.participants.has(event.userid) || event.status === 'offline') return
+      if (this.participants.has(event.userid) || event.status === 'offline')
+        return
       const username = CommonUtils.getUserNameFromEvent(event)
       this.$bvToast.toast(
-        this.$t('room.notifications.user') + username + this.$t('room.notifications.joined'),
+        this.$t('room.notifications.user') +
+          username +
+          this.$t('room.notifications.joined'),
         {
           title: this.$t('room.notifications.title'),
           variant: 'info',
@@ -146,7 +242,10 @@ export default {
           this.$router,
           this.participants
         )
-        this.stateService = new RTCStateService(this.rtcConnection, this.$store)
+        this.stateService = new RTCStateService(
+          this.rtcConnection,
+          this.$store
+        )
       } catch (e) {
         console.error('Error Initialize RTCMultuConnection', e)
         window.location.reload()
@@ -219,6 +318,11 @@ export default {
       this.initialize()
       this.rtcConnection.join(this.roomId)
     },
+    participantCount(newCount) {
+      if (newCount <= 2 && this.selectedParticipantId) {
+        this.selectedParticipantId = null
+      }
+    },
   },
 }
 </script>
@@ -236,7 +340,7 @@ export default {
 }
 @media (max-width: 801px) {
   .room-name {
-    margin-left: 10px!important;
+    margin-left: 10px !important;
     max-width: 70%;
     text-align: left;
   }
@@ -249,54 +353,118 @@ export default {
   width: 100%;
   z-index: 1000;
 }
-.card-deck {
-  max-height: calc(100vh - 108px);
-  min-height: calc(100vh - 108px);
+
+/* ===== CSS Grid Layout ===== */
+
+.video-grid {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  height: calc(100vh - 108px);
+  padding: 8px;
+  grid-auto-rows: minmax(0, 1fr);
+}
+
+/* 1 participant */
+.video-grid--single {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
+/* 2 participants */
+.video-grid--dual {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* 3-4 participants — 2x2 */
+.video-grid--quad {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* 5-6 participants — 3x2 */
+.video-grid--six {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* 7+ participants — auto-fill */
+.video-grid--many {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* ===== Spotlight Mode (2/3 + 1/3) ===== */
+
+.video-grid--spotlight {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: 1fr;
+  gap: 8px;
+}
+
+.spotlight-main {
+  display: flex;
   align-items: center;
-  position: relative;
+  justify-content: center;
+  min-height: 0;
 }
-.card-deck .card {
-  margin-right: unset !important;
+
+.spotlight-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  max-height: calc(100vh - 108px);
+  padding: 4px;
 }
+
+.spotlight-sidebar .user-block {
+  flex-shrink: 0;
+  min-width: unset;
+  min-height: unset;
+  height: auto;
+  aspect-ratio: 1.5;
+  width: 100%;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+
+.spotlight-sidebar .user-block:hover {
+  box-shadow: 0 0 0 2px var(--bs-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .video-grid--dual {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+
+  .video-grid--six,
+  .video-grid--many {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .video-grid--spotlight {
+    grid-template-columns: 1fr;
+    grid-template-rows: 2fr 1fr;
+  }
+
+  .spotlight-sidebar {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-height: 150px;
+  }
+
+  .spotlight-sidebar .user-block {
+    min-width: 160px;
+    min-height: unset !important;
+  }
+}
+
 @media (max-width: 380px) {
   .container-fluid {
     padding-left: 0px !important;
     padding-right: 0px !important;
-  }
-}
-.half-screen-container {
-  position: absolute;
-  right: 1.5em;
-  width: 249px !important;
-  max-height: calc(100% - 152px);
-  overflow-y: scroll;
-  top: unset !important;
-  -webkit-transform: inherit !important;
-  transform: inherit !important;
-  align-content: center;
-}
-
-.half-screen-container .user-block {
-  min-width: 215px !important;
-  min-height: 160px !important;
-  margin-top: 5px;
-}
-.half-screen-container .only-local-participant {
-  height: inherit !important;
-}
-.half-screen-container .many-participants {
-  height: inherit !important;
-}
-.only-local-participant {
-  height: 100vw;
-}
-.many-participants {
-  height: 20vw !important;
-  max-height: 20vw !important;
-}
-@media (min-width: 578px) {
-  .many-participants {
-    max-width: 35vw;
   }
 }
 </style>

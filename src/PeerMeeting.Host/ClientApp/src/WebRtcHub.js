@@ -30,7 +30,8 @@ function WebRtcSignalR(connection, connectCallback) {
 
   signalRConnection.on(channelName, (message) => {
     let data = JSON.parse(message)
-    console.log('ON Deserialized', data)
+    if (window.pmDebug)
+      console.log('ON Deserialized', data)
 
     switch (data.eventName) {
       case connection.socketMessageEvent:

@@ -1,34 +1,37 @@
 <template>
   <div
-    class="card text-white user-block"
+    class="user-block card text-white"
     :class="[
-      fullscreen ? 'pseudo-fullscreen' : '',
-      halfscreen ? 'half-screen' : '',
-      streamEvent.extra.speacking ? 'speaking' : '',
+      { 'user-block--spotlight': isSpotlight },
+      { 'user-block--thumbnail': isThumbnail },
+      { 'user-block--speaking': streamEvent.extra.speacking },
     ]"
-    :style="
-      halfscreen
-        ? 'max-height: unset!important;height: 80%!important; max-width: unset;'
-        : ''
-    "
     :id="'card-' + streamEvent.userid"
   >
     <span class="username-span">{{ profile.username }}</span>
     <b-avatar
-      :class="[
-        state.halfScreenMode && !halfscreen ? 'b-avatar-half' : '',
-        profile.avatar ? 'has-avatar' : '',
-      ]"
+      :class="[profile.avatar ? 'has-avatar' : '']"
       :src="profile.avatar"
       :text="getInitials()"
     ></b-avatar>
+
+    <div
+      class="spotlight-toggle-overlay"
+      v-if="!isThumbnail && !isSpotlight"
+      @click="$emit('toggleSpotlight')"
+    ></div>
+
+    <div
+      class="spotlight-toggle-overlay spotlight-exit-overlay"
+      v-if="isSpotlight"
+      @click="$emit('toggleSpotlight')"
+    ></div>
 
     <b-button
       class="fullscreen-button"
       size="sm"
       variant="outline-light"
-      @click="switchFullscreen"
-      :disabled="state.halfScreenMode"
+      @click.stop="toggleFullscreen"
     >
       <b-icon v-if="!fullscreen" icon="fullscreen" />
       <b-icon v-else icon="fullscreen-exit" />
@@ -55,8 +58,6 @@
       :userId="streamEvent.userid"
       :connection="connection"
     />
-
-    <div class="switch-half-screen" @click="switchHalfScreen"></div>
   </div>
 </template>
 
@@ -74,8 +75,6 @@ export default {
   },
   data: () => ({
     fullscreen: false,
-    halfscreen: false,
-    halfscreenTimer: null,
     streamValidateTimer: null,
     profile: {
       username: null,
@@ -100,33 +99,19 @@ export default {
     DetectRTC: Object,
     participants: Map,
     connection: Object,
+    isSpotlight: {
+      type: Boolean,
+      default: false,
+    },
+    isThumbnail: {
+      type: Boolean,
+      default: false,
+    },
   },
   methods: {
-    switchFullscreen() {
+    toggleFullscreen(event) {
+      event.stopPropagation()
       this.fullscreen = !this.fullscreen
-      this.state.fullScreenMode = !this.state.fullScreenMode
-    },
-    switchHalfScreen() {
-      if (this.participants.size <= 1 && !this.halfscreen) return
-      if (this.DetectRTC.isMobileDevice) return
-      if (this.state.halfScreenMode && !this.halfscreen) return
-      if (this.state.fullScreenMode) return
-
-      this.state.halfScreenMode = !this.state.halfScreenMode
-      this.halfscreen = !this.halfscreen
-
-      if (!this.halfscreen && this.halfscreenTimer != null) {
-        clearInterval(this.halfscreenTimer)
-        this.halfscreenTimer = null
-        return
-      }
-      if (this.halfscreen && this.halfscreenTimer == null) {
-        this.halfscreenTimer = setInterval(() => {
-          if (this.halfscreen && this.participants.size <= 1) {
-            this.switchHalfScreen()
-          }
-        }, 2000)
-      }
     },
     getInitials() {
       const username = CommonUtils.getUserNameFromEvent(this.streamEvent)
@@ -150,6 +135,21 @@ export default {
       this.profile.avatar = CommonUtils.getAvatarFromEvent(this.streamEvent)
       this.profile.username = CommonUtils.getUserNameFromEvent(this.streamEvent)
     },
+    streamEventChangeCallback() {
+      this.$forceUpdate()
+    },
+    enablePeerStats(event) {
+      if (event.type && event.type === 'local') return
+      if (this.connection.connection.userid === event.userid) return
+      if (!this.connection.connection.peers[event.userid]) return
+      if (this.peerStats) this.peerStats.stop()
+      this.peerStats = new PeerStats(
+        this.connection.connection.peers[event.userid].peer
+      )
+      this.peerStats.start((stats) => {
+        this.stats = stats
+      }, 5000)
+    },
     streamValidate() {
       if (this.connection.connection.userid === this.streamEvent.userid) return
       if (!this.streamEvent.mediaElement) return
@@ -167,21 +167,6 @@ export default {
           sender: this.connection.connection.userid,
         })
       }
-    },
-    enablePeerStats(event) {
-      if (event.type && event.type === 'local') return
-      if (this.connection.connection.userid === event.userid) return
-      if (!this.connection.connection.peers[event.userid]) return
-      if (this.peerStats) this.peerStats.stop()
-      this.peerStats = new PeerStats(
-        this.connection.connection.peers[event.userid].peer
-      )
-      this.peerStats.start((stats) => {
-        this.stats = stats
-      }, 5000)
-    },
-    streamEventChangeCallback() {
-      this.$forceUpdate()
     },
     prepare(event) {
       event.changeCallback = this.streamEventChangeCallback
@@ -220,12 +205,6 @@ export default {
   },
   destroyed() {
     if (this.peerStats) this.peerStats.stop()
-    if (!this.halfscreen) return
-    this.state.halfScreenMode = false
-    if (this.halfscreenTimer != null) {
-      clearInterval(this.halfscreenTimer)
-      this.halfscreenTimer = null
-    }
     if (this.streamValidateTimer != null) {
       clearInterval(this.streamValidateTimer)
       this.streamValidateTimer = null
@@ -234,44 +213,41 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .user-block {
-  min-width: 355px;
-  overflow: hidden;
-  border-radius: 18px;
-  border-style: hidden;
-  max-height: calc(100vh - 169px);
-  background-color: black;
-  min-height: 250px;
-  margin-bottom: 1em !important;
-  transition: box-shadow 0.4s;
-  justify-content: center;
-}
-.user-block video {
-  background-color: transparent;
-  z-index: 1;
+  width: 100%;
   height: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-height: unset;
+  overflow: hidden;
+  border-radius: 12px;
+  border-style: hidden;
+  background-color: black;
+  transition: box-shadow 0.4s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }
-@-moz-document url-prefix() {
-  .half-screen video {
-    height: unset;
-  }
-}
+
 .user-block .b-avatar {
   position: absolute;
   z-index: 0;
-  left: calc(50% - 100px);
-  bottom: calc(50% - 100px);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   width: 200px;
   height: 200px;
   font-size: 4em;
 }
-.b-avatar-half {
-  left: calc(50% - 50px) !important;
-  bottom: calc(50% - 50px) !important;
-  width: 100px !important;
-  height: 100px !important;
+
+.user-block--thumbnail .b-avatar {
+  width: 80px !important;
+  height: 80px !important;
+  font-size: 2em !important;
 }
+
 .username-span {
   position: absolute;
   background-color: rgb(255, 255, 255, 0.32);
@@ -282,32 +258,24 @@ export default {
   font-weight: bold;
   z-index: 2;
   top: 0;
+  padding: 4px 8px;
+  box-sizing: border-box;
 }
-.pseudo-fullscreen {
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100% !important;
-  min-height: calc(100% - 48px);
-  max-height: calc(100% - 48px);
-  padding: 0px !important;
-  margin: 0px !important;
-  border-radius: 0px;
-  max-width: unset !important;
-}
+
 .audio-muted-icon {
   position: absolute;
   left: 1em;
   bottom: 1.3em;
   z-index: 30;
 }
+
 .video-muted-icon {
   z-index: 30;
   position: absolute;
   left: 2.5em;
   bottom: 1.3em;
 }
+
 .fullscreen-button {
   position: absolute;
   bottom: 1em;
@@ -316,30 +284,73 @@ export default {
   color: white;
   border-style: hidden;
 }
+
 .fullscreen-button .b-icon {
   padding-top: 1px;
 }
-.switch-half-screen {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  z-index: 39;
-  background-color: transparent;
-  cursor: pointer;
-}
-.half-screen {
-  position: fixed;
-  width: calc(100% - 285px);
-  height: 100%;
-  z-index: 0;
-  padding: 0px;
-  left: 0;
-  margin: 0px 0px 0px 1.5em;
-}
+
 .has-avatar {
   background-color: transparent !important;
 }
-.speaking {
-  box-shadow: 0 0 10px 10px lightblue;
+
+.spotlight-toggle-overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.user-block--speaking {
+  box-shadow: 0 0 10px 4px lightblue;
+}
+
+/* Thumbnail mode — smaller */
+.user-block--thumbnail {
+  border-radius: 8px;
+  min-height: 120px !important;
+}
+
+.user-block--thumbnail .username-span {
+  font-size: 0.75em;
+  padding: 2px 6px;
+}
+
+.user-block--thumbnail .audio-muted-icon,
+.user-block--thumbnail .video-muted-icon {
+  font-size: 0.85em;
+}
+
+.user-block--thumbnail .fullscreen-button {
+  display: none;
+}
+
+/* Spotlight mode — fills available space */
+.user-block--spotlight {
+  border-radius: 12px;
+}
+
+@media (max-width: 768px) {
+  .user-block .b-avatar {
+    width: 100px;
+    height: 100px;
+    font-size: 2.5em;
+  }
+
+  .user-block--thumbnail .b-avatar {
+    width: 50px !important;
+    height: 50px !important;
+    font-size: 1.5em !important;
+  }
+}
+</style>
+<style>
+.user-block video {
+  background-color: transparent;
+  z-index: 1;
+  /* width: 100%; */
+  height: 100%;
+  object-fit: cover;
 }
 </style>
