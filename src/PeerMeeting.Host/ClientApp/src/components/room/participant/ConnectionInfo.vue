@@ -9,30 +9,32 @@
       <b-icon icon="bar-chart-fill" />
     </b-button>
     <b-toast
-      :id="'toast-' + this.userId"
+      :id="'toast-' + userId"
       class="connection-toast"
       title="Connection Info"
       variant="secondary"
       static
       no-auto-hide
     >
-      Bandwidth: {{ this.bytesToSize(this.stats.bandwidth) }}<br />
-      State: {{ this.stats.connectionState }}<br />
-      Local ({{this.stats.stunOrTurn.local}}): {{ this.stats.ips.local }} {{ this.stats.transport.local }}<br />
-      Remote ({{this.stats.stunOrTurn.remote}}): {{ this.stats.ips.remote }} {{ this.stats.transport.remote
-      }}<br />
-      Data transfered: {{ this.bytesToSize(this.stats.data.receive) }}
+      Bandwidth: {{ bytesToSize(stats.bandwidth) }}<br />
+      State: {{ stats.connectionState }}<br />
+      Local ({{ stats.stunOrTurn.local }}): {{ stats.ips.local }}
+      {{ stats.transport.local }}<br />
+      Remote ({{ stats.stunOrTurn.remote }}): {{ stats.ips.remote }}
+      {{ stats.transport.remote }}<br />
+      Data transfered: {{ bytesToSize(stats.data.receive) }}
       <b-icon icon="arrow-down-up" />
-      {{ this.bytesToSize(this.stats.data.send) }} <br />
-      RTT: {{ this.stats.rtt }} s.
+      {{ bytesToSize(stats.data.send) }} <br />
+      RTT: {{ stats.rtt }} s.
     </b-toast>
   </div>
 </template>
 
 <script>
-import CommonUtils from "@/CommonUtils";
+import CommonUtils from '@/CommonUtils'
+
 export default {
-  name: "ConnectionInfo",
+  name: 'ConnectionInfo',
   props: {
     userId: String,
     stats: Object,
@@ -40,7 +42,7 @@ export default {
   methods: {
     bytesToSize: CommonUtils.bytesToSize,
   },
-};
+}
 </script>
 
 <style>

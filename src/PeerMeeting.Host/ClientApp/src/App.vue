@@ -5,64 +5,66 @@
     <b-container class="login-container" v-else>
       <log-in v-if="this.loaded" />
     </b-container>
-    <a 
-    :class="[this.$route.name == 'room'? 'hide-forkme' : '']"
-    class="fork-me" 
-    href="https://github.com/AMEST/PeerMeeting"
+    <a
+      :class="[this.$route.name == 'room' ? 'hide-forkme' : '']"
+      class="fork-me"
+      href="https://github.com/AMEST/PeerMeeting"
     >
       Fork me
-      <font-awesome-icon :icon="{ prefix: 'fab', iconName: 'github' }"/>
+      <font-awesome-icon :icon="{ prefix: 'fab', iconName: 'github' }" />
     </a>
-    <span class="text-muted text-version">{{this.$store.state.application.version}}</span>
-    <settings-dialog/>
+    <span class="text-muted text-version">{{ this.$store.state.application.version }}</span>
+    <settings-dialog />
   </div>
 </template>
 
 <script>
 import axios from 'axios'
-import TopMenu from "@/components/TopMenu.vue";
-import SettingsDialog from "@/components/settings/SettingsDialog.vue";
-import LogIn from "@/components/LogIn.vue";
-import { v4 as uuidv4 } from "uuid";
+import TopMenu from '@/components/TopMenu.vue'
+import SettingsDialog from '@/components/settings/SettingsDialog.vue'
+import LogIn from '@/components/LogIn.vue'
+import { v4 as uuidv4 } from 'uuid'
+
 export default {
   components: {
     TopMenu,
     SettingsDialog,
-    LogIn
+    LogIn,
   },
   data: () => ({
     loaded: false,
   }),
-  mounted: function () {
-    var self = this;
+  mounted() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
-      // eslint-disable-next-line
-      console.log("enumerateDevices() не поддерживается.");
-      return;
+      console.log('enumerateDevices() не поддерживается.')
+      return
     }
-    navigator.mediaDevices.enumerateDevices().then(function (devices) {
-      self.$store.commit("updateMediaDevices", devices);
-    });
+    navigator.mediaDevices.enumerateDevices().then((devices) => {
+      this.$store.commit('updateMediaDevices', devices)
+    })
   },
-  created: async function(){
-    var versionRequest = await axios.get("/api/version");
-    if(versionRequest.data != null){
-      this.$store.commit("changeVersion", versionRequest.data.version);
+  async created() {
+    const versionRequest = await axios.get('/api/version')
+    if (versionRequest.data != null) {
+      this.$store.commit('changeVersion', versionRequest.data.version)
     }
-    var username = this.$store.state.application.profile != null ? this.$store.state.application.profile.name : uuidv4();
-    var turnRequest = await axios.post("/api/credentials","username="+username);
-    if (turnRequest.data != null && turnRequest.status != 204){
-      this.$store.commit("updateTurnSettings", turnRequest.data);
+    const username =
+      this.$store.state.application.profile != null
+        ? this.$store.state.application.profile.name
+        : uuidv4()
+    const turnRequest = await axios.post('/api/credentials', 'username=' + username)
+    if (turnRequest.data != null && turnRequest.status !== 204) {
+      this.$store.commit('updateTurnSettings', turnRequest.data)
     }
-    
-    this.loaded = true;
-  }
-};
+
+    this.loaded = true
+  },
+}
 </script>
 
 <style>
 #app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
@@ -94,21 +96,21 @@ export default {
   border-radius: 0px 10px 0px 0px;
 }
 
-.text-version{
+.text-version {
   position: fixed;
   right: 5px;
   bottom: 0;
   z-index: -1;
 }
 
-.login-container{
+.login-container {
   height: calc(100vh - 58px);
   align-items: baseline;
   display: flex;
 }
 
-.hide-forkme{
-  display: none!important;;
+.hide-forkme {
+  display: none !important;
 }
 
 .container-center {
@@ -120,20 +122,16 @@ export default {
 }
 
 /* Scroll */
-/* width */
 ::-webkit-scrollbar {
   width: 10px;
 }
-/* Track */
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
-/* Handle */
 ::-webkit-scrollbar-thumb {
   background: #888;
 }
-/* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }

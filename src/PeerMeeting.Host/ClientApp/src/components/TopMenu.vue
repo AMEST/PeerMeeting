@@ -2,21 +2,22 @@
   <div class="top-menu-plcae-reservation">
     <b-navbar toggleable="sm" class="shadow top-menu p-0">
       <b-container fluid>
-        <b-navbar-brand href="/" id="brand" :class="[this.$route.name == 'room'? 'hide-brand-in-room-on-small-screen' : '']">
+        <b-navbar-brand
+          href="/"
+          id="brand"
+          :class="[
+            this.$route.name == 'room' ? 'hide-brand-in-room-on-small-screen' : '',
+          ]"
+        >
           <img class="topicon" src="../assets/logo.png" alt="rss" />PeerMeeting
         </b-navbar-brand>
-        <!-- Right aligned nav items -->
         <b-navbar-nav class="ml-auto">
           <b-form-select
             v-if="this.$store.state.application.profile == null"
             v-model="$i18n.locale"
             :options="langs"
           ></b-form-select>
-          <b-nav-item-dropdown
-            v-else
-            right
-          >
-            <!-- Using 'button-content' slot -->
+          <b-nav-item-dropdown v-else right>
             <template v-slot:button-content>
               <em>
                 <b-avatar
@@ -27,14 +28,18 @@
               </em>
             </template>
             <b-dropdown-text style="width: 240px">
-              {{$t('topMenu.signedAs')}}
+              {{ $t('topMenu.signedAs') }}
               <span class="username">{{
                 $store.state.application.profile.name
               }}</span>
             </b-dropdown-text>
             <b-dropdown-divider></b-dropdown-divider>
-            <b-dropdown-item v-b-modal.settings-modal>{{$t('topMenu.settings')}}</b-dropdown-item>
-            <b-dropdown-item @click="signOut">{{$t('topMenu.signOut')}}</b-dropdown-item>
+            <b-dropdown-item v-b-modal.settings-modal>{{
+              $t('topMenu.settings')
+            }}</b-dropdown-item>
+            <b-dropdown-item @click="signOut">{{
+              $t('topMenu.signOut')
+            }}</b-dropdown-item>
           </b-nav-item-dropdown>
         </b-navbar-nav>
       </b-container>
@@ -43,31 +48,29 @@
 </template>
 
 <script>
-import CommonUtils from "@/CommonUtils";
+import CommonUtils from '@/CommonUtils'
+
 export default {
-  name: "TopMenu",
+  name: 'TopMenu',
   data: () => ({
-    langs: ["ru", "en"]
+    langs: ['ru', 'en'],
   }),
   methods: {
-    signOut: function () {
-      this.$store.commit("clearProfile");
-      this.$store.commit("clearHistory");
-      window.location.reload();
+    signOut() {
+      this.$store.commit('clearProfile')
+      this.$store.commit('clearHistory')
+      window.location.reload()
     },
-    getInitials: function () {
-      return CommonUtils.getInitials(
-        this.$store.state.application.profile.name
-      );
+    getInitials() {
+      return CommonUtils.getInitials(this.$store.state.application.profile.name)
     },
   },
   watch: {
-    // eslint-disable-next-line
-    "$i18n.locale": function(to,from){
-      window.localStorage['lang'] = to;
-    }
+    '$i18n.locale'(newValue) {
+      window.localStorage['lang'] = newValue
+    },
   },
-};
+}
 </script>
 
 <style>
@@ -87,7 +90,7 @@ export default {
   padding-right: 5px;
 }
 #brand {
-  color: #ffc107!important;
+  color: #ffc107 !important;
 }
 .avatar-bg .b-avatar-img img {
   background-color: var(--bs-body-bg);
