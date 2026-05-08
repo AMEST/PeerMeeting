@@ -458,6 +458,7 @@ export default {
   .spotlight-sidebar .user-block {
     min-width: 160px;
     min-height: unset !important;
+    max-width: fit-content;
   }
 }
 

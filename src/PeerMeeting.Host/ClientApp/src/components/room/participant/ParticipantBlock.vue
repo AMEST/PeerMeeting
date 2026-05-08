@@ -220,6 +220,7 @@ export default {
   min-width: 0;
   min-height: 0;
   max-height: unset;
+  max-width: calc(100vw - 2.5em);
   overflow: hidden;
   border-radius: 12px;
   border-style: hidden;
