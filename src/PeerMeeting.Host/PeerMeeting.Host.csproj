@@ -7,6 +7,7 @@
     <Copyright>Klabukov Erik</Copyright>
     <Version>0-develop</Version>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <SpaRoot>ClientApp\</SpaRoot>
     <UserSecretsId>d5d11dc6-d93d-4008-8343-e3aec50b859b</UserSecretsId>
   </PropertyGroup>
