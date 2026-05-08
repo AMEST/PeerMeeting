@@ -89,7 +89,7 @@ function WebRtcSignalR(connection, connectCallback) {
         break
     }
   })
-
+  // eslint-disable-next-line
   signalRConnection.onreconnected((connectionId) => {
     console.log('signalr reconnected. state' + signalRConnection.state)
     signalRConnection.invoke('JoinRoom', channelName).then(() => {

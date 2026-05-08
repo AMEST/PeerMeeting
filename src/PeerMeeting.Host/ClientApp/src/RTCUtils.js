@@ -134,6 +134,7 @@ const RTCUtils = {
       userid: connection.userid,
       stream,
     }
+    // eslint-disable-next-line
     const speech = hark(stream, {})
 
     speech.on('speaking', () => connection.onspeaking(speechEvent))
