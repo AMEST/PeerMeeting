@@ -97,6 +97,11 @@ export default {
       }
     },
   },
+  beforeDestroy() {
+    if (this.connection) {
+      this.connection.stop()
+    }
+  },
   async created() {
     this.connection = new HubConnectionBuilder()
       .withUrl('/ws/chat', {

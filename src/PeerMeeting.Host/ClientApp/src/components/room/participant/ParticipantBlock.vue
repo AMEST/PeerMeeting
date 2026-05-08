@@ -96,7 +96,6 @@ export default {
   props: {
     streamEvent: Object,
     state: Object,
-    DetectRTC: Object,
     participants: Map,
     connection: Object,
     isSpotlight: {
