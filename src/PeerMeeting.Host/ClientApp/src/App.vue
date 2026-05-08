@@ -44,20 +44,25 @@ export default {
     })
   },
   async created() {
-    const versionRequest = await axios.get('/api/version')
-    if (versionRequest.data != null) {
-      this.$store.commit('changeVersion', versionRequest.data.version)
-    }
-    const username =
-      this.$store.state.application.profile != null
-        ? this.$store.state.application.profile.name
-        : uuidv4()
-    const turnRequest = await axios.post('/api/credentials', 'username=' + username)
-    if (turnRequest.data != null && turnRequest.status !== 204) {
-      this.$store.commit('updateTurnSettings', turnRequest.data)
-    }
+    try{
+      const versionRequest = await axios.get('/api/version')
+      if (versionRequest.data != null) {
+        this.$store.commit('changeVersion', versionRequest.data.version)
+      }
+      const username =
+        this.$store.state.application.profile.name != null
+          ? this.$store.state.application.profile.name
+          : uuidv4()
+      const turnRequest = await axios.post('/api/credentials', 'username=' + username)
+      if (turnRequest.data != null && turnRequest.status !== 204) {
+        this.$store.commit('updateTurnSettings', turnRequest.data)
+      }
 
-    this.loaded = true
+      this.loaded = true
+    }catch(e){
+      alert('Error while loading application. More information see in devtools')
+      console.error('Error while loading application.', e)
+    }
   },
 }
 </script>

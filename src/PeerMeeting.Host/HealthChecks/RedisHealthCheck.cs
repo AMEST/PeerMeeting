@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using PeerMeeting.Host.Configuration;
 using StackExchange.Redis;
 using System;
 using System.Threading;
@@ -10,9 +11,9 @@ namespace PeerMeeting.Host.HealthChecks
     {
         private readonly string _connectionString;
 
-        public RedisHealthCheck(string connectionString)
+        public RedisHealthCheck(RedisConfiguration configuration)
         {
-            _connectionString = connectionString;
+            _connectionString = configuration.ConnectionString;
         }
 
         public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)

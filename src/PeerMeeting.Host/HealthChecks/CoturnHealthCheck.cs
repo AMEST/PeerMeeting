@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using PeerMeeting.Host.Configuration;
 using System;
 using System.Net.Sockets;
 using System.Threading;
@@ -10,9 +11,9 @@ namespace PeerMeeting.Host.HealthChecks
     {
         private readonly string _turnAddress;
 
-        public CoturnHealthCheck(string turnAddress)
+        public CoturnHealthCheck(CoturnConfiguration configuration)
         {
-            _turnAddress = turnAddress;
+            _turnAddress = configuration.TurnAddress;
         }
 
         public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)

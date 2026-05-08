@@ -49,6 +49,7 @@ builder.Services.AddSignalR(o =>
 
 // Configure Redis if enabled
 var redisConfiguration = builder.Configuration.GetRedisConfiguration();
+builder.Services.AddSingleton<RedisConfiguration>(redisConfiguration);
 if (redisConfiguration.Enabled && !string.IsNullOrEmpty(redisConfiguration.ConnectionString))
 {
     builder.Services.AddSignalR().AddStackExchangeRedis(redisConfiguration.ConnectionString);
@@ -140,7 +141,7 @@ app.UseEndpoints(endpoints =>
         );
     }
 });
-
+app.MapHealthChecks("/api/health");
 app.UseSpa(spa =>
 {
     spa.Options.SourcePath = "ClientApp";
