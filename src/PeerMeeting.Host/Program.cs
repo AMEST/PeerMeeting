@@ -86,8 +86,7 @@ builder.Services.AddAntiforgery(options =>
 var coturnConfiguration = builder.Configuration.GetCoturnConfiguration();
 builder.Services.AddHealthChecks()
     .AddCheck<RedisHealthCheck>("Redis", HealthStatus.Unhealthy)
-    .AddCheck<CoturnHealthCheck>("Coturn", HealthStatus.Degraded)
-    .AddCheck<ThreadPoolStarvationHealthCheck>("ThreadPool", HealthStatus.Unhealthy);
+    .AddCheck<CoturnHealthCheck>("Coturn", HealthStatus.Degraded);
 
 var app = builder.Build();
 

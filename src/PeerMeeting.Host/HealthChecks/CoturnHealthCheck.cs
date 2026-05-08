@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System;
-using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,17 +18,13 @@ namespace PeerMeeting.Host.HealthChecks
         public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(_turnAddress))
-            {
                 return HealthCheckResult.Degraded("Coturn address is not configured, health check skipped.");
-            }
 
             try
             {
                 var addressParts = _turnAddress.Split(':');
                 if (addressParts.Length != 2)
-                {
                     return HealthCheckResult.Degraded("Invalid Coturn address format. Expected format: hostname:port");
-                }
 
                 var host = addressParts[0];
                 var port = int.Parse(addressParts[1]);
@@ -42,18 +37,11 @@ namespace PeerMeeting.Host.HealthChecks
                 var completedTask = await Task.WhenAny(connectTask, timeoutTask);
                 
                 if (completedTask == timeoutTask)
-                {
                     return HealthCheckResult.Degraded("Coturn connection timed out");
-                }
 
-                if (client.Connected)
-                {
-                    return HealthCheckResult.Healthy("Coturn connection is healthy");
-                }
-                else
-                {
-                    return HealthCheckResult.Degraded("Coturn connection failed");
-                }
+                return client.Connected
+                    ? HealthCheckResult.Healthy("Coturn connection is healthy")
+                    : HealthCheckResult.Degraded("Coturn connection failed");
             }
             catch (Exception ex)
             {

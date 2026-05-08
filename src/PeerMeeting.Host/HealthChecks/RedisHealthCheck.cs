@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using StackExchange.Redis;
 using System;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,24 +18,16 @@ namespace PeerMeeting.Host.HealthChecks
         public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(_connectionString))
-            {
-                return HealthCheckResult.Unhealthy("Redis connection string is not configured");
-            }
+                return HealthCheckResult.Degraded("Redis connection string is not configured");
 
             try
             {
-                var connection = await ConnectionMultiplexer.ConnectAsync(_connectionString);
+                await using var connection = await ConnectionMultiplexer.ConnectAsync(_connectionString);
                 var isAlive = connection.IsConnected;
-                await connection.CloseAsync();
                 
-                if (isAlive)
-                {
-                    return HealthCheckResult.Healthy("Redis connection is healthy");
-                }
-                else
-                {
-                    return HealthCheckResult.Unhealthy("Redis connection is not alive");
-                }
+                return isAlive 
+                    ? HealthCheckResult.Healthy("Redis connection is healthy")
+                    : HealthCheckResult.Unhealthy("Redis connection is not alive");
             }
             catch (Exception ex)
             {
