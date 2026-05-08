@@ -1,218 +1,366 @@
 <template>
   <div class="room">
     <b-container fluid>
-      <div class="room-container"><h3 class="room-name">{{ this.roomId }}</h3></div>
-      <b-card-group
-        deck
-        id="videos-container"
-        class="justify-content-center"
+      <div class="room-container">
+        <h3 class="room-name">{{ roomId }}</h3>
+      </div>
+
+      <div
         :class="[
-          this.state.halfScreenMode ? 'half-screen-container' : '',
+          'video-grid',
+          fullscreenMode ? 'video-grid--fullscreen' : spotlightMode ? 'video-grid--spotlight' : `video-grid--${gridClass}`,
         ]"
       >
-        <participant-block
-          v-for="[k, v] in this.participants"
-          :key="k"
-          :streamEvent="v"
-          :state="state"
-          :DetectRTC="DetectRTC"
-          :participants="participants"
-          :connection="rtcConnection"
-          :class="
-            participants.size <= 2
-              ? 'only-local-participant'
-              : 'many-participants'
-          "
-        ></participant-block>
-      </b-card-group>
+        <!-- Fullscreen mode: only selected participant -->
+        <template v-if="fullscreenMode && fullscreenParticipant">
+          <participant-block
+            :key="fullscreenParticipant[0]"
+            :streamEvent="fullscreenParticipant[1]"
+            :state="state"
+            :participants="participants"
+            :connection="rtcConnection"
+            :isFullscreen="true"
+            @toggleFullscreen="toggleFullscreen(fullscreenParticipant[0])"
+          />
+        </template>
+
+        <!-- Spotlight mode: selected participant + sidebar -->
+        <template v-else-if="spotlightMode && selectedParticipant">
+          <div class="spotlight-main">
+            <participant-block
+              :key="selectedParticipant[0]"
+              :streamEvent="selectedParticipant[1]"
+              :state="state"
+              :participants="participants"
+              :connection="rtcConnection"
+              :isSpotlight="true"
+              @toggleSpotlight="clearSpotlight"
+              @toggleFullscreen="toggleFullscreen(selectedParticipant[0])"
+            />
+          </div>
+          <div class="spotlight-sidebar">
+            <participant-block
+              v-for="[k, v] in otherParticipants"
+              :key="k"
+              :streamEvent="v"
+              :state="state"
+              :participants="participants"
+              :connection="rtcConnection"
+              :isThumbnail="true"
+              @toggleSpotlight="selectParticipant(k)"
+              @toggleFullscreen="toggleFullscreen(k)"
+            />
+          </div>
+        </template>
+
+        <!-- Normal grid mode -->
+        <template v-else>
+          <participant-block
+            v-for="[k, v] in participantList"
+            :key="k"
+            :streamEvent="v"
+            :state="state"
+            :participants="participants"
+            :connection="rtcConnection"
+            @toggleSpotlight="selectParticipant(k)"
+            @toggleFullscreen="toggleFullscreen(k)"
+          />
+        </template>
+      </div>
+
       <chat
-        :style="this.state.chatOpened ? '' : 'visibility:hidden'"
-        :roomId="this.rtcConnection.connection.channel"
-        :state="this.state"
+        :style="state.chatOpened ? '' : 'visibility:hidden'"
+        :roomId="rtcConnection.connection.channel"
+        :state="state"
       />
       <control-bar
-        :stateService="this.stateService"
-        :DetectRTC="this.DetectRTC"
-        :streamAddCallback="this.addParticipantBlock"
+        :stateService="stateService"
+        :DetectRTC="DetectRTC"
+        :streamAddCallback="addParticipantBlock"
       />
     </b-container>
   </div>
 </template>
 
 <script>
-/* eslint-disable */
-// @ is an alias to /src
-import RTCUtils from "@/RTCUtils";
-import RTCStateService from "@/services/RTCStateService";
-import PeerMeetingRtcMulticonnection from "@/services/PeerMeetingRtcMulticonnection";
-import CommonUtils from "@/CommonUtils";
-import ParticipantBlock from "@/components/room/participant/ParticipantBlock.vue";
-import Chat from "@/components/room/Chat.vue";
-import ControlBar from "@/components/room/ControlBar.vue";
-require("adapterjs");
+import RTCUtils from '@/RTCUtils'
+import RTCStateService from '@/services/RTCStateService'
+import PeerMeetingRtcMulticonnection from '@/services/PeerMeetingRtcMulticonnection'
+import CommonUtils from '@/CommonUtils'
+import ParticipantBlock from '@/components/room/participant/ParticipantBlock.vue'
+import Chat from '@/components/room/Chat.vue'
+import ControlBar from '@/components/room/ControlBar.vue'
+require('adapterjs')
+
 export default {
-  name: "room",
+  name: 'room',
   data: () => ({
-    roomId: "",
+    roomId: '',
     rtcConnection: null,
     stateService: null,
     participants: new Map(),
-    DetectRTC: require("detectrtc"),
+    participantVersion: 0,
+    selectedParticipantId: null,
+    fullscreenParticipantId: null,
+    DetectRTC: require('detectrtc'),
   }),
   components: {
     ParticipantBlock,
     ControlBar,
     Chat,
   },
-  computed:{
-    state: function(){
-      if(this.stateService == null)
-        return {
-          halfScreenMode: false
-        };
-      return this.stateService.state;
-    }
+  computed: {
+    state() {
+      if (this.stateService == null) {
+        return {}
+      }
+      return this.stateService.state
+    },
+    participantCount() {
+      void this.participantVersion
+      return this.participants.size
+    },
+    participantList() {
+      void this.participantVersion
+      return Array.from(this.participants.entries())
+    },
+    fullscreenMode() {
+      return this.fullscreenParticipantId !== null
+    },
+    fullscreenParticipant() {
+      if (!this.fullscreenParticipantId) return null
+      return [
+        this.fullscreenParticipantId,
+        this.participants.get(this.fullscreenParticipantId),
+      ]
+    },
+    spotlightMode() {
+      return this.selectedParticipantId !== null && this.participantCount > 2
+    },
+    selectedParticipant() {
+      if (!this.selectedParticipantId) return null
+      return [
+        this.selectedParticipantId,
+        this.participants.get(this.selectedParticipantId),
+      ]
+    },
+    otherParticipants() {
+      void this.participantVersion
+      const result = []
+      for (const [k, v] of this.participants) {
+        if (k !== this.selectedParticipantId) {
+          result.push([k, v])
+        }
+      }
+      return result
+    },
+    gridClass() {
+      const count = this.participantCount
+      if (count <= 1) return 'single'
+      if (count === 2) return 'dual'
+      if (count <= 4) return 'quad'
+      if (count <= 6) return 'six'
+      return 'many'
+    },
   },
   methods: {
-    addParticipantBlock: function (event) {
-      if (this.participants.has(event.userid) && event.cardfix) return;
-      if (this.participants.has(event.userid))
-        this.participants.delete(event.userid);
-      event.extra = CommonUtils.extractExtraData(this.rtcConnection.connection, event.userid);
-      this.participants.set(event.userid, event);
-      this.$forceUpdate();
-      if(this.rtcConnection.connection.userid == event.userid
-        && event.type == "local")
-        RTCUtils.SetHarkHandler(this.rtcConnection.connection, event.stream)
+    selectParticipant(id) {
+      if (this.participantCount <= 2) return
+      if (this.fullscreenMode) {
+        this.fullscreenParticipantId = null
+      }
+      if (this.selectedParticipantId === id) {
+        this.selectedParticipantId = null
+      } else {
+        this.selectedParticipantId = id
+      }
     },
-    streamEnded: function (event) {
-      if (!this.participants.has(event.userid)) return;
-      this.participants.delete(event.userid);
-      this.$forceUpdate();
+    clearSpotlight() {
+      this.selectedParticipantId = null
+    },
+    toggleFullscreen(id) {
+      if (this.fullscreenMode) {
+        this.fullscreenParticipantId = null
+      } else {
+        this.fullscreenParticipantId = id
+      }
+    },
+    addParticipantBlock(event) {
+      if (this.participants.has(event.userid) && event.cardfix) return
+      if (this.participants.has(event.userid)) {
+        this.participants.delete(event.userid)
+      }
+      event.extra = CommonUtils.extractExtraData(
+        this.rtcConnection.connection,
+        event.userid
+      )
+      this.participants.set(event.userid, event)
+      this.participantVersion++
+      if (
+        this.rtcConnection.connection.userid === event.userid &&
+        event.type === 'local'
+      ) {
+        RTCUtils.setHarkHandler(
+          this.rtcConnection.connection,
+          event.stream
+        )
+      }
+    },
+    streamEnded(event) {
+      if (!this.participants.has(event.userid)) return
+      this.participants.delete(event.userid)
+      this.participantVersion++
 
-      var peer = this.rtcConnection.connection.peers[event.userid];
+      if (this.selectedParticipantId === event.userid) {
+        this.selectedParticipantId = null
+      }
+
+      const peer = this.rtcConnection.connection.peers[event.userid]
       if (
         this.rtcConnection.connection.userid === event.userid ||
         (peer &&
           peer.peer &&
           peer.peer.connectionState &&
-          peer.peer.connectionState === "connected")
-      )
-        return;
+          peer.peer.connectionState === 'connected')
+      ) {
+        return
+      }
 
-      var username = CommonUtils.getUserNameFromEvent(event);
-      this.$bvToast.toast(this.$t("room.notifications.user") + username + this.$t("room.notifications.left"), {
-        title: this.$t("room.notifications.title"),
-        variant: "info",
-        solid: true,
-      });
+      const username = CommonUtils.getUserNameFromEvent(event)
+      this.$bvToast.toast(
+        this.$t('room.notifications.user') +
+          username +
+          this.$t('room.notifications.left'),
+        {
+          title: this.$t('room.notifications.title'),
+          variant: 'info',
+          solid: true,
+        }
+      )
     },
-    userStatusChanged: function (event) {
+    userStatusChanged(event) {
       if (
         this.participants.has(event.userid) &&
-        event.status === "online" &&
+        event.status === 'online' &&
         event.extra
       ) {
-        var participant = this.participants.get(event.userid);
-        participant.extra = event.extra;
-        if (participant.changeCallback) participant.changeCallback();
-        return;
+        const participant = this.participants.get(event.userid)
+        participant.extra = event.extra
+        if (participant.changeCallback) participant.changeCallback()
+        return
       }
-      if (this.participants.has(event.userid) || event.status === "offline")
-        return;
-      var username = CommonUtils.getUserNameFromEvent(event);
-      this.$bvToast.toast(this.$t("room.notifications.user") + username + this.$t("room.notifications.joined"), {
-        title: this.$t("room.notifications.title"),
-        variant: "info",
-        solid: true,
-      });
+      if (this.participants.has(event.userid) || event.status === 'offline')
+        return
+      const username = CommonUtils.getUserNameFromEvent(event)
+      this.$bvToast.toast(
+        this.$t('room.notifications.user') +
+          username +
+          this.$t('room.notifications.joined'),
+        {
+          title: this.$t('room.notifications.title'),
+          variant: 'info',
+          solid: true,
+        }
+      )
       this.addParticipantBlock({
         userid: event.userid,
-        mediaElement: document.createElement("div"),
+        mediaElement: document.createElement('div'),
         cardfix: true,
         streamid: null,
-      });
+      })
     },
-    initialize: function () {
-      var self = this;
+    initialize() {
       try {
-        this.rtcConnection = new PeerMeetingRtcMulticonnection(this.$store, this.$router, this.participants);
-        this.stateService = new RTCStateService(this.rtcConnection, this.$store);
+        this.rtcConnection = new PeerMeetingRtcMulticonnection(
+          this.$store,
+          this.$router,
+          this.participants
+        )
+        this.stateService = new RTCStateService(
+          this.rtcConnection,
+          this.$store
+        )
       } catch (e) {
-        console.error("Error Initialize RTCMultuConnection", e);
-        window.location.reload();
+        console.error('Error Initialize RTCMultuConnection', e)
+        window.location.reload()
       }
-      this.rtcConnection.setOnStream(this.addParticipantBlock);
-      this.rtcConnection.setOnStreamEnded(this.streamEnded);
-      this.rtcConnection.setOnUserStatusChanged(this.userStatusChanged);
-      this.rtcConnection.setOnMuteForcibly(function () {
-        self.state.audioEnabled = false;
-      });
-      // Configure media error
-      this.rtcConnection.configureMediaError(this.mediaErrorCallback);
+      this.rtcConnection.setOnStream(this.addParticipantBlock)
+      this.rtcConnection.setOnStreamEnded(this.streamEnded)
+      this.rtcConnection.setOnUserStatusChanged(this.userStatusChanged)
+      this.rtcConnection.setOnMuteForcibly(() => {
+        this.stateService.state.audioEnabled = false
+      })
+      this.rtcConnection.configureMediaError(this.mediaErrorCallback)
     },
-    mediaErrorCallback: function (videoState, audioState) {
-      this.stateService.state.videoEnabled = videoState;
-      this.stateService.state.audioEnabled = audioState;
-      this.stateService.state.hasWebcam = videoState;
-      this.stateService.state.hasMicrophone = audioState;
-      this.rtcConnection.connection.extra.audioMuted = !audioState;
-      this.rtcConnection.connection.extra.videoMuted = !videoState;
+    mediaErrorCallback(videoState, audioState) {
+      this.stateService.state.videoEnabled = videoState
+      this.stateService.state.audioEnabled = audioState
+      this.stateService.state.hasWebcam = videoState
+      this.stateService.state.hasMicrophone = audioState
+      this.rtcConnection.connection.extra.audioMuted = !audioState
+      this.rtcConnection.connection.extra.videoMuted = !videoState
       this.addParticipantBlock({
         streamid: null,
         userid: this.rtcConnection.connection.userid,
-        mediaElement: document.createElement("div"),
-      });
+        mediaElement: document.createElement('div'),
+      })
     },
-    addToHistory: function () {
+    addToHistory() {
       CommonUtils.addToHistory(this.$store, {
         id: this.roomId,
         date: new Date(),
-      });
+      })
     },
-    inputDeviceChanged: function () {
-      this.rtcConnection.configureMediaError();
-      this.rtcConnection.configureMediaConstraints();
-      this.rtcConnection.connection.dontCaptureUserMedia = false;
-      this.stateService.state.hasWebcam = true;
-      this.stateService.state.hasMicrophone = true;
+    inputDeviceChanged() {
+      this.rtcConnection.configureMediaError()
+      this.rtcConnection.configureMediaConstraints()
+      this.rtcConnection.connection.dontCaptureUserMedia = false
+      this.stateService.state.hasWebcam = true
+      this.stateService.state.hasMicrophone = true
 
-      if (this.stateService.state.screenEnabled) return;
+      if (this.stateService.state.screenEnabled) return
 
-      this.stateService.state.audioEnabled = true;
-      this.stateService.state.videoEnabled = true;
-      RTCUtils.AddBaseStream(
+      this.stateService.state.audioEnabled = true
+      this.stateService.state.videoEnabled = true
+      RTCUtils.addBaseStream(
         this.rtcConnection.connection,
         this.state,
-        this.$store.state.application.deviceSettings,
-        this.addParticipantBlock
-      );
+        this.$store.state.application.deviceSettings
+      ).then(this.addParticipantBlock)
     },
   },
-  created: function () {
-    this.roomId = this.$route.params.id;
-    this.addToHistory();
-    this.initialize();
-    this.rtcConnection.join(this.roomId);
-    this.$store.commit("addDeviceChangedCallback", this.inputDeviceChanged);
+  created() {
+    this.roomId = this.$route.params.id
+    this.addToHistory()
+    this.initialize()
+    this.rtcConnection.join(this.roomId)
+    this.$store.commit('addDeviceChangedCallback', this.inputDeviceChanged)
   },
-  unmount: function(){
-    this.rtcConnection.leave();
-    this.rtcConnection.stop();
+  beforeDestroy() {
+    if (this.rtcConnection) {
+      this.rtcConnection.leave()
+      this.rtcConnection.stop()
+    }
+    this.$store.commit('clearDeviceChangedCallbacks')
   },
   watch: {
-    // eslint-disable-next-line
-    $route(to, from) {
-      this.roomId = to;
-      this.rtcConnection.leave();
-      this.rtcConnection.stop();
-      this.addToHistory();
-      this.initialize();
-      this.rtcConnection.join(this.roomId);
+    $route(to) {
+      this.roomId = to
+      this.rtcConnection.leave()
+      this.rtcConnection.stop()
+      this.addToHistory()
+      this.initialize()
+      this.rtcConnection.join(this.roomId)
+    },
+    participantCount(newCount) {
+      if (newCount <= 2 && this.selectedParticipantId) {
+        this.selectedParticipantId = null
+      }
     },
   },
-};
+}
 </script>
+
 <style scoped>
 .room-name {
   color: var(--bs-body-color);
@@ -226,67 +374,140 @@ export default {
 }
 @media (max-width: 801px) {
   .room-name {
-    margin-left: 10px!important;
+    margin-left: 10px !important;
     max-width: 70%;
     text-align: left;
   }
 }
-.room-container{
-  pointer-events: none; 
+.room-container {
+  pointer-events: none;
   position: fixed;
   top: 10px;
   left: 0;
   width: 100%;
   z-index: 1000;
 }
-.card-deck {
-  max-height: calc(100vh - 108px);
-  min-height: calc(100vh - 108px);
+
+/* ===== CSS Grid Layout ===== */
+
+.video-grid {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  height: calc(100vh - 108px);
+  padding: 8px;
+  grid-auto-rows: minmax(0, 1fr);
+}
+
+/* 1 participant */
+.video-grid--single {
+  grid-template-columns: 1fr;
+}
+
+/* Fullscreen mode */
+.video-grid--fullscreen {
+  grid-template-columns: 1fr;
+}
+
+.video-grid--fullscreen .user-block {
+  border-radius: 0;
+}
+
+/* 2 participants */
+.video-grid--dual {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* 3-4 participants — 2x2 */
+.video-grid--quad {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* 5-6 participants — 3x2 */
+.video-grid--six {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* 7+ participants — auto-fill */
+.video-grid--many {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* ===== Spotlight Mode (2/3 + 1/3) ===== */
+
+.video-grid--spotlight {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: 1fr;
+  gap: 8px;
+}
+
+.spotlight-main {
+  display: flex;
   align-items: center;
-  position: relative;
+  justify-content: center;
+  min-height: 0;
 }
-.card-deck .card{
-  margin-right: unset !important;
+
+.spotlight-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  max-height: calc(100vh - 108px);
+  padding: 4px;
 }
+
+.spotlight-sidebar .user-block {
+  flex-shrink: 0;
+  min-width: unset;
+  min-height: unset;
+  height: auto;
+  aspect-ratio: 1.5;
+  width: 100%;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+
+.spotlight-sidebar .user-block:hover {
+  box-shadow: 0 0 0 2px var(--bs-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .video-grid--dual {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+
+  .video-grid--six,
+  .video-grid--many {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .video-grid--spotlight {
+    grid-template-columns: 1fr;
+    grid-template-rows: 2fr 1fr;
+  }
+
+  .spotlight-sidebar {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-height: 150px;
+  }
+
+  .spotlight-sidebar .user-block {
+    min-width: 160px;
+    min-height: unset !important;
+    max-width: fit-content;
+  }
+}
+
 @media (max-width: 380px) {
   .container-fluid {
     padding-left: 0px !important;
     padding-right: 0px !important;
-  }
-}
-.half-screen-container {
-  position: absolute;
-  right: 1.5em;
-  width: 249px !important;
-  max-height: calc(100% - 152px);
-  overflow-y: scroll;
-  top: unset !important;
-  -webkit-transform: inherit !important;
-  transform: inherit !important;
-  align-content: center;
-}
-
-.half-screen-container .user-block {
-  min-width: 215px !important;
-  min-height: 160px !important;
-  margin-top: 5px;
-}
-.half-screen-container .only-local-participant {
-  height: inherit !important;
-}
-.half-screen-container .many-participants {
-  height: inherit !important;
-}
-.only-local-participant {
-  height: 100vw;
-}
-.many-participants {
-  height: 20vw !important;
-  max-height: 20vw !important;
-}
-@media (min-width: 578px) {
-  .many-participants {
-    max-width: 35vw;
   }
 }
 </style>

@@ -2,36 +2,38 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 import { HubConnectionBuilder, LogLevel, HttpTransportType } from '@microsoft/signalr'
-/* eslint-disable */
-// Custom SignalR connection handler
-function WebRtcSignalR (connection, connectCallback) {
-  try{
-  var signalRConnection = new HubConnectionBuilder()
-    .withUrl('/ws/webrtc', { 
-      transport: HttpTransportType.WebSockets,
-      skipNegotiation: true
-    })
-    .withAutomaticReconnect()
-    .configureLogging(LogLevel.Information)
-    .build()
-  }catch(e){console.error(e)}
 
-  function isData (session) {
-    return !session.audio && !session.video && !session.screen && session.data
+function WebRtcSignalR(connection, connectCallback) {
+  let signalRConnection
+  try {
+    signalRConnection = new HubConnectionBuilder()
+      .withUrl('/ws/webrtc', {
+        transport: HttpTransportType.WebSockets,
+        skipNegotiation: true,
+      })
+      .withAutomaticReconnect()
+      .configureLogging(LogLevel.Information)
+      .build()
+  } catch (e) {
+    console.error(e)
   }
 
-  var channelName = connection.channel || 'defaultRoom'
+  const isData = (session) => !session.audio && !session.video && !session.screen && session.data
+
+  const channelName = connection.channel || 'defaultRoom'
 
   connection.socket = {
-    send: function (data) {
+    send: (data) => {
       signalRConnection.invoke('Send', channelName, JSON.stringify(data))
-    }
+    },
   }
-  signalRConnection.on(channelName, message => {
-    var data = JSON.parse(message)
-    console.log('ON Deserialized', data)
 
-    switch(data.eventName){
+  signalRConnection.on(channelName, (message) => {
+    let data = JSON.parse(message)
+    if (window.pmDebug)
+      console.log('ON Deserialized', data)
+
+    switch (data.eventName) {
       case connection.socketMessageEvent:
         onMessagesCallback(data.data)
         break
@@ -41,70 +43,75 @@ function WebRtcSignalR (connection, connectCallback) {
         connection.onUserStatusChanged({
           userid: data.userid,
           status: data.isOnline === true ? 'online' : 'offline',
-          extra: connection.peers[data.userid] ? connection.peers[data.userid].extra : {}
+          extra: connection.peers[data.userid] ? connection.peers[data.userid].extra : {},
         })
         break
       case 'extra-data-updated':
-        if(connection.userid === data.data.remoteUserId) return
-        if(!connection.peers[data.data.remoteUserId] || !data.data.extra) return
+        if (connection.userid === data.data.remoteUserId) return
+        if (!connection.peers[data.data.remoteUserId] || !data.data.extra) return
         connection.peers[data.data.remoteUserId].extra = data.data.extra
         connection.onExtraDataUpdated({
           userid: data.data.remoteUserId,
-          extra: data.data.extra
+          extra: data.data.extra,
         })
         break
       case 'renegotiate-needed':
-        if(connection.userid !== data.data.remoteUserId) return
-        if(!connection.peers[data.data.sender]) return
+        if (connection.userid !== data.data.remoteUserId) return
+        if (!connection.peers[data.data.sender]) return
         connection.renegotiate(data.data.sender)
         break
       case 'mute-participant':
-        console.warn("User " + !data.data.all ? data.data.remoteUserId : connection.userid +" muted by "+data.data.sender)
-        if(connection.userid !== data.data.remoteUserId && !data.data.all) return
-        if(connection.userid === data.data.sender && data.data.all) return
-        if(connection.extra.audioMuted) return
-        connection.attachStreams.forEach( s =>{
-          s.mute("audio")
+        console.warn(
+          'User ' +
+            (!data.data.all ? data.data.remoteUserId : connection.userid) +
+            ' muted by ' +
+            data.data.sender
+        )
+        if (connection.userid !== data.data.remoteUserId && !data.data.all) return
+        if (connection.userid === data.data.sender && data.data.all) return
+        if (connection.extra.audioMuted) return
+        connection.attachStreams.forEach((s) => {
+          s.mute('audio')
           connection.extra.audioMuted = true
           connection.updateExtraData()
         })
-        if(connection.onMuteForcibly) connection.onMuteForcibly()
+        if (connection.onMuteForcibly) connection.onMuteForcibly()
         break
       case 'kick-participant':
-        console.warn("User " + data.data.remoteUserId +" kicked by "+data.data.sender)
-        if(connection.userid !== data.data.remoteUserId) return
+        console.warn('User ' + data.data.remoteUserId + ' kicked by ' + data.data.sender)
+        if (connection.userid !== data.data.remoteUserId) return
         connection.leave()
-        if(connection.onKicked)
-          connection.onKicked();
-        else
+        if (connection.onKicked) {
+          connection.onKicked()
+        } else {
           window.location.href = window.location.href + '/ended'
+        }
         break
     }
   })
-  signalRConnection.onreconnected(connectionId => {
-    console.log('signalr reconnected. state' + signalRConnection.state);
-    signalRConnection.invoke('JoinRoom', channelName).then(function(){
+  // eslint-disable-next-line
+  signalRConnection.onreconnected((connectionId) => {
+    console.log('signalr reconnected. state' + signalRConnection.state)
+    signalRConnection.invoke('JoinRoom', channelName).then(() => {
       connection.socket.emit('presence', {
         userid: connection.userid,
-        isOnline: true
+        isOnline: true,
       })
     })
-  });
-  // start the hub
-  signalRConnection.start().then(function () {
+  })
+
+  signalRConnection.start().then(() => {
     if (connection.enableLogs) {
       console.info('SignalR connection is opened.')
     }
-    signalRConnection.invoke('JoinRoom', channelName).then(function(){
-
+    signalRConnection.invoke('JoinRoom', channelName).then(() => {
       connection.socket.emit('presence', {
         userid: connection.userid,
-        isOnline: true
+        isOnline: true,
       })
-
       if (connectCallback) connectCallback(connection.socket)
     })
-  }).catch( e => {
+  }).catch((e) => {
     console.error('Error while establishing connection. Error: ' + e.message)
     console.error(JSON.stringify(e, Object.getOwnPropertyNames(e)))
     alert(JSON.stringify(e, Object.getOwnPropertyNames(e)))
@@ -114,22 +121,21 @@ function WebRtcSignalR (connection, connectCallback) {
     if (eventName === 'changed-uuid') return
     if (data.message && data.message.shiftedModerationControl) return
 
-    if (eventName === 'extra-data-updated'){
+    if (eventName === 'extra-data-updated') {
       data = {
         extra: data,
-        remoteUserId: connection.userid
+        remoteUserId: connection.userid,
       }
     }
 
     connection.socket.send({
-      eventName: eventName,
-      data: data
+      eventName,
+      data,
     })
 
     if (callback) {
-      callback = callback || function () { }
-
-      if (eventName === 'open-room' || eventName === 'join-room'){
+      callback = callback || function () {}
+      if (eventName === 'open-room' || eventName === 'join-room') {
         callback(true, null)
       } else {
         callback()
@@ -137,27 +143,28 @@ function WebRtcSignalR (connection, connectCallback) {
     }
   }
 
-  var mPeer = connection.multiPeersHandler
+  const mPeer = connection.multiPeersHandler
 
-  function onMessagesCallback (message) {
+  function onMessagesCallback(message) {
     if (message.remoteUserId !== connection.userid && !message.message.newParticipationRequest) return
 
-    if (connection.peers[message.sender] && connection.peers[message.sender].extra !== message.message.extra 
-      && message.message.extra) {
+    if (
+      connection.peers[message.sender] &&
+      connection.peers[message.sender].extra !== message.message.extra &&
+      message.message.extra
+    ) {
       connection.peers[message.sender].extra = message.message.extra
       connection.onExtraDataUpdated({
         userid: message.sender,
-        extra: message.message.extra
+        extra: message.message.extra,
       })
     }
 
     if (message.message.streamSyncNeeded && connection.peers[message.sender]) {
-      var stream = connection.streamEvents[message.message.streamid]
-      if (!stream || !stream.stream) {
-        return
-      }
+      const stream = connection.streamEvents[message.message.streamid]
+      if (!stream || !stream.stream) return
 
-      var action = message.message.action
+      const action = message.message.action
 
       if (action === 'ended' || action === 'inactive' || action === 'stream-removed') {
         if (connection.peersBackup[stream.userid]) {
@@ -167,7 +174,7 @@ function WebRtcSignalR (connection, connectCallback) {
         return
       }
 
-      var type = message.message.type !== 'both' ? message.message.type : null
+      const type = message.message.type !== 'both' ? message.message.type : null
 
       if (typeof stream.stream[action] === 'function') {
         stream.stream[action](type)
@@ -185,19 +192,27 @@ function WebRtcSignalR (connection, connectCallback) {
         message.message.allParticipants.push(message.sender)
       }
 
-      message.message.allParticipants.forEach(function (participant) {
-        mPeer[!connection.peers[participant] ? 'createNewPeer' : 'renegotiatePeer'](participant, {
-          localPeerSdpConstraints: {
-            OfferToReceiveAudio: connection.sdpConstraints.mandatory.OfferToReceiveAudio,
-            OfferToReceiveVideo: connection.sdpConstraints.mandatory.OfferToReceiveVideo
-          },
-          remotePeerSdpConstraints: {
-            OfferToReceiveAudio: connection.session.oneway ? !!connection.session.audio : connection.sdpConstraints.mandatory.OfferToReceiveAudio,
-            OfferToReceiveVideo: connection.session.oneway ? !!connection.session.video || !!connection.session.screen : connection.sdpConstraints.mandatory.OfferToReceiveVideo
-          },
-          isOneWay: !!connection.session.oneway || connection.direction === 'one-way',
-          isDataOnly: isData(connection.session)
-        })
+      message.message.allParticipants.forEach((participant) => {
+        mPeer[!connection.peers[participant] ? 'createNewPeer' : 'renegotiatePeer'](
+          participant,
+          {
+            localPeerSdpConstraints: {
+              OfferToReceiveAudio: connection.sdpConstraints.mandatory.OfferToReceiveAudio,
+              OfferToReceiveVideo: connection.sdpConstraints.mandatory.OfferToReceiveVideo,
+            },
+            remotePeerSdpConstraints: {
+              OfferToReceiveAudio: connection.session.oneway
+                ? !!connection.session.audio
+                : connection.sdpConstraints.mandatory.OfferToReceiveAudio,
+              OfferToReceiveVideo: connection.session.oneway
+                ? !!connection.session.video || !!connection.session.screen
+                : connection.sdpConstraints.mandatory.OfferToReceiveVideo,
+            },
+            isOneWay:
+              !!connection.session.oneway || connection.direction === 'one-way',
+            isDataOnly: isData(connection.session),
+          }
+        )
       })
       return
     }
@@ -209,14 +224,19 @@ function WebRtcSignalR (connection, connectCallback) {
       mPeer.createNewPeer(message.message.newParticipant, message.message.userPreferences || {
         localPeerSdpConstraints: {
           OfferToReceiveAudio: connection.sdpConstraints.mandatory.OfferToReceiveAudio,
-          OfferToReceiveVideo: connection.sdpConstraints.mandatory.OfferToReceiveVideo
+          OfferToReceiveVideo: connection.sdpConstraints.mandatory.OfferToReceiveVideo,
         },
         remotePeerSdpConstraints: {
-          OfferToReceiveAudio: connection.session.oneway ? !!connection.session.audio : connection.sdpConstraints.mandatory.OfferToReceiveAudio,
-          OfferToReceiveVideo: connection.session.oneway ? !!connection.session.video || !!connection.session.screen : connection.sdpConstraints.mandatory.OfferToReceiveVideo
+          OfferToReceiveAudio: connection.session.oneway
+            ? !!connection.session.audio
+            : connection.sdpConstraints.mandatory.OfferToReceiveAudio,
+          OfferToReceiveVideo: connection.session.oneway
+            ? !!connection.session.video || !!connection.session.screen
+            : connection.sdpConstraints.mandatory.OfferToReceiveVideo,
         },
-        isOneWay: !!connection.session.oneway || connection.direction === 'one-way',
-        isDataOnly: isData(connection.session)
+        isOneWay:
+          !!connection.session.oneway || connection.direction === 'one-way',
+        isDataOnly: isData(connection.session),
       })
       return
     }
@@ -227,9 +247,7 @@ function WebRtcSignalR (connection, connectCallback) {
       }
 
       if (connection.waitingForLocalMedia) {
-        // if someone is waiting to join you
-        // make sure that we've local media before making a handshake
-        setTimeout(function () {
+        setTimeout(() => {
           onMessagesCallback(message)
         }, 1)
         return
@@ -241,22 +259,35 @@ function WebRtcSignalR (connection, connectCallback) {
         connection.deletePeer(message.sender)
       }
 
-      var userPreferences = {
+      const userPreferences = {
         extra: message.extra || {},
         localPeerSdpConstraints: message.message.remotePeerSdpConstraints || {
           OfferToReceiveAudio: connection.sdpConstraints.mandatory.OfferToReceiveAudio,
-          OfferToReceiveVideo: connection.sdpConstraints.mandatory.OfferToReceiveVideo
+          OfferToReceiveVideo: connection.sdpConstraints.mandatory.OfferToReceiveVideo,
         },
         remotePeerSdpConstraints: message.message.localPeerSdpConstraints || {
-          OfferToReceiveAudio: connection.session.oneway ? !!connection.session.audio : connection.sdpConstraints.mandatory.OfferToReceiveAudio,
-          OfferToReceiveVideo: connection.session.oneway ? !!connection.session.video || !!connection.session.screen : connection.sdpConstraints.mandatory.OfferToReceiveVideo
+          OfferToReceiveAudio: connection.session.oneway
+            ? !!connection.session.audio
+            : connection.sdpConstraints.mandatory.OfferToReceiveAudio,
+          OfferToReceiveVideo: connection.session.oneway
+            ? !!connection.session.video || !!connection.session.screen
+            : connection.sdpConstraints.mandatory.OfferToReceiveVideo,
         },
-        isOneWay: typeof message.message.isOneWay !== 'undefined' ? message.message.isOneWay : !!connection.session.oneway || connection.direction === 'one-way',
-        isDataOnly: typeof message.message.isDataOnly !== 'undefined' ? message.message.isDataOnly : isData(connection.session),
-        dontGetRemoteStream: typeof message.message.isOneWay !== 'undefined' ? message.message.isOneWay : !!connection.session.oneway || connection.direction === 'one-way',
+        isOneWay:
+          typeof message.message.isOneWay !== 'undefined'
+            ? message.message.isOneWay
+            : !!connection.session.oneway || connection.direction === 'one-way',
+        isDataOnly:
+          typeof message.message.isDataOnly !== 'undefined'
+            ? message.message.isDataOnly
+            : isData(connection.session),
+        dontGetRemoteStream:
+          typeof message.message.isOneWay !== 'undefined'
+            ? message.message.isOneWay
+            : !!connection.session.oneway || connection.direction === 'one-way',
         dontAttachLocalStream: !!message.message.dontGetRemoteStream,
         connectionDescription: message,
-        successCallback: function () { }
+        successCallback: () => {},
       }
 
       connection.onNewParticipant(message.sender, userPreferences)
@@ -277,10 +308,11 @@ function WebRtcSignalR (connection, connectCallback) {
         connection.leave()
       }
 
-      //Patch for deleting perticipant block on firefox
-      if (connection.DetectRTC.browser.name === 'Firefox'
-          || !connection.peers[message.sender]){
-        connection.onstreamended({streamid: null, userid: message.sender})
+      if (
+        connection.DetectRTC.browser.name === 'Firefox' ||
+        !connection.peers[message.sender]
+      ) {
+        connection.onstreamended({ streamid: null, userid: message.sender })
       }
 
       return
@@ -289,4 +321,5 @@ function WebRtcSignalR (connection, connectCallback) {
     mPeer.addNegotiatedMessage(message.message, message.sender)
   }
 }
+
 export default WebRtcSignalR

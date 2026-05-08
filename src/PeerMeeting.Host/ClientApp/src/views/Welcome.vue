@@ -6,14 +6,14 @@
           <template #header>Peer Meeting</template>
 
           <template #lead>
-            {{ $t("welcome.message") }}
+            {{ $t('welcome.message') }}
           </template>
 
           <hr class="my-4" />
           <b-tabs>
             <b-tab active>
               <template #title>
-                <span class="tab-title">{{ $t("welcome.new") }}</span>
+                <span class="tab-title">{{ $t('welcome.new') }}</span>
               </template>
               <b-input-group>
                 <b-form-input
@@ -26,7 +26,7 @@
                     text="Button"
                     variant="success"
                     @click="goToRoom(roomName)"
-                    >{{ $t("welcome.startMeeting") }}</b-button
+                    >{{ $t('welcome.startMeeting') }}</b-button
                   >
                 </b-input-group-append>
               </b-input-group>
@@ -34,12 +34,12 @@
 
             <b-tab>
               <template #title>
-                <span class="tab-title">{{ $t("welcome.recent") }}</span>
+                <span class="tab-title">{{ $t('welcome.recent') }}</span>
               </template>
               <b-list-group class="history">
                 <b-list-group-item
                   button
-                  v-for="item in getHistory()"
+                  v-for="item in sortedHistory"
                   v-bind:key="item.id"
                   @click="goToRoom(item.id)"
                 >
@@ -56,33 +56,33 @@
 </template>
 
 <script>
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from 'uuid'
+
 export default {
-  name: "Welcome",
-  components: {},
-  data: () => {
-    return {
-      roomName: "",
-    };
+  name: 'Welcome',
+  data: () => ({
+    roomName: '',
+  }),
+  computed: {
+    sortedHistory() {
+      return this.$store.getters.sortedRoomHistory
+    },
   },
   methods: {
-    goToRoom: function (id = undefined) {
-      if (id == undefined) window.location.href = "/" + this.roomName;
-      else window.location.href = "/" + id;
-    },
-    getHistory: function () {
-      return this.$store.state.application.roomHistory
-        .slice()
-        .sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
+    goToRoom(id = undefined) {
+      if (id === undefined) {
+        window.location.href = '/' + this.roomName
+      } else {
+        window.location.href = '/' + id
+      }
     },
   },
-  created: function () {
-    this.roomName = uuidv4();
+  created() {
+    this.roomName = uuidv4()
   },
-};
+}
 </script>
+
 <style>
 .Welcome {
   font-family: Source Sans Pro, sans-serif;
@@ -111,11 +111,11 @@ export default {
   transition: unset;
   outline: unset;
 }
-.Welcome .nav-tabs{
-  border-bottom:unset!important; 
+.Welcome .nav-tabs {
+  border-bottom: unset !important;
   padding-bottom: 1em;
 }
-.Welcome hr{
+.Welcome hr {
   border-top: 1px solid var(--welcome-hr, #444);
 }
 .tab-title {
@@ -123,7 +123,7 @@ export default {
   margin-left: 4px;
   line-height: 30px;
   font-weight: 400;
-  font-family: "Open Sans", Arial, Helvetica, Tahoma sans-serif;
+  font-family: 'Open Sans', Arial, Helvetica, Tahoma sans-serif;
 }
 .history {
   text-align: left;

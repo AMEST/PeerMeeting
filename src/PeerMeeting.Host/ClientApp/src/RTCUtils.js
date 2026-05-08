@@ -1,148 +1,145 @@
 // Copyright 2021 Klabukov Erik.
 // SPDX-License-Identifier: GPL-3.0-only
 
-/* eslint-disable */
-var RTCUtils = {
-  // Configure media error event for try use another microfon or if webcam not available, connect without it
-  // eslint-disable-next-line
-  ConfigureMediaError: function (connection, DetectRTC, deviceSettings, callback = (videoState, audioState) => { }) {
-    connection.onMediaError = function (e) {
-      var mPeer = connection.multiPeersHandler
+const RTCUtils = {
+  configureMediaError(connection, detectRTC, deviceSettings, onMediaStateChange) {
+    connection.onMediaError = (e) => {
+      const mPeer = connection.multiPeersHandler
       console.error('Media Error', e.message)
 
-      //If all media device unvailable or not allowed
-      if (e.message === 'Requested device not found' 
-          || e.message === 'The object can not be found here.'
-          || e.message === 'The request is not allowed by the user agent or the platform in the current context.'){
+      if (
+        e.message === 'Requested device not found' ||
+        e.message === 'The object can not be found here.' ||
+        e.message === 'The request is not allowed by the user agent or the platform in the current context.'
+      ) {
         connection.dontCaptureUserMedia = true
-        callback(false, false)
-        if(connection.getAllParticipants().length <= 0 )
+        onMediaStateChange(false, false)
+        if (connection.getAllParticipants().length <= 0) {
           connection.join(connection.sessionid)
-        else
+        } else {
           connection.renegotiate()
+        }
         return
       }
 
-      // Fix Mic cuncurrent limit
       if (e.message === 'Concurrent mic process limit.') {
-        if (DetectRTC.audioInputDevices.length <= 1) {
-          alert(
-            'Please select external microphone. Check github issue number 483.'
-          )
+        if (detectRTC.audioInputDevices.length <= 1) {
+          alert('Please select external microphone. Check github issue number 483.')
           return
         }
-        var secondaryMic = DetectRTC.audioInputDevices[1].deviceId
-        connection.mediaConstraints.audio = {
-          deviceId: secondaryMic
-        }
-        if(connection.getAllParticipants().length <= 0 )
+        const secondaryMic = detectRTC.audioInputDevices[1].deviceId
+        connection.mediaConstraints.audio = { deviceId: secondaryMic }
+        if (connection.getAllParticipants().length <= 0) {
           connection.join(connection.sessionid)
-        else
+        } else {
           connection.renegotiate()
+        }
         return
       }
 
-      // Case if webcam not available
-      callback(false, true)
+      onMediaStateChange(false, true)
       connection.dontCaptureUserMedia = true
-      var audioDevice = deviceSettings.audioInput ? {deviceId: deviceSettings.audioInput} : true
+      const audioDevice = deviceSettings.audioInput
+        ? { deviceId: deviceSettings.audioInput }
+        : true
       navigator.getUserMedia(
         { audio: audioDevice, video: false },
-        function (stream) {
+        (stream) => {
           connection.addStream(stream)
           mPeer.onGettingLocalMedia(stream)
-          if(connection.getAllParticipants().length <= 0 )
+          if (connection.getAllParticipants().length <= 0) {
             connection.join(connection.sessionid)
-          else
+          } else {
             connection.renegotiate()
+          }
         },
-        function () { }
+        () => {}
       )
     }
   },
-  AddBaseStream: function(connection, mediaState, deviceSettings, callback){
-    connection.attachStreams.forEach((s) => s.stop());
+
+  async addBaseStream(connection, mediaState, deviceSettings) {
+    connection.attachStreams.forEach((s) => s.stop())
     connection.attachStreams = []
-    var self = this
-    if(!mediaState.hasMicrophone && !mediaState.hasWebcam){
-      this.CreateFakeStream(connection, connection.multiPeersHandler, callback)
-      return
+
+    if (!mediaState.hasMicrophone && !mediaState.hasWebcam) {
+      return this.createFakeStream(connection)
     }
-    if(mediaState.hasMicrophone && !mediaState.hasWebcam && connection.dontCaptureUserMedia){
-      var audioDevice = deviceSettings.audioInput ? {deviceId: deviceSettings.audioInput} : true
+
+    if (mediaState.hasMicrophone && !mediaState.hasWebcam && connection.dontCaptureUserMedia) {
+      const audioDevice = deviceSettings.audioInput
+        ? { deviceId: deviceSettings.audioInput }
+        : true
+      return new Promise((resolve, reject) => {
+        navigator.getUserMedia(
+          { audio: audioDevice, video: false },
+          (stream) => resolve(this.addStream(connection, stream)),
+          (e) => reject(e)
+        )
+      })
+    }
+
+    return new Promise((resolve, reject) => {
       navigator.getUserMedia(
-        { audio: audioDevice, video: false },
-        function (stream) {
-          self.AddStream(connection, stream, connection.multiPeersHandler, callback)
-        },
-        function (e) { connection.onMediaError(e) }
+        connection.mediaConstraints,
+        (stream) => resolve(this.addStream(connection, stream)),
+        (e) => reject(e)
       )
-      return
-    }
+    })
+  },
 
-    navigator.getUserMedia(connection.mediaConstraints,
-      function (stream) {
-        self.AddStream(connection, stream, connection.multiPeersHandler, callback)
-      },
-      function (e) { connection.onMediaError(e) }
-    )
+  addStream(connection, stream) {
+    return new Promise((resolve) => {
+      connection.attachStreams.forEach((s) => s.stop())
+      connection.attachStreams = []
+      setTimeout(() => {
+        connection.addStream(stream)
+        connection.multiPeersHandler.onGettingLocalMedia(stream)
+        this.setHarkHandler(connection, stream)
+        resolve(this.createVideoElementEvent(connection.userid, stream))
+      }, 300)
+    })
   },
-  AddStream: function(connection, stream, mPeer, callback){
-    var self = this;
-    connection.attachStreams.forEach(s => s.stop())
-    connection.attachStreams = [];
-    setTimeout(() =>{
-      connection.addStream(stream)
-      mPeer.onGettingLocalMedia(stream)
-      self.SetHarkHandler(connection, stream)
-      var event = this.CreateVideoElementEvent(connection.userid, stream)
-      callback(event)
-    },300)
-  },
-  CreateFakeStream: function(connection, mPeer, callback){
+
+  createFakeStream(connection) {
     connection.attachStreams = []
-    var emptyStream = new MediaStream()
+    const emptyStream = new MediaStream()
     connection.addStream(emptyStream)
-    mPeer.onGettingLocalMedia(emptyStream)
-    var event = this.CreateVideoElementEvent(connection.userid, emptyStream)
-    callback(event)
+    connection.multiPeersHandler.onGettingLocalMedia(emptyStream)
+    return this.createVideoElementEvent(connection.userid, emptyStream)
   },
-  CreateVideoElementEvent: function(userid, stream){
-    var video = document.createElement("video");
-    video.srcObject = stream;
+
+  createVideoElementEvent(userid, stream) {
+    const video = document.createElement('video')
+    video.srcObject = stream
     video.id = stream.id
-    video.autoplay=true
-    video.playsinline=true
-    video.muted=true
+    video.autoplay = true
+    video.playsInline = true
+    video.muted = true
     return {
-      userid: userid,
+      userid,
       streamid: stream.id,
-      mediaElement: video
+      mediaElement: video,
     }
   },
-  SetHarkHandler: function(connection, stream){
-    if (!stream || stream.getAudioTracks().length < 1) return;
-    if (!connection.onspeaking || !connection.onsilence) {
-      return;
-    }
+
+  setHarkHandler(connection, stream) {
+    if (!stream || stream.getAudioTracks().length < 1) return
+    if (!connection.onspeaking || !connection.onsilence) return
     if (typeof hark === 'undefined') {
-      throw 'hark.js not found.';
+      throw 'hark.js not found.'
     }
 
-    var speachEvent = {
+    const speechEvent = {
       userid: connection.userid,
-      stream: stream
+      stream,
     }
-    var speach = hark(stream, {})
+    // eslint-disable-next-line
+    const speech = hark(stream, {})
 
-    speach.on('speaking', function() {
-      connection.onspeaking(speachEvent)
-    });
- 
-    speach.on('stopped_speaking', function() {
-      connection.onsilence(speachEvent);
-    });
-  }
+    speech.on('speaking', () => connection.onspeaking(speechEvent))
+    speech.on('stopped_speaking', () => connection.onsilence(speechEvent))
+  },
 }
 
 export default RTCUtils

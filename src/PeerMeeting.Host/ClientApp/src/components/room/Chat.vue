@@ -3,7 +3,7 @@
     <b-list-group class="chat-messages-list" id="chat-messages-list">
       <b-list-group-item
         href="#"
-        v-for="item in this.listMessages"
+        v-for="item in listMessages"
         v-bind:key="item.id"
       >
         <b-avatar
@@ -37,11 +37,12 @@ import {
   HubConnectionBuilder,
   LogLevel,
   HttpTransportType,
-} from "@microsoft/signalr";
-import { v4 as uuidv4 } from "uuid";
-import CommonUtils from "@/CommonUtils";
+} from '@microsoft/signalr'
+import { v4 as uuidv4 } from 'uuid'
+import CommonUtils from '@/CommonUtils'
+
 export default {
-  name: "Chat",
+  name: 'Chat',
   props: {
     roomId: String,
     state: Object,
@@ -49,78 +50,80 @@ export default {
   data: () => ({
     connection: undefined,
     listMessages: [],
-    messageText: "",
+    messageText: '',
   }),
   methods: {
     sendMessage(e) {
-      if (e.ctrlKey || e.shiftKey) return;
-      if (this.messageText == "") return;
+      if (e.ctrlKey || e.shiftKey) return
+      if (this.messageText === '') return
       this.connection.invoke(
-        "SendChatMessage",
+        'SendChatMessage',
         this.messageText,
         this.roomId,
         this.$store.state.application.profile
-      );
-      this.messageText = "";
+      )
+      this.messageText = ''
     },
-    messageReceived: function (data) {
-      var message = {
+    messageReceived(data) {
+      const message = {
         id: uuidv4(),
         text: data.message,
         user: data.user,
         date: data.date,
-      };
-      this.listMessages.push(message);
+      }
+      this.listMessages.push(message)
       if (!this.state.chatOpened) {
-        this.scrollToBottom();
-        this.$store.commit("changeHasNewMessages", true);
+        this.scrollToBottom()
+        this.$store.commit('changeHasNewMessages', true)
       }
     },
-    getInitials: function (username) {
-      return CommonUtils.getInitials(username);
+    getInitials(username) {
+      return CommonUtils.getInitials(username)
     },
-    scrollToBottom: function () {
-      var messagesListObject = document.getElementById("chat-messages-list");
+    scrollToBottom() {
+      const messagesListObject = document.getElementById('chat-messages-list')
       setTimeout(() => {
         messagesListObject.scrollTo({
           top: messagesListObject.scrollHeight,
-          behavior: "smooth",
-        });
-      }, 100);
+          behavior: 'smooth',
+        })
+      }, 100)
     },
   },
   watch: {
-    // eslint-disable-next-line
-    "state.chatOpened": function (n, o) {
-      if (n) {
-        this.$store.commit("changeHasNewMessages", false);
+    'state.chatOpened'(newValue) {
+      if (newValue) {
+        this.$store.commit('changeHasNewMessages', false)
       }
     },
   },
-  created: function () {
-    var self = this;
+  beforeDestroy() {
+    if (this.connection) {
+      this.connection.stop()
+    }
+  },
+  async created() {
     this.connection = new HubConnectionBuilder()
-      .withUrl("/ws/chat", {
+      .withUrl('/ws/chat', {
         transport: HttpTransportType.WebSockets,
         skipNegotiation: true,
       })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
-      .build();
-    this.connection
-      .start()
-      .then(() =>
-        self.connection.invoke(
-          "JoinChat",
-          self.roomId,
-          self.$store.state.application.profile
-        )
-      );
+      .build()
 
-    this.connection.on("HandleChatMessage", this.messageReceived);
+    await this.connection.start()
+    await this.connection.invoke(
+      'JoinChat',
+      this.roomId,
+      this.$store.state.application.profile
+    )
+
+    this.connection.on('HandleChatMessage', this.messageReceived)
   },
-};
+}
 </script>
+
 <style>
 .chat {
   position: absolute;
@@ -156,22 +159,22 @@ export default {
   height: 64px;
   border-radius: 0px;
   resize: none;
-  background-color: var(--chat-color,#303030);
+  background-color: var(--chat-color, #303030);
   color: var(--bs-body-color);
-  border-right: 1px solid var(--chat-color,#303030);
-  border-left: 1px solid var(--chat-color,#303030);
-  border-bottom: 1px solid var(--chat-color,#303030);
+  border-right: 1px solid var(--chat-color, #303030);
+  border-left: 1px solid var(--chat-color, #303030);
+  border-bottom: 1px solid var(--chat-color, #303030);
 }
 .chat-textarea textarea:focus {
-  background-color: var(--chat-color,#303030);
+  background-color: var(--chat-color, #303030);
   color: var(--bs-body-color);
 }
 .message-avatar {
   position: absolute;
   background-color: transparent;
 }
-.message-avatar .b-avatar-text{
-      background-color: #6c757d;
+.message-avatar .b-avatar-text {
+  background-color: #6c757d;
 }
 .message-body {
   padding-left: 48px;
