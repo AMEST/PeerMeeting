@@ -4,6 +4,7 @@
     :class="[
       { 'user-block--spotlight': isSpotlight },
       { 'user-block--thumbnail': isThumbnail },
+      { 'user-block--fullscreen': isFullscreen },
       { 'user-block--speaking': streamEvent.extra.speacking },
     ]"
     :id="'card-' + streamEvent.userid"
@@ -17,13 +18,13 @@
 
     <div
       class="spotlight-toggle-overlay"
-      v-if="!isThumbnail && !isSpotlight"
+      v-if="!isThumbnail && !isSpotlight && !isFullscreen"
       @click="$emit('toggleSpotlight')"
     ></div>
 
     <div
       class="spotlight-toggle-overlay spotlight-exit-overlay"
-      v-if="isSpotlight"
+      v-if="isSpotlight && !isThumbnail"
       @click="$emit('toggleSpotlight')"
     ></div>
 
@@ -31,9 +32,9 @@
       class="fullscreen-button"
       size="sm"
       variant="outline-light"
-      @click.stop="toggleFullscreen"
+      @click.stop="$emit('toggleFullscreen')"
     >
-      <b-icon v-if="!fullscreen" icon="fullscreen" />
+      <b-icon v-if="!isFullscreen" icon="fullscreen" />
       <b-icon v-else icon="fullscreen-exit" />
     </b-button>
 
@@ -74,7 +75,6 @@ export default {
     ControlMenu,
   },
   data: () => ({
-    fullscreen: false,
     streamValidateTimer: null,
     profile: {
       username: null,
@@ -107,12 +107,12 @@ export default {
       type: Boolean,
       default: false,
     },
+    isFullscreen: {
+      type: Boolean,
+      default: false,
+    },
   },
   methods: {
-    toggleFullscreen(event) {
-      event.stopPropagation()
-      this.fullscreen = !this.fullscreen
-    },
     getInitials() {
       const username = CommonUtils.getUserNameFromEvent(this.streamEvent)
       return CommonUtils.getInitials(username)
@@ -295,6 +295,15 @@ export default {
 }
 
 .spotlight-toggle-overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.fullscreen-overlay {
   position: absolute;
   width: 100%;
   height: 100%;

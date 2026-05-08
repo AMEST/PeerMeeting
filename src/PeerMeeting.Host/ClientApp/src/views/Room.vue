@@ -8,11 +8,25 @@
       <div
         :class="[
           'video-grid',
-          spotlightMode ? 'video-grid--spotlight' : `video-grid--${gridClass}`,
+          fullscreenMode ? 'video-grid--fullscreen' : spotlightMode ? 'video-grid--spotlight' : `video-grid--${gridClass}`,
         ]"
       >
-        <!-- Spotlight mode: selected participant -->
-        <template v-if="spotlightMode && selectedParticipant">
+        <!-- Fullscreen mode: only selected participant -->
+        <template v-if="fullscreenMode && fullscreenParticipant">
+          <participant-block
+            :key="fullscreenParticipant[0]"
+            :streamEvent="fullscreenParticipant[1]"
+            :state="state"
+            :DetectRTC="DetectRTC"
+            :participants="participants"
+            :connection="rtcConnection"
+            :isFullscreen="true"
+            @toggleFullscreen="toggleFullscreen(fullscreenParticipant[0])"
+          />
+        </template>
+
+        <!-- Spotlight mode: selected participant + sidebar -->
+        <template v-else-if="spotlightMode && selectedParticipant">
           <div class="spotlight-main">
             <participant-block
               :key="selectedParticipant[0]"
@@ -23,6 +37,7 @@
               :connection="rtcConnection"
               :isSpotlight="true"
               @toggleSpotlight="clearSpotlight"
+              @toggleFullscreen="toggleFullscreen(selectedParticipant[0])"
             />
           </div>
           <div class="spotlight-sidebar">
@@ -35,7 +50,8 @@
               :participants="participants"
               :connection="rtcConnection"
               :isThumbnail="true"
-            @toggleSpotlight="selectParticipant(k)"
+              @toggleSpotlight="selectParticipant(k)"
+              @toggleFullscreen="toggleFullscreen(k)"
             />
           </div>
         </template>
@@ -51,6 +67,7 @@
             :participants="participants"
             :connection="rtcConnection"
             @toggleSpotlight="selectParticipant(k)"
+            @toggleFullscreen="toggleFullscreen(k)"
           />
         </template>
       </div>
@@ -88,6 +105,7 @@ export default {
     participants: new Map(),
     participantVersion: 0,
     selectedParticipantId: null,
+    fullscreenParticipantId: null,
     DetectRTC: require('detectrtc'),
   }),
   components: {
@@ -109,6 +127,16 @@ export default {
     participantList() {
       void this.participantVersion
       return Array.from(this.participants.entries())
+    },
+    fullscreenMode() {
+      return this.fullscreenParticipantId !== null
+    },
+    fullscreenParticipant() {
+      if (!this.fullscreenParticipantId) return null
+      return [
+        this.fullscreenParticipantId,
+        this.participants.get(this.fullscreenParticipantId),
+      ]
     },
     spotlightMode() {
       return this.selectedParticipantId !== null && this.participantCount > 2
@@ -142,6 +170,9 @@ export default {
   methods: {
     selectParticipant(id) {
       if (this.participantCount <= 2) return
+      if (this.fullscreenMode) {
+        this.fullscreenParticipantId = null
+      }
       if (this.selectedParticipantId === id) {
         this.selectedParticipantId = null
       } else {
@@ -150,6 +181,13 @@ export default {
     },
     clearSpotlight() {
       this.selectedParticipantId = null
+    },
+    toggleFullscreen(id) {
+      if (this.fullscreenMode) {
+        this.fullscreenParticipantId = null
+      } else {
+        this.fullscreenParticipantId = id
+      }
     },
     addParticipantBlock(event) {
       if (this.participants.has(event.userid) && event.cardfix) return
@@ -368,7 +406,15 @@ export default {
 /* 1 participant */
 .video-grid--single {
   grid-template-columns: 1fr;
-  grid-template-rows: 1fr;
+}
+
+/* Fullscreen mode */
+.video-grid--fullscreen {
+  grid-template-columns: 1fr;
+}
+
+.video-grid--fullscreen .user-block {
+  border-radius: 0;
 }
 
 /* 2 participants */
