@@ -50,7 +50,7 @@ export default {
         this.$store.commit('changeVersion', versionRequest.data.version)
       }
       const username =
-        this.$store.state.application.profile.name != null
+        this.$store.state.application.profile != null
           ? this.$store.state.application.profile.name
           : uuidv4()
       const turnRequest = await axios.post('/api/credentials', 'username=' + username)
