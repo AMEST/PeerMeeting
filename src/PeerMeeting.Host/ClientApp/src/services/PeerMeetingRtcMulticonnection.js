@@ -175,8 +175,8 @@ export default class PeerMeetingRtcMulticonnection {
   }
 
   configureIceConnectionState() {
-    this.connection.oniceconnectionstatechange = (event) => {
-      const state = event.target.iceConnectionState
+    this.connection.onPeerStateChanged = (event) => {
+      const state = event.iceConnectionState
       if ((state === 'failed' || state === 'disconnected') && !this.triedTurnOnly && !this.store.state.application.turnOnly) {
         this.triedTurnOnly = true
         console.warn('ICE connection failed, switching to TURN only mode')
