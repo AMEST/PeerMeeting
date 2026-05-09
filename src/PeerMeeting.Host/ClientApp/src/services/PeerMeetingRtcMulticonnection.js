@@ -195,9 +195,9 @@ export default class PeerMeetingRtcMulticonnection {
     const participants = this.connection.getAllParticipants()
     setTimeout(() => {
       if (participants.length <= 0) {
-        connection.join(roomId)
+        this.connection.join(roomId)
       } else {
-        connection.renegotiate()
+        this.connection.renegotiate()
       }
     }, 1000)
   }
