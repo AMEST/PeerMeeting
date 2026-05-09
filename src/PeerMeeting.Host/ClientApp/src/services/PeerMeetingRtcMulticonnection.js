@@ -193,11 +193,12 @@ export default class PeerMeetingRtcMulticonnection {
     this.configureIceServers()
     const roomId = this.connection.sessionid
     const participants = this.connection.getAllParticipants()
-    participants.forEach((participant) => {
-      this.connection.remove(participant)
-    })
     setTimeout(() => {
-      this.connection.join(roomId)
+      if (participants.length <= 0) {
+        connection.join(roomId)
+      } else {
+        connection.renegotiate()
+      }
     }, 1000)
   }
 
