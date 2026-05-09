@@ -17,8 +17,13 @@ const STORAGE_KEYS = {
 
 const storage = {
   get(key) {
-    const value = window.localStorage[key]
-    return value !== undefined ? JSON.parse(value) : null
+    try{
+      const value = window.localStorage[key]
+      return value !== undefined ? JSON.parse(value) : null
+    }catch{
+      return null
+    }
+
   },
   set(key, value) {
     window.localStorage[key] = JSON.stringify(value)
