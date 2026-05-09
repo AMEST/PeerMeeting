@@ -10,6 +10,7 @@ export default class PeerMeetingRtcMulticonnection {
   userid = null
   participantsFixTimer = null
   participantsCardFixTimer = null
+  triedTurnOnly = false
 
   constructor(store, router, participants) {
     this.store = store
@@ -33,6 +34,7 @@ export default class PeerMeetingRtcMulticonnection {
     this.configureKicked()
     this.configureMute()
     this.configureVoiceDetection()
+    this.configureIceConnectionState()
     this.startParticipantFixTimer()
   }
 
@@ -109,7 +111,7 @@ export default class PeerMeetingRtcMulticonnection {
   configureIceServers() {
     if (!this.store.state.application.turnSettings)
       return
-    if (this.store.state.application.turnOnly) {
+    if (this.store.state.application.turnOnly || this.triedTurnOnly) {
       this.connection.iceServers = []
       this.connection.candidates.host = false
       this.connection.iceTransportPolicy = 'relay'
@@ -170,6 +172,33 @@ export default class PeerMeetingRtcMulticonnection {
       this.connection.extra.speacking = false
       this.connection.updateExtraData()
     }
+  }
+
+  configureIceConnectionState() {
+    this.connection.oniceconnectionstatechange = (event) => {
+      const state = event.target.iceConnectionState
+      if ((state === 'failed' || state === 'disconnected') && !this.triedTurnOnly && !this.store.state.application.turnOnly) {
+        this.triedTurnOnly = true
+        console.warn('ICE connection failed, switching to TURN only mode')
+        this.store.commit('changeTurnOnly', true)
+        this.reapplyIceServers()
+      }
+    }
+  }
+
+  reapplyIceServers() {
+    if (!this.store.state.application.turnSettings)
+      return
+    this.connection.iceServers = []
+    this.configureIceServers()
+    const roomId = this.connection.sessionid
+    const participants = this.connection.getAllParticipants()
+    participants.forEach((participant) => {
+      this.connection.remove(participant)
+    })
+    setTimeout(() => {
+      this.connection.join(roomId)
+    }, 1000)
   }
 
   startParticipantFixTimer() {
