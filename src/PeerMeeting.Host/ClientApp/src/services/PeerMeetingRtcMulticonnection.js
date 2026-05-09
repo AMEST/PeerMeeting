@@ -107,11 +107,29 @@ export default class PeerMeetingRtcMulticonnection {
   }
 
   configureIceServers() {
-    if (this.store.state.application.turnSettings != null) {
-      if (this.store.state.application.turnOnly) {
-        this.connection.iceServers = []
-        this.connection.candidates.host = false
-        this.connection.iceTransportPolicy = 'relay'
+    if (!this.store.state.application.turnSettings)
+      return
+    if (this.store.state.application.turnOnly) {
+      this.connection.iceServers = []
+      this.connection.candidates.host = false
+      this.connection.iceTransportPolicy = 'relay'
+    }
+    const turnUri = this.store.state.application.turnSettings.uris[0]
+    const stunUri = turnUri.replace(/^turn:/, 'stun:').replace(/\?transport=tcp$/, '').replace(/\?transport=udp$/, '')
+    this.connection.iceServers.unshift({
+      urls: stunUri,
+    })
+    this.connection.iceServers.push({
+      urls: this.store.state.application.turnSettings.uris[0],
+      credential: this.store.state.application.turnSettings.password,
+      username: this.store.state.application.turnSettings.username,
+    })
+    this.connection.iceServers.push({
+      urls: this.store.state.application.turnSettings.uris[1],
+      credential: this.store.state.application.turnSettings.password,
+      username: this.store.state.application.turnSettings.username,
+    })
+  }
       }
       const turnUri = this.store.state.application.turnSettings.uris[0]
       const stunUri = turnUri.replace(/^turn:/, 'stun:').replace(/\?transport=tcp$/, '').replace(/\?transport=udp$/, '')
