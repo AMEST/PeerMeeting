@@ -181,25 +181,9 @@ export default class PeerMeetingRtcMulticonnection {
         this.triedTurnOnly = true
         console.warn('ICE connection failed, switching to TURN only mode')
         this.store.commit('changeTurnOnly', true)
-        this.reapplyIceServers()
+        window.location.reload()
       }
     }
-  }
-
-  reapplyIceServers() {
-    if (!this.store.state.application.turnSettings)
-      return
-    this.connection.iceServers = []
-    this.configureIceServers()
-    const roomId = this.connection.sessionid
-    const participants = this.connection.getAllParticipants()
-    setTimeout(() => {
-      if (participants.length <= 0) {
-        this.connection.join(roomId)
-      } else {
-        this.connection.renegotiate()
-      }
-    }, 1000)
   }
 
   startParticipantFixTimer() {
