@@ -30,7 +30,7 @@ namespace PeerMeeting.Host.Services
                 Username = generatedUsername,
                 Password = password,
                 Ttl = _configuration.CredentialsTtl,
-                Uris = new []{$"turn:{_configuration.TurnAddress}?transport=udp" }
+                Uris = [$"turn:{_configuration.TurnAddress}?transport=udp", $"turn:{_configuration.TurnAddress}?transport=tcp"]
             };
         }
 

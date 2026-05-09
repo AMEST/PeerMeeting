@@ -3,6 +3,7 @@
     <b-tabs content-class="mt-3">
       <profile-tab/>
       <devices-tab/>
+      <connection-tab/>
     </b-tabs>
   </b-modal>
 </template>
@@ -10,11 +11,13 @@
 <script>
 import ProfileTab from '@/components/settings/ProfileTab.vue';
 import DevicesTab from '@/components/settings/DevicesTab.vue';
+import ConnectionTab from '@/components/settings/ConnectionTab.vue';
 export default {
   name: "SettingsDialog",
   components:{
     ProfileTab,
-    DevicesTab
+    DevicesTab,
+    ConnectionTab,
   }
 };
 </script>

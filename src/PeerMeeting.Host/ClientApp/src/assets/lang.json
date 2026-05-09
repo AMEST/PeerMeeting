@@ -51,6 +51,14 @@
           },
           "save":"Save",
           "reload":"Reload devices"
+        },
+        "connection":{
+          "title":"Connection",
+          "turnOnly":{
+            "description":"Force use only TURN servers for peer connections",
+            "label":"TURN Only"
+          },
+          "save":"Save"
         }
       },
       "room":{
@@ -124,6 +132,14 @@
           },
           "save":"Сохранить",
           "reload":"Перезагрузить"
+        },
+        "connection":{
+          "title":"Подключение",
+          "turnOnly":{
+            "description":"Принудительно использовать только TURN серверы для пиринга",
+            "label":"Только TURN"
+          },
+          "save":"Сохранить"
         }
       },
       "room":{
