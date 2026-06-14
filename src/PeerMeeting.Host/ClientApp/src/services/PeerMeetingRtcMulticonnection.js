@@ -12,6 +12,17 @@ export default class PeerMeetingRtcMulticonnection {
   participantsCardFixTimer = null
   triedTurnOnly = false
 
+  // Public STUN servers
+  defaultStunServers = [
+    'stun:stun.l.google.com:19302',
+    'stun:stun1.l.google.com:19302',
+    'stun:stun2.l.google.com:19302',
+    'stun:stun3.l.google.com:19302',
+    'stun:stun4.l.google.com:19302',
+    'stun:stun.services.mozilla.com:3478',
+    'stun:stun.stunprotocol.org:3478',
+  ]
+
   constructor(store, router, participants) {
     this.store = store
     this.router = router
@@ -109,28 +120,64 @@ export default class PeerMeetingRtcMulticonnection {
   }
 
   configureIceServers() {
-    if (!this.store.state.application.turnSettings)
+    // Инициализируем iceServers если их нет
+    if (!this.connection.iceServers) {
+      this.connection.iceServers = []
+    }
+
+    // Если нет turnSettings, добавляем только публичные STUN серверы
+    if (!this.store.state.application.turnSettings) {
+      this.connection.iceServers = [
+        {
+          urls: this.defaultStunServers,
+        },
+      ]
       return
+    }
+
+    // Если TURN режим включен, очищаем iceServers и используем только TURN
     if (this.store.state.application.turnOnly || this.triedTurnOnly) {
       this.connection.iceServers = []
       this.connection.candidates.host = false
       this.connection.iceTransportPolicy = 'relay'
     }
-    const turnUri = this.store.state.application.turnSettings.uris[0]
-    const stunUri = turnUri.replace(/^turn:/, 'stun:').replace(/\?transport=tcp$/, '').replace(/\?transport=udp$/, '')
+
+    // Добавляем публичные STUN серверы в начало списка
     this.connection.iceServers.unshift({
+      urls: this.defaultStunServers,
+    })
+
+    // Извлекаем STUN из TURN URI
+    const turnUri = this.store.state.application.turnSettings.uris[0]
+    const stunUri = turnUri
+      .replace(/^turn:/, 'stun:')
+      .replace(/\?transport=tcp$/, '')
+      .replace(/\?transport=udp$/, '')
+
+    // Добавляем STUN сервер из конфига
+    this.connection.iceServers.push({
       urls: stunUri,
     })
-    this.connection.iceServers.push({
-      urls: this.store.state.application.turnSettings.uris[0],
-      credential: this.store.state.application.turnSettings.password,
-      username: this.store.state.application.turnSettings.username,
-    })
-    this.connection.iceServers.push({
-      urls: this.store.state.application.turnSettings.uris[1],
-      credential: this.store.state.application.turnSettings.password,
-      username: this.store.state.application.turnSettings.username,
-    })
+
+    // Добавляем первый TURN сервер
+    if (this.store.state.application.turnSettings.uris.length > 0) {
+      this.connection.iceServers.push({
+        urls: this.store.state.application.turnSettings.uris[0],
+        credential: this.store.state.application.turnSettings.password,
+        username: this.store.state.application.turnSettings.username,
+      })
+    }
+
+    // Добавляем второй TURN сервер (если доступен)
+    if (this.store.state.application.turnSettings.uris.length > 1) {
+      this.connection.iceServers.push({
+        urls: this.store.state.application.turnSettings.uris[1],
+        credential: this.store.state.application.turnSettings.password,
+        username: this.store.state.application.turnSettings.username,
+      })
+    }
+
+    console.log('ICE Servers configured:', this.connection.iceServers)
   }
 
   configureKicked() {
